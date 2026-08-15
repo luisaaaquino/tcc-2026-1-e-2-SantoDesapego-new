@@ -312,16 +312,55 @@
 .hero-card {
   position: absolute;
   background: var(--paper);
-  border: 1.5px solid var(--border);
-  border-radius: 20px;
-  padding: 1rem;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-  transition: transform 0.4s ease;
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-lg);
+  padding: 0.85rem;
+  box-shadow: 5px 5px 0 var(--card-accent, var(--ink));
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-.hero-card:hover { transform: scale(1.03) rotate(0deg) !important; z-index: 20; }
-.hero-card img   { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; margin-bottom: 0.7rem; }
-.hero-card .price { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; color: var(--ink); }
-.hero-card .hood  { font-size: 0.75rem; color: var(--ink-muted); margin-top: 0.15rem; }
+.hero-card:hover {
+  transform: scale(1.04) rotate(0deg) !important;
+  box-shadow: 7px 7px 0 var(--card-accent, var(--ink));
+  z-index: 20;
+}
+.hero-card--terracotta { --card-accent: var(--terracotta); }
+.hero-card--forest     { --card-accent: var(--forest); }
+.hero-card--mustard    { --card-accent: var(--mustard); }
+.hero-card--ink        { --card-accent: var(--terracotta-dark); }
+
+.hero-card-img-wrap { position: relative; margin-bottom: 0.65rem; }
+.hero-card-img-wrap img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: calc(var(--radius-lg) - 6px);
+}
+.hero-card-price {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: var(--card-accent, var(--ink));
+  color: var(--cream);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.92rem;
+  line-height: 1;
+  padding: 0.35rem 0.7rem;
+  border-radius: var(--radius-pill);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.hero-card-hood {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.hero-card-hood svg { flex-shrink: 0; color: var(--card-accent, var(--ink)); }
 
 .hero-card-1 { width: 210px; top: 50px;    left: 30px;    transform: rotate(-4deg); z-index: 2; }
 .hero-card-2 { width: 230px; top: 10px; right: 60px; transform: rotate(3deg);  z-index: 3; }

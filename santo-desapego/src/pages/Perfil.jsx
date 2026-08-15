@@ -93,15 +93,17 @@ const Perfil = () => {
     fetch(`${API_URL}/api/usuario/perfil`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then((r) => r.json())
-      .then((data) => {
+      .then((r) => r.json().then((data) => ({ status: r.status, data })))
+      .then(({ status, data }) => {
         if (data.usuario) {
           setUsuario(data.usuario);
           setEstatisticas(data.estatisticas);
-        } else {
+        } else if (status === 401) {
           localStorage.removeItem('sd_token');
           localStorage.removeItem('sd_usuario');
           navigate('/login');
+        } else {
+          alert(data.erro || 'Erro ao carregar perfil. Tente novamente.');
         }
       })
       .catch(() => alert('Erro ao carregar perfil. O servidor está rodando?'))

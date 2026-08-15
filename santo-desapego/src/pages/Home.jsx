@@ -72,10 +72,10 @@ const FOOTER_LINKS = [
 ];
 
 const HERO_CARDS = [
-  { img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80', price: 'R$ 480',  hood: 'Sofá • Jardim Marajoara',      cls: 'hero-card-1' },
-  { img: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=400&q=80', price: 'R$ 120',  hood: 'Bicicleta • Campo Belo', cls: 'hero-card-2' },
-  { img: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&q=80', price: 'R$ 35',   hood: 'Livros • Vila Cruzeiro',          cls: 'hero-card-3' },
-  { img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80', price: 'R$ 220',  hood: 'Tênis • Vila Mascote',            cls: 'hero-card-4' },
+  { img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80', price: 'R$ 480',  hood: 'Sofá • Jardim Marajoara',      cls: 'hero-card-1', accent: 'terracotta' },
+  { img: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=400&q=80', price: 'R$ 120',  hood: 'Bicicleta • Campo Belo', cls: 'hero-card-2', accent: 'forest' },
+  { img: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&q=80', price: 'R$ 35',   hood: 'Livros • Vila Cruzeiro',          cls: 'hero-card-3', accent: 'mustard' },
+  { img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80', price: 'R$ 220',  hood: 'Tênis • Vila Mascote',            cls: 'hero-card-4', accent: 'ink' },
 ];
 
 /* ── Ícones — UI ────────────────────────────────────────────── */
@@ -409,10 +409,15 @@ const Home = () => {
 
         <div className="hero-visual">
           {HERO_CARDS.map((c) => (
-            <div key={c.cls} className={`hero-card ${c.cls}`}>
-              <img src={c.img} alt="" />
-              <div className="price">{c.price}</div>
-              <div className="hood">{c.hood}</div>
+            <div key={c.cls} className={`hero-card ${c.cls} hero-card--${c.accent}`}>
+              <div className="hero-card-img-wrap">
+                <img src={c.img} alt="" />
+                <span className="hero-card-price">{c.price}</span>
+              </div>
+              <div className="hero-card-hood">
+                <IconPin />
+                {c.hood}
+              </div>
             </div>
           ))}
         </div>
