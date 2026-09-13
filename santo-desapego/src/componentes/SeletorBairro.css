@@ -1,0 +1,72 @@
+/* ============================================================
+   SELETOR DE BAIRRO — dropdown customizado da barra de busca
+   ============================================================ */
+.seletor-bairro {
+  position: relative;
+  border-left: 1px solid var(--border);
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.seletor-bairro-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.88rem;
+  font-family: inherit;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.seletor-bairro-btn:hover { color: var(--ink); }
+.seletor-bairro-btn svg:first-child { color: var(--ink-muted); flex-shrink: 0; }
+.seletor-bairro-btn span {
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.seletor-bairro-chevron { flex-shrink: 0; transition: transform 0.15s; color: var(--ink-muted); }
+.seletor-bairro-chevron.aberto { transform: rotate(180deg); }
+
+.seletor-bairro-lista {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 230px;
+  max-height: 320px;
+  overflow-y: auto;
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  padding: 0.4rem;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.seletor-bairro-lista button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  font-family: inherit;
+  color: var(--ink);
+  text-align: left;
+  transition: background 0.15s;
+}
+.seletor-bairro-lista button:hover { background: var(--cream-soft); }
+.seletor-bairro-lista button.ativo { color: var(--terracotta); font-weight: 700; }
+.seletor-bairro-lista button.ativo svg { color: var(--terracotta); flex-shrink: 0; }
+
+@media (max-width: 768px) {
+  .seletor-bairro-btn span { display: none; }
+  .seletor-bairro-lista { right: -60px; }
+}

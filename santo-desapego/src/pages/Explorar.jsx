@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import './Explorar.css';
+import SeletorBairro, { BAIRROS } from '../componentes/SeletorBairro';
 
 const API_URL = 'http://localhost:8080/api';
 
@@ -8,11 +9,6 @@ const API_URL = 'http://localhost:8080/api';
 const IconSearch = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-  </svg>
-);
-const IconPin = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>
   </svg>
 );
 const IconLogout = () => (
@@ -89,6 +85,25 @@ const IconMore = () => (
   </svg>
 );
 
+/* ── Condição do produto — emoji + rótulo legível ─────────── */
+const ESTADO_LABEL = {
+  'novo':        { emoji: '✨', label: 'Novo' },
+  'seminovo':    { emoji: '👌', label: 'Seminovo' },
+  'usado':       { emoji: '👍', label: 'Usado' },
+  'para-reparo': { emoji: '🔧', label: 'Para reparo' },
+};
+
+/* ── Data relativa (pt-BR) — "Hoje", "Ontem", "há 3 dias"... ─ */
+const tempoRelativo = (dataISO) => {
+  const dias = Math.floor((Date.now() - new Date(dataISO).getTime()) / 86400000);
+  if (dias <= 0) return 'Hoje';
+  if (dias === 1) return 'Ontem';
+  if (dias < 7) return `há ${dias} dias`;
+  if (dias < 30) return `há ${Math.floor(dias / 7)} sem.`;
+  if (dias < 365) return `há ${Math.floor(dias / 30)} meses`;
+  return new Date(dataISO).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+};
+
 /* ── Mapa id da categoria → componente de ícone ───────────── */
 const CATEGORY_ICONS = {
   1: IconSofa,     // Móveis & Casa
@@ -116,10 +131,12 @@ const Explorar = () => {
   const [ordenacao, setOrdenacao] = useState('recentes');
   const [categoriaAtiva, setCategoriaAtiva] = useState(null);
   const [tabAtiva, setTabAtiva] = useState('todos');
-  const [precoMin, setPrecoMin] = useState(0);
-  const [precoMax, setPrecoMax] = useState(5000);
-  const [distancia, setDistancia] = useState('qualquer');
+  const [precoMax, setPrecoMax] = useState(5000);           // valor ao vivo do slider (label)
+  const [precoMaxAplicado, setPrecoMaxAplicado] = useState(5000); // valor usado no filtro
   const [condicoes, setCondicoes] = useState([]);
+  const [bairroFiltro, setBairroFiltro] = useState('');
+  const [limite, setLimite] = useState(12);
+  const [totalItens, setTotalItens] = useState(0);
 
   // Lê usuário do localStorage
   useEffect(() => {
@@ -147,6 +164,7 @@ const Explorar = () => {
     const categoriaUrl = searchParams.get('categoria_id');
     const aceitaTrocaUrl = searchParams.get('aceita_troca');
     const buscaUrl = searchParams.get('busca');
+    const bairroUrl = searchParams.get('bairro');
 
     if (categoriaUrl) {
       setCategoriaAtiva(parseInt(categoriaUrl));
@@ -160,23 +178,30 @@ const Explorar = () => {
     } else {
       setTermoBusca('');
     }
+    // Atualiza o bairro selecionado com o valor vindo da URL (ex: link da Home)
+    if (bairroUrl) {
+      setBairroFiltro(bairroUrl);
+    }
   }, [searchParams]);
 
-  // Busca anúncios quando os filtros mudam OU searchParams muda
+  // Busca anúncios quando algum filtro real muda — reinicia a paginação
   useEffect(() => {
-    buscarAnuncios();
-  }, [ordenacao, categoriaAtiva, tabAtiva, searchParams]);
+    setLimite(12);
+    buscarAnuncios(12);
+  }, [ordenacao, categoriaAtiva, tabAtiva, bairroFiltro, searchParams, condicoes.join(','), precoMaxAplicado]);
 
-  const buscarAnuncios = async () => {
+  const buscarAnuncios = async (limiteParam) => {
     setCarregando(true);
     try {
       const params = new URLSearchParams();
       params.append('ordenacao', ordenacao);
-      params.append('limite', '12');
+      params.append('limite', limiteParam || limite);
 
       if (categoriaAtiva) params.append('categoria_id', categoriaAtiva);
       if (tabAtiva === 'troca') params.append('aceita_troca', 'true');
-      if (tabAtiva === 'novos') params.append('estado_conservacao', 'novo');
+      if (bairroFiltro) params.append('bairro', bairroFiltro);
+      if (precoMaxAplicado < 5000) params.append('preco_max', precoMaxAplicado);
+      if (condicoes.length > 0) params.append('estado_conservacao', condicoes.join(','));
 
       // Adiciona termo de busca se existir na URL
       const buscaUrl = searchParams.get('busca');
@@ -186,12 +211,20 @@ const Explorar = () => {
       const data = await res.json();
 
       setAnuncios(data.anuncios || []);
+      setTotalItens(data.paginacao?.total_itens ?? (data.anuncios || []).length);
     } catch (erro) {
       console.error('Erro ao buscar anúncios:', erro);
       setAnuncios([]);
+      setTotalItens(0);
     } finally {
       setCarregando(false);
     }
+  };
+
+  const carregarMais = () => {
+    const novoLimite = limite + 12;
+    setLimite(novoLimite);
+    buscarAnuncios(novoLimite);
   };
 
   const handleLogout = () => {
@@ -225,15 +258,11 @@ const Explorar = () => {
 
   // Limpar filtro específico
   const limparPreco = () => {
-    setPrecoMin(0);
     setPrecoMax(5000);
+    setPrecoMaxAplicado(5000);
   };
-  const limparDistancia = () => setDistancia('qualquer');
   const limparCondicoes = () => setCondicoes([]);
-
-  const aplicarFiltros = () => {
-    buscarAnuncios();
-  };
+  const limparBairro = () => setBairroFiltro('');
 
   const formatarPreco = (valor) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -284,10 +313,7 @@ const Explorar = () => {
               onChange={(e) => setTermoBusca(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleBuscar(e)}
             />
-            <span className="search-location">
-              <IconPin />
-              Santo Amaro, SP
-            </span>
+            <SeletorBairro value={bairroFiltro} onChange={setBairroFiltro} />
             <button className="search-btn" onClick={handleBuscar}>Buscar</button>
           </div>
 
@@ -366,7 +392,7 @@ const Explorar = () => {
             <div>
               <h1>Explorar <em>desapegos</em></h1>
               <p className="explorar-header-subtitle">
-                {anuncios.length} {anuncios.length === 1 ? 'anúncio encontrado' : 'anúncios encontrados'} em Santo Amaro
+                {totalItens} {totalItens === 1 ? 'anúncio encontrado' : 'anúncios encontrados'} em Santo Amaro
               </p>
             </div>
 
@@ -386,31 +412,13 @@ const Explorar = () => {
               className={`explorar-tab ${tabAtiva === 'todos' ? 'active' : ''}`}
               onClick={() => setTabAtiva('todos')}
             >
-              Todos <span className="count">{anuncios.length}</span>
-            </button>
-            <button
-              className={`explorar-tab ${tabAtiva === 'disponiveis' ? 'active' : ''}`}
-              onClick={() => setTabAtiva('disponiveis')}
-            >
-              Disponíveis <span className="count">{anuncios.filter(a => a.status === 'ativo').length}</span>
+              Todos <span className="count">{totalItens}</span>
             </button>
             <button
               className={`explorar-tab ${tabAtiva === 'troca' ? 'active' : ''}`}
               onClick={() => setTabAtiva('troca')}
             >
               Aceita Troca <span className="count">{anuncios.filter(a => a.aceita_troca).length}</span>
-            </button>
-            <button
-              className={`explorar-tab ${tabAtiva === 'novos' ? 'active' : ''}`}
-              onClick={() => setTabAtiva('novos')}
-            >
-              Novos <span className="count">{anuncios.filter(a => a.estado_conservacao === 'novo').length}</span>
-            </button>
-            <button
-              className={`explorar-tab ${tabAtiva === 'perto' ? 'active' : ''}`}
-              onClick={() => setTabAtiva('perto')}
-            >
-              Até 3km <span className="count">0</span>
             </button>
           </div>
         </div>
@@ -429,8 +437,8 @@ const Explorar = () => {
               </div>
               <div className="price-range">
                 <div className="price-range-labels">
-                  <span>R$ {precoMin}</span>
-                  <span>R$ {precoMax}</span>
+                  <span>R$ 0</span>
+                  <span>até R$ {precoMax}{precoMax === 5000 ? '+' : ''}</span>
                 </div>
                 <input
                   type="range"
@@ -439,24 +447,33 @@ const Explorar = () => {
                   step="100"
                   value={precoMax}
                   onChange={(e) => setPrecoMax(parseInt(e.target.value))}
+                  onMouseUp={() => setPrecoMaxAplicado(precoMax)}
+                  onTouchEnd={() => setPrecoMaxAplicado(precoMax)}
+                  onKeyUp={() => setPrecoMaxAplicado(precoMax)}
                 />
               </div>
             </div>
 
-            {/* Distância máxima */}
+            {/* Bairro */}
             <div className="filter-section">
               <div className="filter-section-title">
-                <h3>Distância máxima</h3>
-                <button className="filter-clear" onClick={limparDistancia}>Limpar</button>
+                <h3>Bairro</h3>
+                <button className="filter-clear" onClick={limparBairro}>Limpar</button>
               </div>
               <div className="filter-options">
-                {['qualquer', '500m', '1km', '2km', '5km'].map((d) => (
+                <button
+                  className={`filter-option ${!bairroFiltro ? 'active' : ''}`}
+                  onClick={() => setBairroFiltro('')}
+                >
+                  Todos
+                </button>
+                {BAIRROS.map((b) => (
                   <button
-                    key={d}
-                    className={`filter-option ${distancia === d ? 'active' : ''}`}
-                    onClick={() => setDistancia(d)}
+                    key={b}
+                    className={`filter-option ${bairroFiltro === b ? 'active' : ''}`}
+                    onClick={() => setBairroFiltro(b)}
                   >
-                    {d === 'qualquer' ? 'Qualquer' : d}
+                    {b}
                   </button>
                 ))}
               </div>
@@ -490,54 +507,45 @@ const Explorar = () => {
                 ))}
               </div>
             </div>
-
-            <button className="filter-apply" onClick={aplicarFiltros}>
-              Aplicar filtros
-            </button>
           </aside>
 
           {/* ── Grid de produtos ── */}
           <div className="explorar-content">
-            <div className="explorar-results-count">
-              Mostrando 1–{anuncios.length} de {anuncios.length} anúncios
-            </div>
-
-            {carregando ? (
+            {carregando && anuncios.length === 0 ? (
               <div className="explorar-loading">Carregando...</div>
             ) : anuncios.length > 0 ? (
               <div className="explorar-grid">
-                {anuncios.map((anuncio) => (
-                  /* Card inteiro vira link para a página do anúncio */
-                  <Link
-                    key={anuncio.id}
-                    to={`/anuncio/${anuncio.id}`}
-                    className="product-card product-card-link"
-                  >
-                    <div className="product-image">
-                      {anuncio.imagem_principal ? (
-                        <img src={anuncio.imagem_principal} alt={anuncio.titulo} />
-                      ) : (
-                        <div style={{
-                          width: '100%', height: '100%', background: 'var(--gray-2)',
-                          display: 'grid', placeItems: 'center', color: 'var(--ink-muted)',
-                          fontSize: '3rem'
-                        }}>📦</div>
-                      )}
-                      {anuncio.aceita_troca && (
-                        <span className="product-badge">🔄 Aceita troca</span>
-                      )}
-                    </div>
-                    <div className="product-info">
-                      <h3 className="product-title">{anuncio.titulo}</h3>
-                      <p className="product-price">{formatarPreco(anuncio.preco)}</p>
-                      <p className="product-location">{anuncio.bairro || 'Santo Amaro'}</p>
-                      <div className="product-meta">
-                        <span className="product-condition">{anuncio.estado_conservacao}</span>
-                        <span className="product-time">Agora</span>
+                {anuncios.map((anuncio) => {
+                  const estado = ESTADO_LABEL[anuncio.estado_conservacao] || { emoji: '📦', label: anuncio.estado_conservacao };
+                  return (
+                    /* Card inteiro vira link para a página do anúncio */
+                    <Link
+                      key={anuncio.id}
+                      to={`/anuncio/${anuncio.id}`}
+                      className="ecard"
+                    >
+                      <div className="ecard-imagem">
+                        {anuncio.imagem_principal ? (
+                          <img src={anuncio.imagem_principal} alt={anuncio.titulo} loading="lazy" />
+                        ) : (
+                          <div className="ecard-imagem-vazia">📦</div>
+                        )}
+                        {anuncio.aceita_troca && (
+                          <span className="ecard-badge">🔄 Aceita troca</span>
+                        )}
                       </div>
-                    </div>
-                  </Link>
-                ))}
+                      <div className="ecard-info">
+                        <h3 className="ecard-titulo">{anuncio.titulo}</h3>
+                        <p className="ecard-preco">{formatarPreco(anuncio.preco)}</p>
+                        <p className="ecard-local">📍 {anuncio.bairro || 'Santo Amaro'}</p>
+                        <div className="ecard-meta">
+                          <span className="ecard-condicao">{estado.emoji} {estado.label}</span>
+                          <span className="ecard-tempo">{tempoRelativo(anuncio.data_criacao)}</span>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             ) : (
               <div className="explorar-grid">
@@ -553,6 +561,12 @@ const Explorar = () => {
                   </Link>
                 </div>
               </div>
+            )}
+
+            {anuncios.length > 0 && anuncios.length < totalItens && (
+              <button className="explorar-carregar-mais" onClick={carregarMais} disabled={carregando}>
+                {carregando ? 'Carregando...' : `Carregar mais anúncios (${anuncios.length} de ${totalItens})`}
+              </button>
             )}
           </div>
         </div>

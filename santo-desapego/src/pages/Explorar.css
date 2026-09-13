@@ -283,9 +283,10 @@
 }
 
 /* Botão aplicar filtros */
-.filter-apply {
-  width: 100%;
-  padding: 0.75rem;
+.explorar-carregar-mais {
+  display: block;
+  margin: 2.5rem auto 0;
+  padding: 0.85rem 2rem;
   background: var(--ink);
   color: var(--cream);
   border: none;
@@ -298,21 +299,16 @@
   box-shadow: 3px 3px 0 var(--terracotta);
   transition: all 0.2s;
 }
-.filter-apply:hover {
+.explorar-carregar-mais:hover:not(:disabled) {
   background: var(--terracotta);
   box-shadow: 5px 5px 0 var(--ink);
   transform: translate(-1px, -1px);
 }
+.explorar-carregar-mais:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* ── Grid de produtos ───────────────────────────────────── */
 .explorar-content {
   min-height: 60vh;
-}
-
-.explorar-results-count {
-  font-size: 0.88rem;
-  color: var(--ink-muted);
-  margin-bottom: 1.5rem;
 }
 
 .explorar-grid {
@@ -320,6 +316,114 @@
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
 }
+
+/* ============================================================
+   CARD DE ANÚNCIO (Explorar) — classes próprias (prefixo ecard),
+   sem depender de nada definido em Home.css.
+   ============================================================ */
+.ecard {
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  text-decoration: none;
+  transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+}
+.ecard:hover {
+  transform: translateY(-3px);
+  border-color: var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.ecard-imagem {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: var(--cream-soft);
+  overflow: hidden;
+}
+.ecard-imagem img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s;
+}
+.ecard:hover .ecard-imagem img { transform: scale(1.05); }
+.ecard-imagem-vazia {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-size: 2.8rem;
+  color: var(--ink-muted);
+  background: var(--cream-soft);
+}
+.ecard-badge {
+  position: absolute;
+  top: 0.65rem;
+  left: 0.65rem;
+  background: var(--forest);
+  color: var(--cream);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.3rem 0.65rem;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  white-space: nowrap;
+}
+
+.ecard-info {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 1.1rem 0.9rem;
+  flex: 1;
+}
+.ecard-titulo {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--ink);
+  line-height: 1.3;
+  margin-bottom: 0.4rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ecard-preco {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--ink);
+  margin-bottom: 0.5rem;
+}
+.ecard-local {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  margin-bottom: 0.75rem;
+}
+.ecard-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: 0.7rem;
+  margin-top: auto;
+  border-top: 1px solid var(--border-soft);
+  font-size: 0.74rem;
+  color: var(--ink-muted);
+}
+.ecard-condicao {
+  font-weight: 600;
+  color: var(--ink-soft);
+  background: var(--cream-soft);
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+.ecard-tempo { white-space: nowrap; }
 
 /* Estado vazio */
 .explorar-empty {

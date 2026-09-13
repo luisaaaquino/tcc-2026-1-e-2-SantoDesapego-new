@@ -242,6 +242,49 @@
 .anuncio-vendedor strong { display: block; font-size: 0.95rem; color: var(--ink); }
 .anuncio-vendedor p { font-size: 0.8rem; color: var(--ink-muted); margin: 0.1rem 0 0; }
 
+/* ── Denunciar ──────────────────────────────────────────── */
+.anuncio-denunciar {
+  display: block;
+  margin-top: 0.9rem;
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  text-decoration: underline;
+}
+.anuncio-denunciar:hover { color: var(--terracotta); }
+
+.denuncia-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(26,26,26,0.5);
+  display: grid; place-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+.denuncia-modal {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+}
+.denuncia-modal h2 { font-family: var(--font-display); font-size: 1.2rem; margin-bottom: 0.4rem; }
+.denuncia-modal p { font-size: 0.85rem; color: var(--ink-soft); margin-bottom: 1rem; }
+.denuncia-modal label { font-size: 0.8rem; font-weight: 600; color: var(--ink-soft); display: block; margin-bottom: 0.3rem; }
+.denuncia-modal select,
+.denuncia-modal textarea {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.7rem 0.9rem;
+  font-family: inherit;
+  font-size: 0.88rem;
+  margin-bottom: 0.9rem;
+  resize: vertical;
+}
+.denuncia-modal-actions { display: flex; justify-content: flex-end; gap: 0.6rem; }
+.denuncia-sucesso { text-align: center; padding: 1rem 0; }
+.denuncia-sucesso .emoji { font-size: 2.2rem; display: block; margin-bottom: 0.6rem; }
+
 /* ── Descrição ──────────────────────────────────────────── */
 .anuncio-descricao {
   margin-top: 2.5rem;

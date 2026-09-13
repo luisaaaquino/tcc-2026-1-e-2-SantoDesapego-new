@@ -72,6 +72,24 @@
 }
 
 /* ==========================================================
+   TOOLTIP PERMANENTE — preço sempre visível sobre o pin,
+   sem precisar de hover ou clique
+   ========================================================== */
+.mapa-tooltip.leaflet-tooltip {
+  background: var(--ink) !important;
+  color: var(--cream) !important;
+  border: none !important;
+  border-radius: var(--radius-pill) !important;
+  padding: 0.25rem 0.7rem !important;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.74rem;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+  white-space: nowrap;
+}
+.mapa-tooltip.leaflet-tooltip::before { display: none; }
+
+/* ==========================================================
    POPUP — sobrescreve estilo padrão do Leaflet
    ========================================================== */
 .leaflet-wrapper .leaflet-popup-content-wrapper {
@@ -173,12 +191,13 @@
 }
 
 /* ==========================================================
-   INFO BADGE — contador no canto superior esquerdo
+   INFO BADGE — contador no canto superior direito
+   (superior esquerdo é reservado pros controles de zoom do Leaflet)
    ========================================================== */
 .mapa-info {
   position: absolute;
   top: 1rem;
-  left: 1rem;
+  right: 1rem;
   z-index: 500;
   background: var(--paper);
   padding: 0.7rem 1.1rem;
@@ -215,6 +234,23 @@
 
 @keyframes mapaSpin {
   to { transform: rotate(360deg); }
+}
+
+/* ==========================================================
+   NOTA — transparência sobre localização aproximada
+   ========================================================== */
+.mapa-nota {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  z-index: 500;
+  background: rgba(251, 248, 241, 0.9);
+  padding: 0.4rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+  pointer-events: none;
 }
 
 /* ==========================================================
@@ -289,9 +325,10 @@
   .mapa-popup img { height: 110px; }
   .mapa-info {
     top: 0.7rem;
-    left: 0.7rem;
+    right: 0.7rem;
     padding: 0.55rem 0.9rem;
     font-size: 0.76rem;
   }
   .mapa-info strong { font-size: 1.1rem; }
+  .mapa-nota { bottom: 0.7rem; left: 0.7rem; padding: 0.3rem 0.6rem; font-size: 0.68rem; }
 }

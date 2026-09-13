@@ -10,6 +10,7 @@ import Anuncio          from './pages/Anuncio';
 import Mensagens        from './pages/Mensagens';
 import Checkout         from './pages/Checkout';
 import CompraRealizada  from './pages/CompraRealizada';
+import Admin            from './pages/Admin';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/mensagens"         element={<Mensagens />}        />
         <Route path="/checkout/:id"      element={<Checkout />}         />
         <Route path="/compra-realizada"  element={<CompraRealizada />}  />
+        <Route path="/admin"             element={<Admin />}            />
       </Routes>
     </BrowserRouter>
   );

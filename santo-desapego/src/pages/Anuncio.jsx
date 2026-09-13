@@ -14,6 +14,83 @@ const ESTADO_LABEL = {
 const brl = (v) =>
   Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
+const MOTIVOS_DENUNCIA = [
+  { valor: 'conteudo_inadequado', label: 'Conteúdo inadequado' },
+  { valor: 'fraude', label: 'Suspeita de fraude' },
+  { valor: 'violacao_termos', label: 'Violação dos Termos de Uso' },
+  { valor: 'outro', label: 'Outro motivo' },
+];
+
+/* ── Modal de denúncia [RF19] ─────────────────────────────── */
+const ModalDenunciar = ({ anuncio, aoFechar }) => {
+  const navigate = useNavigate();
+  const [motivo, setMotivo] = useState('conteudo_inadequado');
+  const [descricao, setDescricao] = useState('');
+  const [enviando, setEnviando] = useState(false);
+  const [erro, setErro] = useState('');
+  const [enviado, setEnviado] = useState(false);
+
+  const enviar = async () => {
+    const token = localStorage.getItem('sd_token');
+    if (!token) { navigate('/login'); return; }
+
+    setEnviando(true);
+    setErro('');
+    try {
+      const resposta = await fetch(`${API_URL}/api/denuncias`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ anuncio_id: anuncio.id, motivo, descricao: descricao.trim() || null }),
+      });
+      const dados = await resposta.json();
+      if (!resposta.ok) { setErro(dados.erro || 'Erro ao enviar denúncia.'); return; }
+      setEnviado(true);
+    } catch {
+      setErro('Erro ao conectar com o servidor.');
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  return (
+    <div className="denuncia-modal-overlay" onClick={() => !enviando && aoFechar()}>
+      <div className="denuncia-modal" onClick={(e) => e.stopPropagation()}>
+        {enviado ? (
+          <div className="denuncia-sucesso">
+            <span className="emoji">✅</span>
+            <h2>Denúncia enviada</h2>
+            <p>Nossa equipe vai analisar em breve. Obrigado por ajudar a manter a comunidade segura.</p>
+            <div className="denuncia-modal-actions" style={{ justifyContent: 'center' }}>
+              <button type="button" className="btn-anuncio-comprar" onClick={aoFechar}>Fechar</button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <h2>Denunciar anúncio</h2>
+            <p>Conte pra gente o que há de errado com "{anuncio.titulo}".</p>
+            {erro && <p className="anuncio-erro-pagamento">{erro}</p>}
+
+            <label>Motivo</label>
+            <select value={motivo} onChange={(e) => setMotivo(e.target.value)}>
+              {MOTIVOS_DENUNCIA.map((m) => <option key={m.valor} value={m.valor}>{m.label}</option>)}
+            </select>
+
+            <label>Descreva o problema (opcional)</label>
+            <textarea rows={3} maxLength={1000} value={descricao} onChange={(e) => setDescricao(e.target.value)} />
+
+            <div className="denuncia-modal-actions">
+              <button type="button" className="btn-anuncio-proposta" onClick={aoFechar} disabled={enviando}>Cancelar</button>
+              <button type="button" className="btn-anuncio-comprar" onClick={enviar} disabled={enviando}>
+                {enviando ? 'Enviando...' : 'Enviar denúncia'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const Anuncio = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -63,6 +140,7 @@ const Anuncio = () => {
 
   const [abrindoChat, setAbrindoChat] = useState(false);
   const [erroAcao, setErroAcao] = useState('');
+  const [denunciando, setDenunciando] = useState(false);
 
   const comprar = () => {
     const token = localStorage.getItem('sd_token');
@@ -234,6 +312,10 @@ const Anuncio = () => {
                 <p>Anunciante em {anuncio.bairro}</p>
               </div>
             </div>
+
+            <button type="button" className="anuncio-denunciar" onClick={() => setDenunciando(true)}>
+              🚩 Denunciar este anúncio
+            </button>
           </aside>
         </div>
 
@@ -261,6 +343,8 @@ const Anuncio = () => {
           Comprar agora
         </button>
       </div>
+
+      {denunciando && <ModalDenunciar anuncio={anuncio} aoFechar={() => setDenunciando(false)} />}
     </div>
   );
 };

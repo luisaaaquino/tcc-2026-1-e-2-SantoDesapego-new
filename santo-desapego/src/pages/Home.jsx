@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Home.css';
 import Mapa from '../componentes/Mapa';
+import SeletorBairro from '../componentes/SeletorBairro';
 
 /* ── Dados — altere aqui sem tocar no JSX ──────────────────── */
 const STEPS = [
@@ -53,7 +54,7 @@ const IMPACT_CARDS = [
 const HOODS = [
   'Santo Amaro Centro', 'Jardim Marajoara', 'Campo Belo',
   'Brooklin', 'Granja Julieta', 'Vila Cruzeiro',
-  'Vila Sofia', 'Vila Mascote', '+ 12 bairros',
+  'Vila Sofia', 'Vila Mascote',
 ];
 
 const FOOTER_LINKS = [
@@ -172,6 +173,8 @@ const IconRefresh = () => (
 const Home = () => {
   const navigate = useNavigate();
   const [termoBusca, setTermoBusca] = useState('');
+  const [bairroBusca, setBairroBusca] = useState('');
+  const [bairroFoco, setBairroFoco] = useState(null);
 
   // ── Sugestões de busca (dropdown enquanto digita)
   const [sugestoes, setSugestoes] = useState([]);
@@ -222,14 +225,23 @@ const Home = () => {
     navigate('/');
   };
 
+  const irParaExplorar = (busca, bairro) => {
+    const params = new URLSearchParams();
+    if (busca.trim()) params.set('busca', busca.trim());
+    if (bairro) params.set('bairro', bairro);
+    const query = params.toString();
+    navigate(query ? `/explorar?${query}` : '/explorar');
+  };
+
   const handleBuscar = (e) => {
     e.preventDefault();
     setMostrarSugestoes(false);
-    if (termoBusca.trim()) {
-      navigate(`/explorar?busca=${encodeURIComponent(termoBusca.trim())}`);
-    } else {
-      navigate('/explorar');
-    }
+    irParaExplorar(termoBusca, bairroBusca);
+  };
+
+  const handleBairro = (bairro) => {
+    setBairroBusca(bairro);
+    irParaExplorar(termoBusca, bairro);
   };
 
   // ── CTA "Anunciar grátis": leva pra /anunciar se logado, pra /cadastro se visitante ──
@@ -263,10 +275,7 @@ const Home = () => {
               onBlur={() => setTimeout(() => setMostrarSugestoes(false), 150)}
               onFocus={() => sugestoes.length > 0 && setMostrarSugestoes(true)}
             />
-            <span className="search-location">
-              <IconPin />
-              Santo Amaro
-            </span>
+            <SeletorBairro value={bairroBusca} onChange={handleBairro} />
             <button className="search-btn" onClick={handleBuscar}>Buscar</button>
 
             {mostrarSugestoes && sugestoes.length > 0 && (
@@ -485,7 +494,7 @@ const Home = () => {
           ══════════════════════════════════ */}
       <section className="local-section">
         <div className="local-wrap">
-          <Mapa />
+          <Mapa bairroFoco={bairroFoco} />
 
           <div className="local-text">
             <h2>Feito <em>pra cá</em>, feito <em>por aqui</em>.</h2>
@@ -495,12 +504,19 @@ const Home = () => {
               dentro do distrito. Menos logística, mais vínculo comunitário.
             </p>
             <p>
-              A plataforma valida endereços por CEP, exibe a distância exata entre comprador
-              e vendedor e prioriza entregas a pé, de bike ou em encontros presenciais seguros.
+              A plataforma valida endereços por CEP e prioriza entregas a pé, de bike ou em
+              encontros presenciais seguros — sempre perto de casa.
             </p>
             <div className="local-hoods">
               {HOODS.map((h) => (
-                <span key={h} className="hood-tag">{h}</span>
+                <button
+                  key={h}
+                  type="button"
+                  className={`hood-tag${bairroFoco === h ? ' active' : ''}`}
+                  onClick={() => setBairroFoco(bairroFoco === h ? null : h)}
+                >
+                  📍 {h}
+                </button>
               ))}
             </div>
           </div>

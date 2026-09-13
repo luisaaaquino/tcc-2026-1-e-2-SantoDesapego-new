@@ -187,6 +187,11 @@ const Perfil = () => {
               onClick={() => setAba('lgpd')} role="tab">
               <I.data /> Privacidade (LGPD)
             </button>
+            {usuario.papel === 'administrador' && (
+              <Link to="/admin" className="perfil-tab">
+                <I.shield /> Painel administrativo
+              </Link>
+            )}
           </nav>
         </aside>
 

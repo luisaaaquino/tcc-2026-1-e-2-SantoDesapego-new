@@ -62,6 +62,13 @@ Crie o banco de dados usando o script `schema.sql` e inicie o servidor:
 npm run dev
 ```
 
+### Painel administrativo
+Não existe cadastro de administrador pela interface (por segurança). Para promover uma conta já existente:
+```sql
+UPDATE usuarios SET papel = 'administrador' WHERE email = 'seu-email@exemplo.com';
+```
+Após o login, um link "Painel administrativo" aparece na sidebar do Perfil, ou acesse `/admin` diretamente.
+
 ### Frontend (`santo-desapego`)
 ```bash
 cd santo-desapego

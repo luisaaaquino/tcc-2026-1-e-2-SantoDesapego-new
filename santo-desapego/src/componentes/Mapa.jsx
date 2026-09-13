@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { useState, useEffect, useRef } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from 'react-leaflet';
 import { Link } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -7,9 +7,25 @@ import './Mapa.css';
 
 const API_URL = 'http://localhost:8080/api';
 
-const CENTER_SANTO_AMARO = { lat: -23.6509, lng: -46.7100 };
+const CENTER_SANTO_AMARO = { lat: -23.6562, lng: -46.7191 };
 const CENTER = [CENTER_SANTO_AMARO.lat, CENTER_SANTO_AMARO.lng];
-const ZOOM = 14;
+const ZOOM_INICIAL = 13;
+
+/* ── Centro aproximado de cada bairro atendido (coordenadas reais,
+   validadas via OpenStreetMap Nominatim) ───────────────────────
+   Usamos o centro do bairro, não o endereço exato do vendedor —
+   é o suficiente pra mostrar "o que tem perto de mim" sem expor
+   a localização precisa de quem anuncia. */
+const CENTRO_BAIRRO = {
+  'Santo Amaro Centro': { lat: -23.6562, lng: -46.7191 },
+  'Campo Belo':         { lat: -23.6299, lng: -46.6704 },
+  'Brooklin':           { lat: -23.6268, lng: -46.6881 },
+  'Granja Julieta':     { lat: -23.6275, lng: -46.7120 },
+  'Jardim Marajoara':   { lat: -23.6554, lng: -46.6849 },
+  'Vila Cruzeiro':      { lat: -23.6352, lng: -46.7117 },
+  'Vila Mascote':       { lat: -23.6459, lng: -46.6676 },
+  'Vila Sofia':         { lat: -23.6630, lng: -46.6850 },
+};
 
 /* ── Pin terracota customizado ───────────────────────────── */
 const ICONE_PIN = L.divIcon({
@@ -20,159 +36,62 @@ const ICONE_PIN = L.divIcon({
   popupAnchor: [0, -10],
 });
 
-/* ── Cache de geocodificação no localStorage ─────────────── */
-const CACHE_PREFIX = 'sd_geo_';
-
-const cacheGet = (cep) => {
-  try {
-    const raw = localStorage.getItem(CACHE_PREFIX + cep);
-    return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
-};
-
-const cacheSet = (cep, coords) => {
-  try { localStorage.setItem(CACHE_PREFIX + cep, JSON.stringify(coords)); } catch {}
-};
-
-/* ── Nominatim: busca por endereço completo (muito mais preciso que só CEP) ── */
-async function geocodarViaNominatim(cep, logradouro = '') {
-  try {
-    // Se tiver logradouro, usa ele — resultado bem mais exato
-    const query = logradouro
-      ? `${logradouro}, São Paulo, Brasil`
-      : `${cep}, São Paulo, Brasil`;
-
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&countrycodes=br`;
-    console.log('[Mapa] Nominatim query:', query);
-
-    const res = await fetch(url, {
-      headers: {
-        'Accept-Language': 'pt-BR',
-        'User-Agent': 'SantoDesapego/1.0',
-      },
-    });
-
-    const data = await res.json();
-    console.log('[Mapa] Nominatim resposta:', data);
-
-    if (data && data[0]) {
-      const lat = parseFloat(data[0].lat);
-      const lng = parseFloat(data[0].lon);
-      if (Number.isFinite(lat) && Number.isFinite(lng)) {
-        const coords = { lat, lng };
-        const cepLimpo = String(cep).replace(/\D/g, '');
-        cacheSet(cepLimpo, coords);
-        console.log('[Mapa] Nominatim coords:', coords);
-        return coords;
-      }
-    }
-    return null;
-  } catch (e) {
-    console.error('[Mapa] Erro Nominatim:', e);
-    return null;
-  }
-}
-
-/* ── Geocodifica CEP — BrasilAPI → ViaCEP + Nominatim ────── */
-async function geocodarCep(cep) {
-  const cepLimpo = String(cep || '').replace(/\D/g, '');
-  if (cepLimpo.length !== 8) {
-    console.warn('[Mapa] CEP inválido:', cep);
-    return null;
-  }
-
-  // 1. Verifica cache primeiro
-  const cached = cacheGet(cepLimpo);
-  if (cached) {
-    console.log('[Mapa] CEP do cache:', cepLimpo, cached);
-    return cached;
-  }
-
-  try {
-    // 2. BrasilAPI — tenta coords diretas
-    console.log('[Mapa] BrasilAPI para CEP:', cepLimpo);
-    const res = await fetch(`https://brasilapi.com.br/api/cep/v2/${cepLimpo}`);
-
-    if (res.ok) {
-      const data = await res.json();
-      console.log('[Mapa] BrasilAPI resposta:', data);
-
-      const lat = parseFloat(data?.location?.coordinates?.latitude);
-      const lng = parseFloat(data?.location?.coordinates?.longitude);
-
-      if (Number.isFinite(lat) && Number.isFinite(lng)) {
-        const coords = { lat, lng };
-        cacheSet(cepLimpo, coords);
-        console.log('[Mapa] BrasilAPI coords diretas:', coords);
-        return coords;
-      }
-
-      // BrasilAPI sem coords — usa logradouro para Nominatim
-      const logradouro = [data?.street, data?.neighborhood]
-        .filter(Boolean)
-        .join(', ');
-
-      console.log('[Mapa] BrasilAPI sem coords, usando logradouro:', logradouro);
-      const coordsNominatim = await geocodarViaNominatim(cepLimpo, logradouro);
-      if (coordsNominatim) return coordsNominatim;
-    }
-
-    // 3. Fallback: ViaCEP (para pegar o logradouro caso BrasilAPI falhe)
-    console.log('[Mapa] Tentando ViaCEP para:', cepLimpo);
-    const resVia = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
-    if (resVia.ok) {
-      const dataVia = await resVia.json();
-      console.log('[Mapa] ViaCEP resposta:', dataVia);
-
-      if (!dataVia.erro) {
-        const logradouro = [dataVia.logradouro, dataVia.bairro, dataVia.localidade]
-          .filter(Boolean)
-          .join(', ');
-        console.log('[Mapa] ViaCEP logradouro para Nominatim:', logradouro);
-        return await geocodarViaNominatim(cepLimpo, logradouro);
-      }
-    }
-
-    console.warn('[Mapa] Todas as APIs falharam para CEP:', cepLimpo);
-    return null;
-  } catch (e) {
-    console.error('[Mapa] Erro na geocodificação:', e);
-    return null;
-  }
-}
-
-/* ── Resolve coords para um anúncio ──────────────────────── */
-async function resolverCoords(anuncio) {
-  // 1. Prioridade: lat/lng direto do banco
+/* ── Resolve coords para um anúncio — síncrono, sem API externa ──
+   1) lat/lng próprios do anúncio, se um dia existirem no banco;
+   2) centro do bairro cadastrado, com um leve espalhamento
+      aleatório (~250m) pra vários anúncios no mesmo bairro não
+      ficarem todos empilhados no mesmíssimo ponto;
+   3) fallback: centro de Santo Amaro, mesmo espalhamento. */
+const resolverCoords = (anuncio) => {
   const lat = parseFloat(anuncio.latitude);
   const lng = parseFloat(anuncio.longitude);
-  if (Number.isFinite(lat) && Number.isFinite(lng)) {
-    console.log('[Mapa] Usando coords do banco para anúncio', anuncio.id);
-    return { lat, lng };
-  }
+  if (Number.isFinite(lat) && Number.isFinite(lng)) return { lat, lng };
 
-  // 2. Geocodifica pelo CEP (BrasilAPI → ViaCEP + Nominatim)
-  if (anuncio.cep) {
-    const coords = await geocodarCep(anuncio.cep);
-    if (coords) return coords;
-  }
+  const base = CENTRO_BAIRRO[anuncio.bairro] || CENTER_SANTO_AMARO;
+  const jitter = () => (Math.random() - 0.5) * 0.0045; // ~ 250m
+  return { lat: base.lat + jitter(), lng: base.lng + jitter() };
+};
 
-  // 3. Fallback final: centro de Santo Amaro com offset aleatório
-  //    (evita empilhar todos os pins no mesmo ponto)
-  console.warn('[Mapa] Sem coords para anúncio', anuncio.id, '— usando fallback Santo Amaro');
-  return {
-    lat: CENTER_SANTO_AMARO.lat + (Math.random() - 0.5) * 0.008,
-    lng: CENTER_SANTO_AMARO.lng + (Math.random() - 0.5) * 0.008,
-  };
-}
-
-/* ── Força Leaflet a recalcular tamanho após mount ────────── */
+/* ── Força Leaflet a recalcular tamanho após mount ──────────
+   Um único setTimeout não é suficiente: se o contêiner ainda não
+   tinha suas dimensões finais nesse instante (fontes carregando,
+   imagens acima mudando a altura da página, etc.), os tiles ficam
+   em branco até a próxima interação. Um ResizeObserver cobre
+   qualquer mudança de tamanho depois disso também. */
 const InvalidarTamanho = () => {
   const map = useMap();
   useEffect(() => {
-    const t = setTimeout(() => map.invalidateSize(), 120);
-    return () => clearTimeout(t);
+    const t1 = setTimeout(() => map.invalidateSize(), 150);
+    const t2 = setTimeout(() => map.invalidateSize(), 700);
+
+    const container = map.getContainer();
+    const ro = new ResizeObserver(() => map.invalidateSize());
+    ro.observe(container);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      ro.disconnect();
+    };
   }, [map]);
+  return null;
+};
+
+/* ── Enquadra automaticamente todos os pins na tela ────────── */
+const EnquadrarMarcadores = ({ marcadores }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (marcadores.length === 0) return;
+    const bounds = L.latLngBounds(marcadores.map((m) => [m.coords.lat, m.coords.lng]));
+    map.flyToBounds(bounds, { padding: [48, 48], maxZoom: 15, duration: 0.6 });
+  }, [marcadores, map]);
+  return null;
+};
+
+/* ── Referência do mapa exposta pro componente pai (voa até um bairro) ── */
+const ExporMapa = ({ mapaRef }) => {
+  const map = useMap();
+  useEffect(() => { mapaRef.current = map; }, [map, mapaRef]);
   return null;
 };
 
@@ -185,73 +104,46 @@ const formatarPreco = (valor) =>
 /* ════════════════════════════════════════════════════════════
    COMPONENTE
    ════════════════════════════════════════════════════════════ */
-const Mapa = () => {
+const Mapa = ({ bairroFoco }) => {
   const [marcadores, setMarcadores] = useState([]);
   const [carregando, setCarregando] = useState(true);
+  const mapaRef = useRef(null);
 
   useEffect(() => {
     let cancelado = false;
 
-    const carregar = async () => {
-      try {
-        const url = `${API_URL}/anuncios?limite=50&status=ativo`;
-        console.log('[Mapa] Buscando anúncios em:', url);
-
-        const res = await fetch(url);
-        const data = await res.json();
-        console.log('[Mapa] Resposta da API:', data);
-
+    fetch(`${API_URL}/anuncios?limite=50`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelado) return;
         const anuncios = data.anuncios || [];
-        console.log('[Mapa] Total de anúncios recebidos:', anuncios.length);
+        setMarcadores(anuncios.map((anuncio) => ({ anuncio, coords: resolverCoords(anuncio) })));
+      })
+      .catch((erro) => console.error('[Mapa] Erro ao carregar anúncios:', erro))
+      .finally(() => { if (!cancelado) setCarregando(false); });
 
-        if (anuncios.length === 0) {
-          if (!cancelado) setCarregando(false);
-          return;
-        }
-
-        // Resolve coords em paralelo, em batches de 5
-        const BATCH = 5;
-        const acumulado = [];
-
-        for (let i = 0; i < anuncios.length; i += BATCH) {
-          if (cancelado) return;
-
-          const batch = anuncios.slice(i, i + BATCH);
-          const resultados = await Promise.all(
-            batch.map(async (a) => {
-              const coords = await resolverCoords(a);
-              return coords ? { anuncio: a, coords } : null;
-            })
-          );
-
-          for (const r of resultados) if (r) acumulado.push(r);
-
-          // Atualização incremental — pins aparecem conforme chegam
-          if (!cancelado) setMarcadores([...acumulado]);
-        }
-
-        console.log('[Mapa] Marcadores resolvidos:', acumulado.length);
-        if (!cancelado) setCarregando(false);
-      } catch (erro) {
-        console.error('[Mapa] Erro ao carregar anúncios:', erro);
-        if (!cancelado) setCarregando(false);
-      }
-    };
-
-    carregar();
     return () => { cancelado = true; };
   }, []);
+
+  // Voa até o bairro selecionado nos chips ao lado do mapa
+  useEffect(() => {
+    if (!bairroFoco || !mapaRef.current) return;
+    const centro = CENTRO_BAIRRO[bairroFoco];
+    if (centro) mapaRef.current.flyTo([centro.lat, centro.lng], 15, { duration: 0.6 });
+  }, [bairroFoco]);
 
   return (
     <div className="leaflet-wrapper">
       <MapContainer
         center={CENTER}
-        zoom={ZOOM}
+        zoom={ZOOM_INICIAL}
         scrollWheelZoom={false}
         className="leaflet-map"
         attributionControl={false}
       >
         <InvalidarTamanho />
+        <ExporMapa mapaRef={mapaRef} />
+        {!bairroFoco && <EnquadrarMarcadores marcadores={marcadores} />}
 
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -263,6 +155,11 @@ const Mapa = () => {
             position={[coords.lat, coords.lng]}
             icon={ICONE_PIN}
           >
+            {/* Rótulo sempre visível — não depende de hover/clique */}
+            <Tooltip permanent direction="top" offset={[0, -10]} className="mapa-tooltip">
+              {formatarPreco(anuncio.preco)}
+            </Tooltip>
+
             <Popup>
               <div className="mapa-popup">
                 {anuncio.imagem_principal && (
@@ -304,6 +201,11 @@ const Mapa = () => {
           </>
         )}
       </div>
+
+      {/* Nota de transparência sobre a localização aproximada */}
+      {!carregando && marcadores.length > 0 && (
+        <div className="mapa-nota">Localização aproximada, por bairro</div>
+      )}
 
       {/* Estado vazio */}
       {!carregando && marcadores.length === 0 && (

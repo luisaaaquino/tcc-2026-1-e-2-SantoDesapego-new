@@ -39,6 +39,36 @@ const autenticar = (req, res, next) => {
 };
 
 // ============================================================
+// MIDDLEWARE — exige papel administrador [RNF04]
+// Usado nas rotas do Painel Administrativo.
+// ============================================================
+const autenticarAdmin = (req, res, next) => {
+  autenticar(req, res, async () => {
+    try {
+      const resultado = await pool.query('SELECT papel FROM usuarios WHERE id = $1', [req.userId]);
+      if (resultado.rows.length === 0 || resultado.rows[0].papel !== 'administrador') {
+        return res.status(403).json({ erro: 'Acesso restrito a administradores.' });
+      }
+      next();
+    } catch (erro) {
+      console.error('Erro ao verificar permissão de administrador:', erro);
+      return res.status(500).json({ erro: 'Erro ao verificar permissões.' });
+    }
+  });
+};
+
+// ============================================================
+//  Registra uma ação administrativa no log de auditoria [RF20]
+// ============================================================
+const registrarLog = (adminId, acao, alvoTipo, alvoId, detalhes = null) => {
+  pool.query(
+    `INSERT INTO logs_auditoria (admin_id, acao, alvo_tipo, alvo_id, detalhes)
+     VALUES ($1, $2, $3, $4, $5)`,
+    [adminId, acao, alvoTipo, alvoId, detalhes ? JSON.stringify(detalhes) : null]
+  ).catch((erro) => console.error('Erro ao registrar log de auditoria:', erro));
+};
+
+// ============================================================
 //  Validação de senha forte (RN03)
 // ============================================================
 const validarSenhaForte = (senha, dadosUsuario = {}) => {
@@ -172,7 +202,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     const resultado = await pool.query(
-      `SELECT id, nome, sobrenome, email, senha, bairro, foto_perfil
+      `SELECT id, nome, sobrenome, email, senha, bairro, foto_perfil, papel, status_conta
        FROM usuarios WHERE email = $1`, [email]
     );
 
@@ -186,8 +216,12 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ erro: 'E-mail ou senha inválidos.' });
     }
 
+    if (usuario.status_conta === 'suspensa') {
+      return res.status(403).json({ erro: 'Sua conta está suspensa. Entre em contato com o suporte.' });
+    }
+
     const token = jwt.sign(
-      { id: usuario.id, email: usuario.email },
+      { id: usuario.id, email: usuario.email, papel: usuario.papel },
       process.env.JWT_SECRET, { expiresIn: '7d' }
     );
 
@@ -197,7 +231,7 @@ app.post('/api/auth/login', async (req, res) => {
       usuario: {
         id: usuario.id, nome: usuario.nome, sobrenome: usuario.sobrenome,
         email: usuario.email, bairro: usuario.bairro,
-        foto_perfil: usuario.foto_perfil,
+        foto_perfil: usuario.foto_perfil, papel: usuario.papel,
       }
     });
   } catch (erro) {
@@ -228,7 +262,7 @@ app.post('/api/auth/google', async (req, res) => {
     const emailGoogle = userInfo.email;
 
     const resultado = await pool.query(
-      `SELECT id, nome, sobrenome, email, bairro, foto_perfil
+      `SELECT id, nome, sobrenome, email, bairro, foto_perfil, papel, status_conta
        FROM usuarios WHERE email = $1`, [emailGoogle]
     );
 
@@ -240,8 +274,13 @@ app.post('/api/auth/google', async (req, res) => {
     }
 
     const usuario = resultado.rows[0];
+
+    if (usuario.status_conta === 'suspensa') {
+      return res.status(403).json({ erro: 'Sua conta está suspensa. Entre em contato com o suporte.' });
+    }
+
     const token = jwt.sign(
-      { id: usuario.id, email: usuario.email },
+      { id: usuario.id, email: usuario.email, papel: usuario.papel },
       process.env.JWT_SECRET, { expiresIn: '7d' }
     );
 
@@ -251,7 +290,7 @@ app.post('/api/auth/google', async (req, res) => {
       usuario: {
         id: usuario.id, nome: usuario.nome, sobrenome: usuario.sobrenome,
         email: usuario.email, bairro: usuario.bairro,
-        foto_perfil: usuario.foto_perfil,
+        foto_perfil: usuario.foto_perfil, papel: usuario.papel,
       }
     });
   } catch (erro) {
@@ -268,7 +307,7 @@ app.get('/api/usuario/perfil', autenticar, async (req, res) => {
     const resultado = await pool.query(
       `SELECT id, nome, sobrenome, cpf, telefone, email,
               cep, logradouro, numero, complemento, bairro,
-              recebe_newsletter, aceita_termos, foto_perfil
+              recebe_newsletter, aceita_termos, foto_perfil, papel
        FROM usuarios WHERE id = $1`, [req.userId]
     );
 
@@ -644,6 +683,58 @@ app.post('/api/avaliacoes', autenticar, async (req, res) => {
 });
 
 // ============================================================
+//  POST DENÚNCIA — usuário denuncia anúncio ou perfil [RF19]
+// ============================================================
+app.post('/api/denuncias', autenticar, async (req, res) => {
+  try {
+    const { anuncio_id, usuario_denunciado_id, motivo, descricao } = req.body;
+
+    const motivosValidos = ['conteudo_inadequado', 'fraude', 'violacao_termos', 'outro'];
+    if (!motivo || !motivosValidos.includes(motivo)) {
+      return res.status(400).json({ erro: 'Selecione um motivo válido para a denúncia.' });
+    }
+    if (!anuncio_id && !usuario_denunciado_id) {
+      return res.status(400).json({ erro: 'Informe o anúncio ou o usuário que está sendo denunciado.' });
+    }
+    if (descricao && descricao.length > 1000) {
+      return res.status(400).json({ erro: 'Descrição muito longa (máximo 1000 caracteres).' });
+    }
+
+    let denunciadoId = usuario_denunciado_id || null;
+
+    if (anuncio_id) {
+      const anuncio = await pool.query('SELECT vendedor_id FROM anuncios WHERE id = $1', [anuncio_id]);
+      if (anuncio.rows.length === 0) {
+        return res.status(404).json({ erro: 'Anúncio não encontrado.' });
+      }
+      if (anuncio.rows[0].vendedor_id === req.userId) {
+        return res.status(400).json({ erro: 'Você não pode denunciar seu próprio anúncio.' });
+      }
+      denunciadoId = denunciadoId || anuncio.rows[0].vendedor_id;
+    }
+
+    if (denunciadoId === req.userId) {
+      return res.status(400).json({ erro: 'Você não pode denunciar a si mesmo.' });
+    }
+
+    const nova = await pool.query(
+      `INSERT INTO denuncias (denunciante_id, anuncio_id, usuario_denunciado_id, motivo, descricao)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id, status, criada_em`,
+      [req.userId, anuncio_id || null, denunciadoId, motivo, descricao?.trim() || null]
+    );
+
+    return res.status(201).json({
+      mensagem: 'Denúncia registrada. Nossa equipe vai analisar em breve.',
+      denuncia: nova.rows[0],
+    });
+  } catch (erro) {
+    console.error('Erro ao registrar denúncia:', erro);
+    return res.status(500).json({ erro: 'Erro ao registrar denúncia.' });
+  }
+});
+
+// ============================================================
 //  GET CATEGORIAS — lista hierárquica
 // ============================================================
 app.get('/api/categorias', async (req, res) => {
@@ -798,8 +889,78 @@ app.get('/api/anuncios', async (req, res) => {
       limite = 12
     } = req.query;
 
+    // Cláusula WHERE construída uma única vez e reaproveitada tanto na
+    // consulta principal quanto na contagem total — antes a contagem usava
+    // um WHERE fixo e ignorava todos os filtros, retornando o total errado.
+    let whereClause = ` WHERE a.status = 'ativo'`;
+
+    const params = [];
+    let paramIndex = 1;
+
+    if (categoria_id) {
+      // Busca anúncios da categoria OU de suas subcategorias
+      whereClause += ` AND (a.categoria_id = $${paramIndex} OR c.categoria_pai = $${paramIndex})`;
+      params.push(categoria_id);
+      paramIndex++;
+    }
+
+    if (busca) {
+      // Busca por texto no título ou descrição (case-insensitive, ignora acentos).
+      // Quebra em palavras e exige TODAS presentes (em qualquer ordem, em
+      // qualquer um dos dois campos) — evita que buscas com as palavras fora
+      // de ordem ou com termos extras deixem de encontrar o anúncio.
+      const termos = busca
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .toLowerCase()
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+
+      if (termos.length > 0) {
+        const condicoesTermos = termos.map((termo, i) => {
+          const p = paramIndex + i;
+          return `(TRANSLATE(LOWER(a.titulo), 'áàâãäéèêëíìîïóòôõöúùûüçñ', 'aaaaaeeeeiiiiooooouuuucn') LIKE $${p}
+                 OR TRANSLATE(LOWER(a.descricao), 'áàâãäéèêëíìîïóòôõöúùûüçñ', 'aaaaaeeeeiiiiooooouuuucn') LIKE $${p})`;
+        });
+        whereClause += ` AND (${condicoesTermos.join(' AND ')})`;
+        termos.forEach((termo) => params.push(`%${termo}%`));
+        paramIndex += termos.length;
+      }
+    }
+
+    if (preco_min) {
+      whereClause += ` AND a.preco >= $${paramIndex}`;
+      params.push(preco_min);
+      paramIndex++;
+    }
+
+    if (preco_max) {
+      whereClause += ` AND a.preco <= $${paramIndex}`;
+      params.push(preco_max);
+      paramIndex++;
+    }
+
+    if (estado_conservacao) {
+      // Aceita um valor único ou uma lista separada por vírgula (filtro multi-seleção)
+      const estados = estado_conservacao.split(',').map((e) => e.trim()).filter(Boolean);
+      whereClause += ` AND a.estado_conservacao = ANY($${paramIndex}::text[])`;
+      params.push(estados);
+      paramIndex++;
+    }
+
+    if (aceita_troca === 'true') {
+      whereClause += ` AND a.aceita_troca = true`;
+    }
+
+    if (bairro) {
+      whereClause += ` AND a.bairro = $${paramIndex}`;
+      params.push(bairro);
+      paramIndex++;
+    }
+
     let query = `
-      SELECT 
+      SELECT
         a.id, a.titulo, a.descricao, a.preco, a.aceita_troca,
         a.estado_conservacao, a.bairro, a.status, a.data_criacao,
         c.nome AS categoria_nome,
@@ -809,62 +970,7 @@ app.get('/api/anuncios', async (req, res) => {
       FROM anuncios a
       JOIN categorias c ON a.categoria_id = c.id
       JOIN usuarios u ON a.vendedor_id = u.id
-      WHERE a.status = 'ativo'
-    `;
-
-    const params = [];
-    let paramIndex = 1;
-
-    if (categoria_id) {
-      // Busca anúncios da categoria OU de suas subcategorias
-      query += ` AND (a.categoria_id = $${paramIndex} OR c.categoria_pai = $${paramIndex})`;
-      params.push(categoria_id);
-      paramIndex++;
-    }
-
-    if (busca) {
-      // Busca por texto no título ou descrição (case-insensitive, ignora acentos)
-      // Normaliza tanto o termo de busca quanto os dados usando TRANSLATE
-      const buscaNormalizada = busca
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase();
-      
-      query += ` AND (
-        TRANSLATE(LOWER(a.titulo), 'áàâãäéèêëíìîïóòôõöúùûüçñ', 'aaaaaeeeeiiiiooooouuuucn') LIKE $${paramIndex}
-        OR TRANSLATE(LOWER(a.descricao), 'áàâãäéèêëíìîïóòôõöúùûüçñ', 'aaaaaeeeeiiiiooooouuuucn') LIKE $${paramIndex}
-      )`;
-      params.push(`%${buscaNormalizada}%`);
-      paramIndex++;
-    }
-
-    if (preco_min) {
-      query += ` AND a.preco >= $${paramIndex}`;
-      params.push(preco_min);
-      paramIndex++;
-    }
-
-    if (preco_max) {
-      query += ` AND a.preco <= $${paramIndex}`;
-      params.push(preco_max);
-      paramIndex++;
-    }
-
-    if (estado_conservacao) {
-      query += ` AND a.estado_conservacao = $${paramIndex}`;
-      params.push(estado_conservacao);
-      paramIndex++;
-    }
-
-    if (aceita_troca === 'true') {
-      query += ` AND a.aceita_troca = true`;
-    }
-
-    if (bairro) {
-      query += ` AND a.bairro = $${paramIndex}`;
-      params.push(bairro);
-      paramIndex++;
-    }
+    ` + whereClause;
 
     // Ordenação
     if (ordenacao === 'preco-menor') {
@@ -875,17 +981,18 @@ app.get('/api/anuncios', async (req, res) => {
       query += ' ORDER BY a.data_criacao DESC';
     }
 
-    // Paginação
-    const offset = (pagina - 1) * limite;
+    // Paginação — usa uma cópia dos params, sem afetar os que a contagem usa
+    const paramsComPaginacao = [...params, limite, (pagina - 1) * limite];
     query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
-    params.push(limite, offset);
 
-    const resultado = await pool.query(query, params);
+    const resultado = await pool.query(query, paramsComPaginacao);
 
-    // Conta total pra paginação
-    let countQuery = 'SELECT COUNT(*) FROM anuncios a WHERE a.status = $1';
-    const countParams = ['ativo'];
-    const totalResult = await pool.query(countQuery, countParams);
+    // Conta total pra paginação — mesma cláusula WHERE da consulta principal
+    const countQuery = `
+      SELECT COUNT(*) FROM anuncios a
+      JOIN categorias c ON a.categoria_id = c.id
+    ` + whereClause;
+    const totalResult = await pool.query(countQuery, params);
     const total = parseInt(totalResult.rows[0].count);
 
     return res.json({
@@ -1404,6 +1511,506 @@ app.post('/api/compras/confirmar', autenticar, async (req, res) => {
   } catch (erro) {
     console.error('Erro ao confirmar compra:', erro);
     return res.status(500).json({ erro: 'Erro ao confirmar a compra.' });
+  }
+});
+
+// ════════════════════════════════════════════════════════════
+//  PAINEL ADMINISTRATIVO [RF20]
+//  Todas as rotas abaixo exigem papel = 'administrador'.
+// ════════════════════════════════════════════════════════════
+
+// ============================================================
+//  GET DASHBOARD — resumo geral da plataforma
+// ============================================================
+app.get('/api/admin/dashboard', autenticarAdmin, async (req, res) => {
+  try {
+    const [usuariosR, anunciosR, comprasR, denunciasR, categoriasR, cadastrosR] = await Promise.all([
+      pool.query(`SELECT COUNT(*) AS total,
+                    COUNT(*) FILTER (WHERE status_conta = 'suspensa') AS suspensos
+                  FROM usuarios`),
+      pool.query(`SELECT COUNT(*) AS total,
+                    COUNT(*) FILTER (WHERE status = 'ativo') AS ativos,
+                    COUNT(*) FILTER (WHERE status = 'pausado') AS pausados,
+                    COUNT(*) FILTER (WHERE status = 'vendido') AS vendidos
+                  FROM anuncios`),
+      pool.query(`SELECT COUNT(*) AS total, COALESCE(SUM(preco), 0) AS volume
+                  FROM compras WHERE status = 'approved'`),
+      pool.query(`SELECT COUNT(*) FILTER (WHERE status = 'pendente') AS pendentes,
+                    COUNT(*) AS total
+                  FROM denuncias`),
+      pool.query(`SELECT c.nome, COUNT(a.id) AS total
+                  FROM categorias c JOIN anuncios a ON a.categoria_id = c.id
+                  GROUP BY c.id ORDER BY total DESC LIMIT 5`),
+      pool.query(`SELECT gs::date AS dia, COUNT(u.id) AS total
+                  FROM generate_series(CURRENT_DATE - INTERVAL '29 days', CURRENT_DATE, INTERVAL '1 day') gs
+                  LEFT JOIN usuarios u ON date_trunc('day', u.data_cadastro) = gs
+                  GROUP BY gs ORDER BY gs`),
+    ]);
+
+    return res.json({
+      usuarios: { total: parseInt(usuariosR.rows[0].total), suspensos: parseInt(usuariosR.rows[0].suspensos) },
+      anuncios: {
+        total: parseInt(anunciosR.rows[0].total),
+        ativos: parseInt(anunciosR.rows[0].ativos),
+        pausados: parseInt(anunciosR.rows[0].pausados),
+        vendidos: parseInt(anunciosR.rows[0].vendidos),
+      },
+      compras: { total: parseInt(comprasR.rows[0].total), volume: parseFloat(comprasR.rows[0].volume) },
+      denuncias: { pendentes: parseInt(denunciasR.rows[0].pendentes), total: parseInt(denunciasR.rows[0].total) },
+      top_categorias: categoriasR.rows.map((r) => ({ nome: r.nome, total: parseInt(r.total) })),
+      cadastros_30_dias: cadastrosR.rows.map((r) => ({ dia: r.dia, total: parseInt(r.total) })),
+    });
+  } catch (erro) {
+    console.error('Erro ao carregar dashboard administrativo:', erro);
+    return res.status(500).json({ erro: 'Erro ao carregar o dashboard.' });
+  }
+});
+
+// ============================================================
+//  GET USUÁRIOS — lista com busca e paginação [Gerenciar Usuários]
+// ============================================================
+app.get('/api/admin/usuarios', autenticarAdmin, async (req, res) => {
+  try {
+    const { busca, status, pagina = 1, limite = 20 } = req.query;
+
+    let query = `
+      SELECT id, nome, sobrenome, email, bairro, papel, status_conta, data_cadastro
+      FROM usuarios WHERE 1=1`;
+    const params = [];
+
+    if (busca) {
+      params.push(`%${busca}%`);
+      query += ` AND (nome ILIKE $${params.length} OR sobrenome ILIKE $${params.length} OR email ILIKE $${params.length})`;
+    }
+    if (status) {
+      params.push(status);
+      query += ` AND status_conta = $${params.length}`;
+    }
+
+    const countResult = await pool.query(`SELECT COUNT(*) FROM (${query}) t`, params);
+    const total = parseInt(countResult.rows[0].count);
+
+    query += ` ORDER BY data_cadastro DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    params.push(limite, (pagina - 1) * limite);
+
+    const resultado = await pool.query(query, params);
+
+    return res.json({
+      usuarios: resultado.rows,
+      paginacao: { pagina_atual: parseInt(pagina), total_paginas: Math.ceil(total / limite), total_itens: total },
+    });
+  } catch (erro) {
+    console.error('Erro ao listar usuários (admin):', erro);
+    return res.status(500).json({ erro: 'Erro ao listar usuários.' });
+  }
+});
+
+// ============================================================
+//  PUT SUSPENDER CONTA
+// ============================================================
+app.put('/api/admin/usuarios/:id/suspender', autenticarAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { motivo } = req.body;
+
+    if (parseInt(id) === req.userId) {
+      return res.status(400).json({ erro: 'Você não pode suspender sua própria conta.' });
+    }
+
+    const alvo = await pool.query('SELECT papel, nome, email FROM usuarios WHERE id = $1', [id]);
+    if (alvo.rows.length === 0) {
+      return res.status(404).json({ erro: 'Usuário não encontrado.' });
+    }
+    if (alvo.rows[0].papel === 'administrador') {
+      return res.status(400).json({ erro: 'Não é possível suspender outra conta de administrador.' });
+    }
+
+    await pool.query(`UPDATE usuarios SET status_conta = 'suspensa' WHERE id = $1`, [id]);
+    registrarLog(req.userId, 'suspender_usuario', 'usuario', id, { motivo: motivo || null, email: alvo.rows[0].email });
+
+    return res.json({ mensagem: `Conta de ${alvo.rows[0].nome} suspensa com sucesso.` });
+  } catch (erro) {
+    console.error('Erro ao suspender usuário:', erro);
+    return res.status(500).json({ erro: 'Erro ao suspender usuário.' });
+  }
+});
+
+// ============================================================
+//  PUT REATIVAR CONTA
+// ============================================================
+app.put('/api/admin/usuarios/:id/reativar', autenticarAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const alvo = await pool.query('SELECT nome, email FROM usuarios WHERE id = $1', [id]);
+    if (alvo.rows.length === 0) {
+      return res.status(404).json({ erro: 'Usuário não encontrado.' });
+    }
+
+    await pool.query(`UPDATE usuarios SET status_conta = 'ativa' WHERE id = $1`, [id]);
+    registrarLog(req.userId, 'reativar_usuario', 'usuario', id, { email: alvo.rows[0].email });
+
+    return res.json({ mensagem: `Conta de ${alvo.rows[0].nome} reativada com sucesso.` });
+  } catch (erro) {
+    console.error('Erro ao reativar usuário:', erro);
+    return res.status(500).json({ erro: 'Erro ao reativar usuário.' });
+  }
+});
+
+// ============================================================
+//  DELETE EXCLUIR CONTA (LGPD) — exclusão administrativa
+// ============================================================
+app.delete('/api/admin/usuarios/:id', autenticarAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { motivo } = req.body;
+
+    if (parseInt(id) === req.userId) {
+      return res.status(400).json({ erro: 'Você não pode excluir sua própria conta por aqui.' });
+    }
+
+    const alvo = await pool.query('SELECT papel, nome, email FROM usuarios WHERE id = $1', [id]);
+    if (alvo.rows.length === 0) {
+      return res.status(404).json({ erro: 'Usuário não encontrado.' });
+    }
+    if (alvo.rows[0].papel === 'administrador') {
+      return res.status(400).json({ erro: 'Não é possível excluir outra conta de administrador.' });
+    }
+
+    await pool.query('DELETE FROM usuarios WHERE id = $1', [id]);
+    registrarLog(req.userId, 'excluir_usuario', 'usuario', id, {
+      motivo: motivo || null, nome: alvo.rows[0].nome, email: alvo.rows[0].email,
+    });
+
+    return res.json({ mensagem: `Conta de ${alvo.rows[0].nome} excluída com sucesso.` });
+  } catch (erro) {
+    console.error('Erro ao excluir usuário (admin):', erro);
+    return res.status(500).json({ erro: 'Erro ao excluir usuário.' });
+  }
+});
+
+// ============================================================
+//  GET ANÚNCIOS — lista para moderação [Gerenciar Anúncios]
+// ============================================================
+app.get('/api/admin/anuncios', autenticarAdmin, async (req, res) => {
+  try {
+    const { busca, status, pagina = 1, limite = 20 } = req.query;
+
+    let query = `
+      SELECT a.id, a.titulo, a.preco, a.status, a.data_criacao,
+        u.id AS vendedor_id, u.nome AS vendedor_nome, u.email AS vendedor_email,
+        c.nome AS categoria_nome,
+        (SELECT COUNT(*) FROM denuncias WHERE anuncio_id = a.id) AS total_denuncias
+      FROM anuncios a
+      JOIN usuarios u ON u.id = a.vendedor_id
+      JOIN categorias c ON c.id = a.categoria_id
+      WHERE 1=1`;
+    const params = [];
+
+    if (busca) {
+      params.push(`%${busca}%`);
+      query += ` AND a.titulo ILIKE $${params.length}`;
+    }
+    if (status) {
+      params.push(status);
+      query += ` AND a.status = $${params.length}`;
+    }
+
+    const countResult = await pool.query(`SELECT COUNT(*) FROM (${query}) t`, params);
+    const total = parseInt(countResult.rows[0].count);
+
+    query += ` ORDER BY total_denuncias DESC, a.data_criacao DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    params.push(limite, (pagina - 1) * limite);
+
+    const resultado = await pool.query(query, params);
+    resultado.rows.forEach((r) => { r.total_denuncias = parseInt(r.total_denuncias); });
+
+    return res.json({
+      anuncios: resultado.rows,
+      paginacao: { pagina_atual: parseInt(pagina), total_paginas: Math.ceil(total / limite), total_itens: total },
+    });
+  } catch (erro) {
+    console.error('Erro ao listar anúncios (admin):', erro);
+    return res.status(500).json({ erro: 'Erro ao listar anúncios.' });
+  }
+});
+
+// ============================================================
+//  PUT MODERAR ANÚNCIO — pausa ou reativa
+// ============================================================
+app.put('/api/admin/anuncios/:id/moderar', autenticarAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { acao, motivo } = req.body;
+
+    if (!['pausar', 'reativar'].includes(acao)) {
+      return res.status(400).json({ erro: "Ação inválida. Use 'pausar' ou 'reativar'." });
+    }
+
+    const anuncio = await pool.query('SELECT titulo, status FROM anuncios WHERE id = $1', [id]);
+    if (anuncio.rows.length === 0) {
+      return res.status(404).json({ erro: 'Anúncio não encontrado.' });
+    }
+    if (anuncio.rows[0].status === 'vendido') {
+      return res.status(400).json({ erro: 'Não é possível moderar um anúncio já vendido.' });
+    }
+
+    const novoStatus = acao === 'pausar' ? 'pausado' : 'ativo';
+    await pool.query('UPDATE anuncios SET status = $1 WHERE id = $2', [novoStatus, id]);
+    registrarLog(req.userId, 'moderar_anuncio', 'anuncio', id, {
+      acao, motivo: motivo || null, titulo: anuncio.rows[0].titulo,
+    });
+
+    return res.json({ mensagem: `Anúncio "${anuncio.rows[0].titulo}" ${acao === 'pausar' ? 'pausado' : 'reativado'} com sucesso.` });
+  } catch (erro) {
+    console.error('Erro ao moderar anúncio:', erro);
+    return res.status(500).json({ erro: 'Erro ao moderar anúncio.' });
+  }
+});
+
+// ============================================================
+//  DELETE REMOVER ANÚNCIO — exclusão definitiva
+//  Bloqueada se já existirem compras vinculadas (histórico
+//  financeiro deve ser preservado); nesse caso, use "moderar".
+// ============================================================
+app.delete('/api/admin/anuncios/:id', autenticarAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { motivo } = req.body;
+
+    const anuncio = await pool.query('SELECT titulo FROM anuncios WHERE id = $1', [id]);
+    if (anuncio.rows.length === 0) {
+      return res.status(404).json({ erro: 'Anúncio não encontrado.' });
+    }
+
+    const compras = await pool.query('SELECT COUNT(*) FROM compras WHERE anuncio_id = $1', [id]);
+    if (parseInt(compras.rows[0].count) > 0) {
+      return res.status(409).json({
+        erro: 'Este anúncio possui compras registradas e não pode ser removido. Use "pausar" para tirá-lo de circulação.',
+      });
+    }
+
+    await pool.query('DELETE FROM anuncios WHERE id = $1', [id]);
+    registrarLog(req.userId, 'remover_anuncio', 'anuncio', id, {
+      motivo: motivo || null, titulo: anuncio.rows[0].titulo,
+    });
+
+    return res.json({ mensagem: `Anúncio "${anuncio.rows[0].titulo}" removido com sucesso.` });
+  } catch (erro) {
+    console.error('Erro ao remover anúncio (admin):', erro);
+    return res.status(500).json({ erro: 'Erro ao remover anúncio.' });
+  }
+});
+
+// ============================================================
+//  GET CATEGORIAS (ADMIN) — lista plana com uso [Gerenciar Categorias]
+// ============================================================
+app.get('/api/admin/categorias', autenticarAdmin, async (req, res) => {
+  try {
+    const resultado = await pool.query(`
+      SELECT c.id, c.nome, c.slug, c.icone, c.categoria_pai, c.ordem,
+        (SELECT COUNT(*) FROM anuncios WHERE categoria_id = c.id) AS total_anuncios
+      FROM categorias c
+      ORDER BY c.categoria_pai NULLS FIRST, c.ordem, c.nome`);
+    resultado.rows.forEach((r) => { r.total_anuncios = parseInt(r.total_anuncios); });
+    return res.json({ categorias: resultado.rows });
+  } catch (erro) {
+    console.error('Erro ao listar categorias (admin):', erro);
+    return res.status(500).json({ erro: 'Erro ao listar categorias.' });
+  }
+});
+
+// ============================================================
+//  POST CATEGORIA — cria categoria ou subcategoria
+// ============================================================
+app.post('/api/admin/categorias', autenticarAdmin, async (req, res) => {
+  try {
+    const { nome, slug, icone, categoria_pai, ordem } = req.body;
+    if (!nome || !slug) {
+      return res.status(400).json({ erro: 'Nome e slug são obrigatórios.' });
+    }
+
+    const nova = await pool.query(
+      `INSERT INTO categorias (nome, slug, icone, categoria_pai, ordem)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [nome.trim(), slug.trim().toLowerCase(), icone || null, categoria_pai || null, ordem || 0]
+    );
+    registrarLog(req.userId, 'criar_categoria', 'categoria', nova.rows[0].id, { nome });
+
+    return res.status(201).json({ mensagem: 'Categoria criada com sucesso!', categoria: nova.rows[0] });
+  } catch (erro) {
+    if (erro.code === '23505') {
+      return res.status(409).json({ erro: 'Já existe uma categoria com esse slug.' });
+    }
+    console.error('Erro ao criar categoria:', erro);
+    return res.status(500).json({ erro: 'Erro ao criar categoria.' });
+  }
+});
+
+// ============================================================
+//  PUT CATEGORIA — edita categoria existente
+// ============================================================
+app.put('/api/admin/categorias/:id', autenticarAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nome, slug, icone, categoria_pai, ordem } = req.body;
+    if (!nome || !slug) {
+      return res.status(400).json({ erro: 'Nome e slug são obrigatórios.' });
+    }
+    if (parseInt(categoria_pai) === parseInt(id)) {
+      return res.status(400).json({ erro: 'Uma categoria não pode ser subcategoria de si mesma.' });
+    }
+
+    const atualizada = await pool.query(
+      `UPDATE categorias SET nome = $1, slug = $2, icone = $3, categoria_pai = $4, ordem = $5
+       WHERE id = $6 RETURNING *`,
+      [nome.trim(), slug.trim().toLowerCase(), icone || null, categoria_pai || null, ordem || 0, id]
+    );
+    if (atualizada.rows.length === 0) {
+      return res.status(404).json({ erro: 'Categoria não encontrada.' });
+    }
+    registrarLog(req.userId, 'editar_categoria', 'categoria', id, { nome });
+
+    return res.json({ mensagem: 'Categoria atualizada com sucesso!', categoria: atualizada.rows[0] });
+  } catch (erro) {
+    if (erro.code === '23505') {
+      return res.status(409).json({ erro: 'Já existe uma categoria com esse slug.' });
+    }
+    console.error('Erro ao editar categoria:', erro);
+    return res.status(500).json({ erro: 'Erro ao editar categoria.' });
+  }
+});
+
+// ============================================================
+//  DELETE CATEGORIA
+// ============================================================
+app.delete('/api/admin/categorias/:id', autenticarAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const categoria = await pool.query('SELECT nome FROM categorias WHERE id = $1', [id]);
+    if (categoria.rows.length === 0) {
+      return res.status(404).json({ erro: 'Categoria não encontrada.' });
+    }
+
+    await pool.query('DELETE FROM categorias WHERE id = $1', [id]);
+    registrarLog(req.userId, 'excluir_categoria', 'categoria', id, { nome: categoria.rows[0].nome });
+
+    return res.json({ mensagem: 'Categoria removida com sucesso!' });
+  } catch (erro) {
+    if (erro.code === '23503') {
+      return res.status(409).json({
+        erro: 'Esta categoria possui anúncios ou subcategorias vinculadas e não pode ser removida.',
+      });
+    }
+    console.error('Erro ao excluir categoria:', erro);
+    return res.status(500).json({ erro: 'Erro ao excluir categoria.' });
+  }
+});
+
+// ============================================================
+//  GET DENÚNCIAS — fila de moderação [Visualizar denúncias]
+// ============================================================
+app.get('/api/admin/denuncias', autenticarAdmin, async (req, res) => {
+  try {
+    const { status, pagina = 1, limite = 20 } = req.query;
+
+    let query = `
+      SELECT d.id, d.motivo, d.descricao, d.status, d.resolucao, d.criada_em, d.resolvida_em,
+        den.id AS denunciante_id, den.nome AS denunciante_nome,
+        alvo.id AS denunciado_id, alvo.nome AS denunciado_nome,
+        a.id AS anuncio_id, a.titulo AS anuncio_titulo
+      FROM denuncias d
+      JOIN usuarios den ON den.id = d.denunciante_id
+      LEFT JOIN usuarios alvo ON alvo.id = d.usuario_denunciado_id
+      LEFT JOIN anuncios a ON a.id = d.anuncio_id
+      WHERE 1=1`;
+    const params = [];
+
+    if (status) {
+      params.push(status);
+      query += ` AND d.status = $${params.length}`;
+    }
+
+    const countResult = await pool.query(`SELECT COUNT(*) FROM (${query}) t`, params);
+    const total = parseInt(countResult.rows[0].count);
+
+    query += ` ORDER BY d.criada_em DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    params.push(limite, (pagina - 1) * limite);
+
+    const resultado = await pool.query(query, params);
+
+    return res.json({
+      denuncias: resultado.rows,
+      paginacao: { pagina_atual: parseInt(pagina), total_paginas: Math.ceil(total / limite), total_itens: total },
+    });
+  } catch (erro) {
+    console.error('Erro ao listar denúncias:', erro);
+    return res.status(500).json({ erro: 'Erro ao listar denúncias.' });
+  }
+});
+
+// ============================================================
+//  PUT DENÚNCIA — atualiza status/resolução [Mediar disputas]
+// ============================================================
+app.put('/api/admin/denuncias/:id', autenticarAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, resolucao } = req.body;
+
+    const statusValidos = ['pendente', 'em_analise', 'resolvida', 'arquivada'];
+    if (!status || !statusValidos.includes(status)) {
+      return res.status(400).json({ erro: 'Status inválido.' });
+    }
+
+    const finalizando = ['resolvida', 'arquivada'].includes(status);
+    const atualizada = await pool.query(
+      `UPDATE denuncias SET status = $1, resolucao = $2,
+         resolvida_por = ${finalizando ? '$3' : 'resolvida_por'},
+         resolvida_em = ${finalizando ? 'NOW()' : 'resolvida_em'}
+       WHERE id = ${finalizando ? '$4' : '$3'} RETURNING *`,
+      finalizando ? [status, resolucao || null, req.userId, id] : [status, resolucao || null, id]
+    );
+
+    if (atualizada.rows.length === 0) {
+      return res.status(404).json({ erro: 'Denúncia não encontrada.' });
+    }
+    registrarLog(req.userId, 'resolver_denuncia', 'denuncia', id, { status, resolucao: resolucao || null });
+
+    return res.json({ mensagem: 'Denúncia atualizada com sucesso!', denuncia: atualizada.rows[0] });
+  } catch (erro) {
+    console.error('Erro ao atualizar denúncia:', erro);
+    return res.status(500).json({ erro: 'Erro ao atualizar denúncia.' });
+  }
+});
+
+// ============================================================
+//  GET LOGS DE AUDITORIA [Consultar Logs de Auditoria]
+// ============================================================
+app.get('/api/admin/logs', autenticarAdmin, async (req, res) => {
+  try {
+    const { pagina = 1, limite = 30 } = req.query;
+
+    const total = await pool.query('SELECT COUNT(*) FROM logs_auditoria');
+    const resultado = await pool.query(
+      `SELECT l.id, l.acao, l.alvo_tipo, l.alvo_id, l.detalhes, l.criada_em,
+         a.nome AS admin_nome, a.email AS admin_email
+       FROM logs_auditoria l
+       LEFT JOIN usuarios a ON a.id = l.admin_id
+       ORDER BY l.criada_em DESC LIMIT $1 OFFSET $2`,
+      [limite, (pagina - 1) * limite]
+    );
+
+    return res.json({
+      logs: resultado.rows,
+      paginacao: {
+        pagina_atual: parseInt(pagina),
+        total_paginas: Math.ceil(parseInt(total.rows[0].count) / limite),
+        total_itens: parseInt(total.rows[0].count),
+      },
+    });
+  } catch (erro) {
+    console.error('Erro ao listar logs de auditoria:', erro);
+    return res.status(500).json({ erro: 'Erro ao listar logs de auditoria.' });
   }
 });
 
