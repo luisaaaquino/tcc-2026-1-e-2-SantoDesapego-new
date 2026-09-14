@@ -1,6 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Cadastro.css';
+import { BAIRROS } from '../componentes/SeletorBairro';
+
+// RN01 — mesma faixa de CEP de Santo Amaro validada no back-end
+const cepDentroDeSantoAmaro = (cepNumeros) => {
+  const prefixo = parseInt(cepNumeros.slice(0, 5), 10);
+  return prefixo >= 4600 && prefixo <= 4799;
+};
 
 const API_URL = 'http://localhost:8080';
 
@@ -48,6 +55,8 @@ const Cadastro = () => {
   const [showStrength, setShowStrength]     = useState(false);
   const [cepLoading, setCepLoading]         = useState(false);
   const [cepOk, setCepOk]                   = useState(false);
+  const [cepErro, setCepErro]               = useState('');
+  const [cepForaArea, setCepForaArea]       = useState(false);
   const [termsChecked, setTermsChecked]     = useState(false);
   const [newsChecked, setNewsChecked]       = useState(false);
   const [submitted, setSubmitted]           = useState(false);
@@ -110,18 +119,40 @@ const Cadastro = () => {
     let val = value.replace(/\D/g, '');
     if (val.length > 5) val = val.slice(0, 5) + '-' + val.slice(5, 8);
     setForm((prev) => ({ ...prev, cep: val }));
-    if (val.replace('-', '').length === 8) {
-      setCepLoading(true); setCepOk(false);
-      setTimeout(() => {
-        setCepLoading(false);
-        setCepOk(true);
+    setCepErro('');
+    setCepForaArea(false);
+
+    const numeros = val.replace(/\D/g, '');
+    if (numeros.length !== 8) { setCepOk(false); return; }
+
+    setCepLoading(true);
+    setCepOk(false);
+
+    fetch(`https://viacep.com.br/ws/${numeros}/json/`)
+      .then((r) => r.json())
+      .then((dados) => {
+        if (dados.erro) {
+          setCepErro('CEP não encontrado. Verifique o número digitado.');
+          return;
+        }
+        const foraDeArea = !cepDentroDeSantoAmaro(numeros);
+
         setForm((prev) => ({
           ...prev,
-          logradouro: prev.logradouro || 'Rua das Figueiras',
-          bairro: prev.bairro || 'Santo Amaro Centro',
+          logradouro: dados.logradouro || prev.logradouro,
+          bairro: foraDeArea
+            // fora de Santo Amaro: já seleciona "Outro bairro" automaticamente
+            ? 'Outro bairro'
+            // dentro da área: só preenche sozinho se bater com a lista atendida
+            : (BAIRROS.includes(dados.bairro) ? dados.bairro : prev.bairro),
         }));
-      }, 900);
-    } else { setCepOk(false); }
+        setCepOk(true);
+        setCepForaArea(foraDeArea);
+      })
+      .catch(() => {
+        setCepErro('Não foi possível consultar o CEP agora. Preencha o endereço manualmente.');
+      })
+      .finally(() => setCepLoading(false));
   };
 
   // ============================================================
@@ -262,7 +293,10 @@ const Cadastro = () => {
             Santo <em>Desapego</em>
           </Link>
           <nav className="nav-actions">
-            <Link to="/">← Voltar para a home</Link>
+            <Link to="/" className="nav-btn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              Voltar para a home
+            </Link>
           </nav>
         </div>
       </header>
@@ -271,10 +305,6 @@ const Cadastro = () => {
 
         {/* LEFT PANEL */}
         <div className="left-panel">
-          <div className="left-kicker">
-            <span className="kicker-dot" />
-            1.247 vizinhos já conectados
-          </div>
           <h2>Seu bairro <em>nunca</em><br />foi tão próximo.</h2>
           <p>Crie sua conta gratuita e comece a comprar, vender e trocar com vizinhos de Santo Amaro em poucos minutos.</p>
 
@@ -472,7 +502,9 @@ const Cadastro = () => {
                       {cepLoading && <div className="cep-loader visible"><span /></div>}
                       {cepOk && !cepLoading && <div className="cep-ok visible"><IconCheck /></div>}
                     </div>
-                    <span className="field-hint">Preenchimento automático do endereço</span>
+                    {cepErro
+                      ? <span className="field-error"><IconAlert /> {cepErro}</span>
+                      : <span className="field-hint">Preenchimento automático do endereço</span>}
                   </div>
 
                   <div className="field-group no-mb">
@@ -483,14 +515,26 @@ const Cadastro = () => {
                       </svg>
                       <select className="field-select" name="bairro" value={form.bairro} onChange={handleChange} required>
                         <option value="" disabled>Selecione...</option>
-                        {['Santo Amaro Centro','Campo Belo','Brooklin','Granja Julieta','Jardim Marajoara','Vila Cruzeiro','Vila Mascote','Vila Sofia','Outro bairro'].map(b => (
+                        {BAIRROS.map((b) => (
                           <option key={b}>{b}</option>
                         ))}
+                        {/* Fallback pra quem mora fora da área de Santo Amaro atendida */}
+                        <option value="Outro bairro">Outro bairro (fora de Santo Amaro)</option>
                       </select>
                       <span className="select-arrow"><IconChevron /></span>
                     </div>
                   </div>
                 </div>
+
+                {cepForaArea && (
+                  <div className="alerta-fora-area">
+                    <IconAlert />
+                    <div>
+                      <strong>Esse CEP fica fora da área de Santo Amaro atendida pela plataforma.</strong>
+                      <span> Você pode concluir o cadastro normalmente, mas anunciar e comprar itens fica limitado aos vizinhos de Santo Amaro e região.</span>
+                    </div>
+                  </div>
+                )}
 
                 <div className="form-row" style={{ marginTop: '1rem' }}>
                   <div className="field-group no-mb" style={{ gridColumn: '1 / -1' }}>

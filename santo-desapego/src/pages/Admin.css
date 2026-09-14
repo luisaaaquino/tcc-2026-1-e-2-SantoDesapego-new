@@ -109,7 +109,7 @@
 /* ── Cards de estatística (dashboard) ────────────────────── */
 .admin-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
   margin-bottom: 1rem;
 }
@@ -220,10 +220,10 @@
   font-weight: 700;
   white-space: nowrap;
 }
-.badge-status.ativa,  .badge-status.ativo,     .badge-status.resolvida  { background: rgba(31,79,63,0.12); color: var(--forest); }
-.badge-status.suspensa, .badge-status.pausado, .badge-status.pendente  { background: rgba(193,75,53,0.12); color: var(--terracotta); }
-.badge-status.em_analise { background: rgba(228,160,32,0.18); color: #8A5D0C; }
-.badge-status.arquivada, .badge-status.vendido { background: rgba(34,34,34,0.08); color: var(--ink-soft); }
+.badge-status.ativa,  .badge-status.ativo,     .badge-status.resolvida, .badge-status.respondido  { background: rgba(31,79,63,0.12); color: var(--forest); }
+.badge-status.suspensa, .badge-status.pausado, .badge-status.pendente, .badge-status.aberto  { background: rgba(193,75,53,0.12); color: var(--terracotta); }
+.badge-status.em_analise, .badge-status.em_atendimento { background: rgba(228,160,32,0.18); color: #8A5D0C; }
+.badge-status.arquivada, .badge-status.vendido, .badge-status.encerrado { background: rgba(34,34,34,0.08); color: var(--ink-soft); }
 .badge-status.administrador { background: var(--ink); color: var(--mustard-soft); }
 .badge-status.usuario { background: rgba(34,34,34,0.06); color: var(--ink-soft); }
 

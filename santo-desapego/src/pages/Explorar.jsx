@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import './Explorar.css';
 import SeletorBairro, { BAIRROS } from '../componentes/SeletorBairro';
+import NotificacoesSino from '../componentes/NotificacoesSino';
 
 const API_URL = 'http://localhost:8080/api';
 
@@ -138,6 +139,11 @@ const Explorar = () => {
   const [limite, setLimite] = useState(12);
   const [totalItens, setTotalItens] = useState(0);
 
+  // Evita condição de corrida: se duas buscas estiverem "no ar" (ex.: o
+  // filtro de categoria muda logo após a busca sem filtro ter disparado),
+  // só o resultado da requisição mais recente pode atualizar a tela.
+  const buscaIdRef = useRef(0);
+
   // Lê usuário do localStorage
   useEffect(() => {
     const usuarioSalvo = localStorage.getItem('sd_usuario');
@@ -191,6 +197,7 @@ const Explorar = () => {
   }, [ordenacao, categoriaAtiva, tabAtiva, bairroFiltro, searchParams, condicoes.join(','), precoMaxAplicado]);
 
   const buscarAnuncios = async (limiteParam) => {
+    const idDestaBusca = ++buscaIdRef.current;
     setCarregando(true);
     try {
       const params = new URLSearchParams();
@@ -210,14 +217,20 @@ const Explorar = () => {
       const res = await fetch(`${API_URL}/anuncios?${params}`);
       const data = await res.json();
 
+      // Se uma busca mais nova já foi disparada enquanto esta esperava a
+      // resposta, ignora este resultado desatualizado (evita sobrescrever
+      // a tela com dados de um filtro antigo).
+      if (idDestaBusca !== buscaIdRef.current) return;
+
       setAnuncios(data.anuncios || []);
       setTotalItens(data.paginacao?.total_itens ?? (data.anuncios || []).length);
     } catch (erro) {
       console.error('Erro ao buscar anúncios:', erro);
+      if (idDestaBusca !== buscaIdRef.current) return;
       setAnuncios([]);
       setTotalItens(0);
     } finally {
-      setCarregando(false);
+      if (idDestaBusca === buscaIdRef.current) setCarregando(false);
     }
   };
 
@@ -320,6 +333,7 @@ const Explorar = () => {
           <nav className="nav-actions">
             {usuario ? (
               <>
+                <NotificacoesSino />
                 <Link to="/perfil" style={{
                   display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
                   fontSize: '0.9rem', color: 'var(--ink)', fontWeight: 600, textDecoration: 'none',
@@ -336,11 +350,7 @@ const Explorar = () => {
                   </span>
                   Olá, {usuario.nome}!
                 </Link>
-                <button onClick={handleLogout} style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-                  background: 'none', border: 'none', color: 'var(--ink-muted)',
-                  fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-                }}>
+                <button onClick={handleLogout} className="nav-btn" style={{ cursor: 'pointer', fontFamily: 'inherit' }}>
                   <IconLogout />
                   Sair
                 </button>
@@ -348,7 +358,7 @@ const Explorar = () => {
               </>
             ) : (
               <>
-                <Link to="/login">Entrar</Link>
+                <Link to="/login" className="nav-btn">Entrar</Link>
                 <Link to="/cadastro" className="btn-sell">+ Anunciar grátis</Link>
               </>
             )}
@@ -588,21 +598,18 @@ const Explorar = () => {
             <a href="#">Como funciona</a>
             <a href="#">Anunciar</a>
             <a href="#">Categorias</a>
-            <a href="#">Dicas de segurança</a>
           </div>
 
           <div className="footer-col">
             <h4>Comunidade</h4>
             <a href="#">Nosso impacto</a>
             <a href="#">Bairros atendidos</a>
-            <a href="#">Blog</a>
             <a href="#">Indique um vizinho</a>
           </div>
 
           <div className="footer-col">
             <h4>Suporte</h4>
-            <a href="#">Central de ajuda</a>
-            <a href="#">Fale conosco</a>
+            <Link to="/central-ajuda">Central de ajuda</Link>
             <a href="#">Termos de uso</a>
             <a href="#">Privacidade (LGPD)</a>
           </div>

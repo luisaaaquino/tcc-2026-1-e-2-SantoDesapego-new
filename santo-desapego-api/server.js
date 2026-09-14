@@ -5,6 +5,8 @@ const express = require('express');
 const cors    = require('cors');
 const bcrypt  = require('bcrypt');
 const jwt     = require('jsonwebtoken');
+const crypto  = require('crypto');
+const nodemailer = require('nodemailer');
 require('dotenv').config();
 const pool = require('./db');
 
@@ -12,6 +14,71 @@ const pool = require('./db');
 const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 const mp = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+// ============================================================
+//  E-mail — Gmail SMTP, usado na recuperação de senha [RF02]
+// ============================================================
+const mailTransporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_APP_PASSWORD,
+  },
+});
+
+const enviarEmail = async (destinatario, assunto, html) => {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_APP_PASSWORD) {
+    console.warn('⚠️  EMAIL_USER/EMAIL_APP_PASSWORD não configurados — e-mail não enviado.');
+    return;
+  }
+  await mailTransporter.sendMail({
+    from: `"Santo Desapego" <${process.env.EMAIL_USER}>`,
+    to: destinatario,
+    subject: assunto,
+    html,
+  });
+};
+
+// ============================================================
+//  NOTIFICAÇÕES — in-app e por e-mail [RF18]
+//  Grava a notificação no banco (o sino do usuário lê daqui) e,
+//  em segundo plano, dispara o e-mail correspondente.
+// ============================================================
+const criarNotificacao = async (usuarioId, tipo, titulo, mensagem, link = null) => {
+  try {
+    await pool.query(
+      `INSERT INTO notificacoes (usuario_id, tipo, titulo, mensagem, link)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [usuarioId, tipo, titulo, mensagem, link]
+    );
+  } catch (erro) {
+    console.error('Erro ao criar notificação in-app:', erro);
+  }
+
+  // O e-mail roda em segundo plano — nunca atrasa nem quebra a requisição principal.
+  pool.query('SELECT nome, email FROM usuarios WHERE id = $1', [usuarioId])
+    .then(({ rows }) => {
+      if (rows.length === 0) return;
+      const destinatario = rows[0];
+      const botao = link
+        ? `<p style="text-align:center; margin: 24px 0;">
+             <a href="${FRONTEND_URL}${link}" style="background:#1F4F3F; color:#fff; padding:12px 24px; border-radius:24px; text-decoration:none; font-weight:bold;">Ver na plataforma</a>
+           </p>`
+        : '';
+      return enviarEmail(
+        destinatario.email,
+        titulo,
+        `<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+          <h2 style="color:#1F4F3F;">Santo Desapego</h2>
+          <p>Olá, ${destinatario.nome}!</p>
+          <p>${mensagem}</p>
+          ${botao}
+          <p style="color:#888; font-size:12px;">Santo Desapego — Projeto acadêmico TCC, Centro Universitário Senac Santo Amaro.</p>
+        </div>`
+      );
+    })
+    .catch((erro) => console.error('Erro ao enviar e-mail de notificação:', erro));
+};
 
 const app = express();
 
@@ -237,6 +304,100 @@ app.post('/api/auth/login', async (req, res) => {
   } catch (erro) {
     console.error('Erro no login:', erro);
     return res.status(500).json({ erro: 'Erro interno no servidor.' });
+  }
+});
+
+// ──────────────────────────────────────────────────────────
+// RECUPERAÇÃO DE SENHA — solicitar token por e-mail [RF02]
+// ──────────────────────────────────────────────────────────
+app.post('/api/auth/recuperar-senha', async (req, res) => {
+  const respostaGenerica = {
+    mensagem: 'Se este e-mail estiver cadastrado, você vai receber um link para redefinir sua senha.',
+  };
+
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ erro: 'Informe o e-mail cadastrado.' });
+    }
+
+    const resultado = await pool.query('SELECT id, nome FROM usuarios WHERE email = $1', [email]);
+
+    // Resposta genérica em ambos os casos, para não revelar quais e-mails existem na base.
+    if (resultado.rows.length === 0) {
+      return res.json(respostaGenerica);
+    }
+
+    const usuario = resultado.rows[0];
+    const tokenBruto = crypto.randomBytes(32).toString('hex');
+    const tokenHash = crypto.createHash('sha256').update(tokenBruto).digest('hex');
+    const expiraEm = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+
+    await pool.query(
+      'UPDATE usuarios SET reset_senha_token = $1, reset_senha_expira = $2 WHERE id = $3',
+      [tokenHash, expiraEm, usuario.id]
+    );
+
+    const link = `${FRONTEND_URL}/redefinir-senha?token=${tokenBruto}`;
+
+    await enviarEmail(
+      email,
+      'Recupere sua senha — Santo Desapego',
+      `<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
+        <h2 style="color:#1F4F3F;">Santo Desapego</h2>
+        <p>Olá, ${usuario.nome}!</p>
+        <p>Recebemos uma solicitação para redefinir a senha da sua conta. Clique no botão abaixo para criar uma nova senha:</p>
+        <p style="text-align:center; margin: 24px 0;">
+          <a href="${link}" style="background:#1F4F3F; color:#fff; padding:12px 24px; border-radius:24px; text-decoration:none; font-weight:bold;">Redefinir minha senha</a>
+        </p>
+        <p>Este link expira em 1 hora. Se você não pediu essa alteração, pode ignorar este e-mail.</p>
+        <p style="color:#888; font-size:12px;">Santo Desapego — Projeto acadêmico TCC, Centro Universitário Senac Santo Amaro.</p>
+      </div>`
+    );
+
+    return res.json(respostaGenerica);
+  } catch (erro) {
+    console.error('Erro ao solicitar recuperação de senha:', erro);
+    return res.status(500).json({ erro: 'Erro ao processar a solicitação.' });
+  }
+});
+
+// ──────────────────────────────────────────────────────────
+// RECUPERAÇÃO DE SENHA — redefinir com token [RF02]
+// ──────────────────────────────────────────────────────────
+app.post('/api/auth/redefinir-senha', async (req, res) => {
+  try {
+    const { token, novaSenha } = req.body;
+    if (!token || !novaSenha) {
+      return res.status(400).json({ erro: 'Token e nova senha são obrigatórios.' });
+    }
+
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+    const resultado = await pool.query(
+      `SELECT id, nome, sobrenome FROM usuarios
+       WHERE reset_senha_token = $1 AND reset_senha_expira > NOW()`,
+      [tokenHash]
+    );
+
+    if (resultado.rows.length === 0) {
+      return res.status(400).json({ erro: 'Link inválido ou expirado. Solicite a recuperação novamente.' });
+    }
+
+    const usuario = resultado.rows[0];
+    const erroSenha = validarSenhaForte(novaSenha, { nome: usuario.nome, sobrenome: usuario.sobrenome });
+    if (erroSenha) return res.status(400).json({ erro: erroSenha });
+
+    const novaSenhaHash = await bcrypt.hash(novaSenha, 10);
+    await pool.query(
+      `UPDATE usuarios SET senha = $1, reset_senha_token = NULL, reset_senha_expira = NULL WHERE id = $2`,
+      [novaSenhaHash, usuario.id]
+    );
+
+    return res.json({ mensagem: 'Senha redefinida com sucesso! Faça login com a nova senha.' });
+  } catch (erro) {
+    console.error('Erro ao redefinir senha:', erro);
+    return res.status(500).json({ erro: 'Erro ao redefinir a senha.' });
   }
 });
 
@@ -629,6 +790,60 @@ app.get('/api/usuario/avaliacoes', autenticar, async (req, res) => {
 });
 
 // ============================================================
+//  NOTIFICAÇÕES — sino do usuário [RF18]
+// ============================================================
+app.get('/api/notificacoes', autenticar, async (req, res) => {
+  try {
+    const resultado = await pool.query(
+      `SELECT id, tipo, titulo, mensagem, link, lida, criada_em
+       FROM notificacoes WHERE usuario_id = $1
+       ORDER BY criada_em DESC LIMIT 30`,
+      [req.userId]
+    );
+    const naoLidas = await pool.query(
+      `SELECT COUNT(*) FROM notificacoes WHERE usuario_id = $1 AND lida = FALSE`,
+      [req.userId]
+    );
+    return res.json({
+      notificacoes: resultado.rows,
+      total_nao_lidas: parseInt(naoLidas.rows[0].count),
+    });
+  } catch (erro) {
+    console.error('Erro ao listar notificações:', erro);
+    return res.status(500).json({ erro: 'Erro ao listar notificações.' });
+  }
+});
+
+app.put('/api/notificacoes/lidas-todas', autenticar, async (req, res) => {
+  try {
+    await pool.query(
+      `UPDATE notificacoes SET lida = TRUE WHERE usuario_id = $1 AND lida = FALSE`,
+      [req.userId]
+    );
+    return res.json({ mensagem: 'Notificações marcadas como lidas.' });
+  } catch (erro) {
+    console.error('Erro ao marcar notificações como lidas:', erro);
+    return res.status(500).json({ erro: 'Erro ao marcar notificações como lidas.' });
+  }
+});
+
+app.put('/api/notificacoes/:id/lida', autenticar, async (req, res) => {
+  try {
+    const atualizada = await pool.query(
+      `UPDATE notificacoes SET lida = TRUE WHERE id = $1 AND usuario_id = $2 RETURNING id`,
+      [req.params.id, req.userId]
+    );
+    if (atualizada.rows.length === 0) {
+      return res.status(404).json({ erro: 'Notificação não encontrada.' });
+    }
+    return res.json({ mensagem: 'Notificação marcada como lida.' });
+  } catch (erro) {
+    console.error('Erro ao marcar notificação como lida:', erro);
+    return res.status(500).json({ erro: 'Erro ao marcar notificação como lida.' });
+  }
+});
+
+// ============================================================
 //  POST AVALIAÇÃO — comprador avalia o vendedor de uma compra
 // ============================================================
 app.post('/api/avaliacoes', autenticar, async (req, res) => {
@@ -731,6 +946,82 @@ app.post('/api/denuncias', autenticar, async (req, res) => {
   } catch (erro) {
     console.error('Erro ao registrar denúncia:', erro);
     return res.status(500).json({ erro: 'Erro ao registrar denúncia.' });
+  }
+});
+
+// ============================================================
+//  GET MINHAS DENÚNCIAS — usuário vê o retorno dos administradores
+// ============================================================
+app.get('/api/denuncias', autenticar, async (req, res) => {
+  try {
+    const resultado = await pool.query(
+      `SELECT d.id, d.motivo, d.descricao, d.status, d.resolucao, d.criada_em, d.resolvida_em,
+         a.id AS anuncio_id, a.titulo AS anuncio_titulo,
+         alvo.id AS denunciado_id, alvo.nome AS denunciado_nome
+       FROM denuncias d
+       LEFT JOIN anuncios a ON a.id = d.anuncio_id
+       LEFT JOIN usuarios alvo ON alvo.id = d.usuario_denunciado_id
+       WHERE d.denunciante_id = $1
+       ORDER BY d.criada_em DESC`,
+      [req.userId]
+    );
+    return res.json({ denuncias: resultado.rows });
+  } catch (erro) {
+    console.error('Erro ao listar minhas denúncias:', erro);
+    return res.status(500).json({ erro: 'Erro ao carregar suas denúncias.' });
+  }
+});
+
+// ============================================================
+//  CENTRAL DE AJUDA — mensagens de suporte dos usuários
+//  [Central de ajuda direcionada aos administradores]
+// ============================================================
+
+//  POST — usuário envia uma nova mensagem de suporte
+app.post('/api/suporte', autenticar, async (req, res) => {
+  try {
+    const { assunto, mensagem } = req.body;
+
+    const assuntosValidos = ['duvida_conta', 'anuncio', 'pagamento', 'denuncia_seguranca', 'outro'];
+    if (!assunto || !assuntosValidos.includes(assunto)) {
+      return res.status(400).json({ erro: 'Selecione um assunto válido.' });
+    }
+    if (!mensagem || !mensagem.trim()) {
+      return res.status(400).json({ erro: 'Escreva sua mensagem antes de enviar.' });
+    }
+    if (mensagem.length > 2000) {
+      return res.status(400).json({ erro: 'Mensagem muito longa (máximo 2000 caracteres).' });
+    }
+
+    const nova = await pool.query(
+      `INSERT INTO mensagens_suporte (usuario_id, assunto, mensagem)
+       VALUES ($1, $2, $3)
+       RETURNING id, assunto, mensagem, status, criada_em`,
+      [req.userId, assunto, mensagem.trim()]
+    );
+
+    return res.status(201).json({
+      mensagem_confirmacao: 'Sua mensagem foi enviada! Nossa equipe vai responder em breve.',
+      solicitacao: nova.rows[0],
+    });
+  } catch (erro) {
+    console.error('Erro ao registrar mensagem de suporte:', erro);
+    return res.status(500).json({ erro: 'Erro ao enviar sua mensagem.' });
+  }
+});
+
+//  GET — usuário vê o histórico das próprias solicitações de suporte
+app.get('/api/suporte', autenticar, async (req, res) => {
+  try {
+    const resultado = await pool.query(
+      `SELECT id, assunto, mensagem, status, resposta, criada_em, respondida_em
+       FROM mensagens_suporte WHERE usuario_id = $1 ORDER BY criada_em DESC`,
+      [req.userId]
+    );
+    return res.json({ solicitacoes: resultado.rows });
+  } catch (erro) {
+    console.error('Erro ao listar mensagens de suporte:', erro);
+    return res.status(500).json({ erro: 'Erro ao carregar suas solicitações.' });
   }
 });
 
@@ -1279,15 +1570,19 @@ app.post('/api/conversas/:id/mensagens', autenticar, async (req, res) => {
     }
 
     const conversa = await pool.query(
-      'SELECT comprador_id, vendedor_id FROM conversas WHERE id = $1',
-      [conversaId]
+      `SELECT c.comprador_id, c.vendedor_id, a.titulo AS anuncio_titulo, r.nome AS remetente_nome
+         FROM conversas c
+         JOIN anuncios a ON a.id = c.anuncio_id
+         JOIN usuarios r ON r.id = $2
+        WHERE c.id = $1`,
+      [conversaId, req.userId]
     );
 
     if (conversa.rows.length === 0) {
       return res.status(404).json({ erro: 'Conversa não encontrada.' });
     }
 
-    const { comprador_id, vendedor_id } = conversa.rows[0];
+    const { comprador_id, vendedor_id, anuncio_titulo, remetente_nome } = conversa.rows[0];
     if (comprador_id !== req.userId && vendedor_id !== req.userId) {
       return res.status(403).json({ erro: 'Esta conversa não é sua.' });
     }
@@ -1303,6 +1598,16 @@ app.post('/api/conversas/:id/mensagens', autenticar, async (req, res) => {
     await pool.query(
       'UPDATE conversas SET ultima_mensagem_em = NOW() WHERE id = $1',
       [conversaId]
+    );
+
+    // [RF18] Notifica quem recebeu a mensagem (in-app + e-mail)
+    const destinatarioId = req.userId === comprador_id ? vendedor_id : comprador_id;
+    criarNotificacao(
+      destinatarioId,
+      'nova_mensagem',
+      `Nova mensagem de ${remetente_nome}`,
+      `${remetente_nome} enviou uma mensagem sobre o anúncio "${anuncio_titulo}": "${conteudo.trim().slice(0, 140)}"`,
+      '/mensagens'
     );
 
     return res.status(201).json({ mensagem: nova.rows[0] });
@@ -1404,6 +1709,15 @@ app.post('/api/pagamentos/preferencia', autenticar, async (req, res) => {
 
     console.log(`💳 Preferência criada — anúncio #${anuncio.id}`);
 
+    // [RF18] Notifica o vendedor da intenção de compra
+    criarNotificacao(
+      anuncio.vendedor_id,
+      'intencao_compra',
+      'Alguém quer comprar seu anúncio!',
+      `${comprador.rows[0]?.nome} iniciou o pagamento do anúncio "${anuncio.titulo}". Fique de olho — assim que o pagamento for aprovado, vocês combinam a retirada.`,
+      '/perfil'
+    );
+
     return res.json({
       preference_id: resposta.id,
       // Com credenciais TEST-, o init_point normal já roda em modo de teste.
@@ -1476,7 +1790,7 @@ app.post('/api/compras/confirmar', autenticar, async (req, res) => {
 
     const anuncioId = dados.external_reference;
     const anuncio = await pool.query(
-      'SELECT id, vendedor_id, preco, status FROM anuncios WHERE id = $1',
+      'SELECT id, titulo, vendedor_id, preco, status FROM anuncios WHERE id = $1',
       [anuncioId]
     );
 
@@ -1484,7 +1798,7 @@ app.post('/api/compras/confirmar', autenticar, async (req, res) => {
       return res.status(404).json({ erro: 'Anúncio da compra não foi encontrado.' });
     }
 
-    const { vendedor_id, preco } = anuncio.rows[0];
+    const { titulo, vendedor_id, preco } = anuncio.rows[0];
 
     if (vendedor_id === req.userId) {
       return res.status(400).json({ erro: 'Você não pode confirmar uma compra do seu próprio anúncio.' });
@@ -1495,7 +1809,7 @@ app.post('/api/compras/confirmar', autenticar, async (req, res) => {
         (anuncio_id, comprador_id, vendedor_id, preco, payment_id, status, metodo_pagamento, parcelas)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        ON CONFLICT (payment_id) DO UPDATE SET status = EXCLUDED.status
-       RETURNING id, anuncio_id, preco, status, criada_em`,
+       RETURNING id, anuncio_id, preco, status, criada_em, (xmax = 0) AS inserida`,
       [
         anuncioId, req.userId, vendedor_id, preco,
         String(payment_id), dados.status, dados.payment_method_id, dados.installments,
@@ -1506,6 +1820,28 @@ app.post('/api/compras/confirmar', autenticar, async (req, res) => {
       `UPDATE anuncios SET status = 'vendido' WHERE id = $1 AND status = 'ativo'`,
       [anuncioId]
     );
+
+    // [RF18] Só notifica na primeira confirmação — evita duplicar em chamadas idempotentes
+    if (compra.rows[0].inserida) {
+      const comprador = await pool.query('SELECT nome FROM usuarios WHERE id = $1', [req.userId]);
+      const nomeComprador = comprador.rows[0]?.nome || 'Um comprador';
+
+      criarNotificacao(
+        vendedor_id,
+        'pagamento_confirmado',
+        'Sua peça foi vendida! 🎉',
+        `O pagamento de "${titulo}" foi aprovado. ${nomeComprador} já pode combinar a retirada com você pelo chat.`,
+        '/mensagens'
+      );
+
+      criarNotificacao(
+        req.userId,
+        'avaliacao_pendente',
+        'Combine a retirada e avalie o vendedor',
+        `Seu pagamento de "${titulo}" foi confirmado! Depois de retirar o produto, não esqueça de avaliar o vendedor no seu perfil.`,
+        '/perfil'
+      );
+    }
 
     return res.status(201).json({ registrada: true, compra: compra.rows[0] });
   } catch (erro) {
@@ -1524,7 +1860,7 @@ app.post('/api/compras/confirmar', autenticar, async (req, res) => {
 // ============================================================
 app.get('/api/admin/dashboard', autenticarAdmin, async (req, res) => {
   try {
-    const [usuariosR, anunciosR, comprasR, denunciasR, categoriasR, cadastrosR] = await Promise.all([
+    const [usuariosR, anunciosR, comprasR, denunciasR, categoriasR, cadastrosR, suporteR] = await Promise.all([
       pool.query(`SELECT COUNT(*) AS total,
                     COUNT(*) FILTER (WHERE status_conta = 'suspensa') AS suspensos
                   FROM usuarios`),
@@ -1545,6 +1881,9 @@ app.get('/api/admin/dashboard', autenticarAdmin, async (req, res) => {
                   FROM generate_series(CURRENT_DATE - INTERVAL '29 days', CURRENT_DATE, INTERVAL '1 day') gs
                   LEFT JOIN usuarios u ON date_trunc('day', u.data_cadastro) = gs
                   GROUP BY gs ORDER BY gs`),
+      pool.query(`SELECT COUNT(*) FILTER (WHERE status IN ('aberto', 'em_atendimento')) AS pendentes,
+                    COUNT(*) AS total
+                  FROM mensagens_suporte`),
     ]);
 
     return res.json({
@@ -1557,6 +1896,7 @@ app.get('/api/admin/dashboard', autenticarAdmin, async (req, res) => {
       },
       compras: { total: parseInt(comprasR.rows[0].total), volume: parseFloat(comprasR.rows[0].volume) },
       denuncias: { pendentes: parseInt(denunciasR.rows[0].pendentes), total: parseInt(denunciasR.rows[0].total) },
+      suporte: { pendentes: parseInt(suporteR.rows[0].pendentes), total: parseInt(suporteR.rows[0].total) },
       top_categorias: categoriasR.rows.map((r) => ({ nome: r.nome, total: parseInt(r.total) })),
       cadastros_30_dias: cadastrosR.rows.map((r) => ({ dia: r.dia, total: parseInt(r.total) })),
     });
@@ -1984,6 +2324,78 @@ app.put('/api/admin/denuncias/:id', autenticarAdmin, async (req, res) => {
 });
 
 // ============================================================
+//  GET SUPORTE (ADMIN) — fila da Central de Ajuda
+// ============================================================
+app.get('/api/admin/suporte', autenticarAdmin, async (req, res) => {
+  try {
+    const { status, pagina = 1, limite = 20 } = req.query;
+
+    let query = `
+      SELECT s.id, s.assunto, s.mensagem, s.status, s.resposta, s.criada_em, s.respondida_em,
+        u.id AS usuario_id, u.nome AS usuario_nome, u.email AS usuario_email
+      FROM mensagens_suporte s
+      JOIN usuarios u ON u.id = s.usuario_id
+      WHERE 1=1`;
+    const params = [];
+
+    if (status) {
+      params.push(status);
+      query += ` AND s.status = $${params.length}`;
+    }
+
+    const countResult = await pool.query(`SELECT COUNT(*) FROM (${query}) t`, params);
+    const total = parseInt(countResult.rows[0].count);
+
+    query += ` ORDER BY s.criada_em DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    params.push(limite, (pagina - 1) * limite);
+
+    const resultado = await pool.query(query, params);
+
+    return res.json({
+      solicitacoes: resultado.rows,
+      paginacao: { pagina_atual: parseInt(pagina), total_paginas: Math.ceil(total / limite), total_itens: total },
+    });
+  } catch (erro) {
+    console.error('Erro ao listar mensagens de suporte:', erro);
+    return res.status(500).json({ erro: 'Erro ao listar mensagens de suporte.' });
+  }
+});
+
+// ============================================================
+//  PUT SUPORTE (ADMIN) — responde e/ou atualiza o status
+// ============================================================
+app.put('/api/admin/suporte/:id', autenticarAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, resposta } = req.body;
+
+    const statusValidos = ['aberto', 'em_atendimento', 'respondido', 'encerrado'];
+    if (!status || !statusValidos.includes(status)) {
+      return res.status(400).json({ erro: 'Status inválido.' });
+    }
+
+    const respondendo = ['respondido', 'encerrado'].includes(status);
+    const atualizada = await pool.query(
+      `UPDATE mensagens_suporte SET status = $1, resposta = $2,
+         respondida_por = ${respondendo ? '$3' : 'respondida_por'},
+         respondida_em = ${respondendo ? 'NOW()' : 'respondida_em'}
+       WHERE id = ${respondendo ? '$4' : '$3'} RETURNING *`,
+      respondendo ? [status, resposta || null, req.userId, id] : [status, resposta || null, id]
+    );
+
+    if (atualizada.rows.length === 0) {
+      return res.status(404).json({ erro: 'Mensagem de suporte não encontrada.' });
+    }
+    registrarLog(req.userId, 'responder_suporte', 'mensagem_suporte', id, { status, resposta: resposta || null });
+
+    return res.json({ mensagem: 'Solicitação atualizada com sucesso!', solicitacao: atualizada.rows[0] });
+  } catch (erro) {
+    console.error('Erro ao atualizar mensagem de suporte:', erro);
+    return res.status(500).json({ erro: 'Erro ao atualizar a solicitação.' });
+  }
+});
+
+// ============================================================
 //  GET LOGS DE AUDITORIA [Consultar Logs de Auditoria]
 // ============================================================
 app.get('/api/admin/logs', autenticarAdmin, async (req, res) => {
@@ -2014,7 +2426,46 @@ app.get('/api/admin/logs', autenticarAdmin, async (req, res) => {
   }
 });
 
+// ============================================================
+//  NOTIFICAÇÃO — anúncio prestes a expirar [RF18]
+//  Roda ao subir o servidor e depois a cada 6 horas. Evita duplicar
+//  o aviso pro mesmo anúncio checando se já notificou nos últimos 3 dias.
+// ============================================================
+const verificarAnunciosExpirando = async () => {
+  try {
+    const resultado = await pool.query(`
+      SELECT a.id, a.titulo, a.vendedor_id, a.data_expiracao
+        FROM anuncios a
+       WHERE a.status = 'ativo'
+         AND a.data_expiracao BETWEEN NOW() AND NOW() + INTERVAL '3 days'
+         AND NOT EXISTS (
+           SELECT 1 FROM notificacoes n
+            WHERE n.tipo = 'anuncio_expirando'
+              AND n.link = '/anuncio/' || a.id
+              AND n.criada_em > NOW() - INTERVAL '3 days'
+         )
+    `);
+
+    for (const anuncio of resultado.rows) {
+      const diasRestantes = Math.max(
+        1, Math.ceil((new Date(anuncio.data_expiracao) - Date.now()) / (1000 * 60 * 60 * 24))
+      );
+      await criarNotificacao(
+        anuncio.vendedor_id,
+        'anuncio_expirando',
+        'Seu anúncio está prestes a expirar',
+        `"${anuncio.titulo}" expira em ${diasRestantes} dia(s). Acesse a plataforma para renovar e continuar recebendo interessados.`,
+        `/anuncio/${anuncio.id}`
+      );
+    }
+  } catch (erro) {
+    console.error('Erro ao verificar anúncios expirando:', erro);
+  }
+};
+
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor do Santo Desapego rodando em http://localhost:${PORT}`);
+  verificarAnunciosExpirando();
+  setInterval(verificarAnunciosExpirando, 6 * 60 * 60 * 1000);
 });

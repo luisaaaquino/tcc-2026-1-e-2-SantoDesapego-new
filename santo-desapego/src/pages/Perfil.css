@@ -398,6 +398,56 @@
 .status-badge.ativo   { background: rgba(86, 119, 84, 0.12);  color: var(--forest); }
 .status-badge.vendido { background: rgba(34, 34, 34, 0.08);   color: var(--ink-muted); }
 .status-badge.pausado { background: rgba(228, 160, 32, 0.15); color: #B07810; }
+.status-badge.resolvida  { background: rgba(86, 119, 84, 0.12);  color: var(--forest); }
+.status-badge.pendente   { background: rgba(193, 75, 53, 0.12); color: var(--terracotta); }
+.status-badge.em_analise { background: rgba(228, 160, 32, 0.15); color: #B07810; }
+.status-badge.arquivada  { background: rgba(34, 34, 34, 0.08);   color: var(--ink-muted); }
+
+/* ============================================================
+   MINHAS DENÚNCIAS
+   ============================================================ */
+.lista-denuncias {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.denuncia-card-perfil {
+  padding: 1rem 1.25rem;
+  background: var(--cream-soft);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+.denuncia-card-perfil-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.4rem;
+}
+.denuncia-card-perfil-topo h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+.denuncia-card-perfil > p {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  margin-bottom: 0.4rem;
+}
+.denuncia-card-perfil .denuncia-descricao {
+  font-style: italic;
+  color: var(--ink-soft);
+}
+.denuncia-resposta-admin {
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--border);
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+.denuncia-resposta-admin strong { color: var(--ink); }
 
 /* ============================================================
    COMPRAS REALIZADAS

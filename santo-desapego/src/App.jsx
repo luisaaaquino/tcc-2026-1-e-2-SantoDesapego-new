@@ -11,6 +11,9 @@ import Mensagens        from './pages/Mensagens';
 import Checkout         from './pages/Checkout';
 import CompraRealizada  from './pages/CompraRealizada';
 import Admin            from './pages/Admin';
+import CentralAjuda     from './pages/CentralAjuda';
+import EsqueciSenha     from './pages/EsqueciSenha';
+import RedefinirSenha   from './pages/RedefinirSenha';
 
 function App() {
   return (
@@ -28,6 +31,9 @@ function App() {
         <Route path="/checkout/:id"      element={<Checkout />}         />
         <Route path="/compra-realizada"  element={<CompraRealizada />}  />
         <Route path="/admin"             element={<Admin />}            />
+        <Route path="/central-ajuda"     element={<CentralAjuda />}     />
+        <Route path="/esqueci-senha"     element={<EsqueciSenha />}     />
+        <Route path="/redefinir-senha"   element={<RedefinirSenha />}   />
       </Routes>
     </BrowserRouter>
   );

@@ -52,31 +52,6 @@
   opacity: 0.1;
 }
 
-/* Kicker / badge pulsante */
-.left-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
-  padding: 0.4rem 1rem;
-  border-radius: var(--radius-pill);
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--mustard-soft);
-  margin-bottom: 1.8rem;
-  width: fit-content;
-  position: relative;
-  z-index: 1;
-}
-.kicker-dot {
-  width: 7px; height: 7px;
-  background: var(--mustard-soft);
-  border-radius: 50%;
-  animation: pulse 2s infinite;
-  flex-shrink: 0;
-}
-
 /* Headline */
 .left-panel h2 {
   font-family: var(--font-display);
@@ -349,6 +324,23 @@
 .checkbox-label a { color: var(--terracotta); font-weight: 600; border-bottom: 1px solid var(--terracotta-soft); }
 .checkbox-label a:hover { border-color: var(--terracotta); }
 
+/* ── Alerta de CEP fora da área atendida ────────────────── */
+.alerta-fora-area {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  background: #FFF8E8;
+  border: 1.5px solid var(--mustard);
+  color: #8A5D0C;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.83rem;
+  line-height: 1.5;
+  margin: -0.2rem 0 1rem;
+}
+.alerta-fora-area svg { flex-shrink: 0; margin-top: 0.15rem; }
+.alerta-fora-area strong { display: block; color: #6B4700; }
+
 /* ── Rótulo de seção dentro do formulário ───────────────── */
 .form-section-label {
   font-size: 0.78rem;
@@ -408,7 +400,9 @@
 /* ============================================================
    RESPONSIVO
    ============================================================ */
-@media (max-width: 900px) {
+@media (max-width: 1180px) {
+  /* Abaixo disso, a coluna esquerda ficava espremida demais (texto
+     quebrando mal) com o formulário do lado — melhor empilhar. */
   .cadastro-page { grid-template-columns: 1fr; }
   .left-panel { padding: 2.5rem 1.5rem; }
   .left-testimonial { display: none; }

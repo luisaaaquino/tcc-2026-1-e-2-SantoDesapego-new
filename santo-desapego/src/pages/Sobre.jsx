@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Sobre.css';
+import NotificacoesSino from '../componentes/NotificacoesSino';
 
 /* ── Dados — altere aqui sem tocar no JSX ──────────────────── */
 
@@ -63,15 +64,15 @@ const MARCOS = [
 const FOOTER_LINKS = [
   {
     title: 'Plataforma',
-    links: ['Como funciona', 'Anunciar', 'Categorias', 'Dicas de segurança'],
+    links: ['Como funciona', 'Anunciar', 'Categorias'],
   },
   {
     title: 'Comunidade',
-    links: ['Nosso impacto', 'Bairros atendidos', 'Blog', 'Indique um vizinho'],
+    links: ['Nosso impacto', 'Bairros atendidos', 'Indique um vizinho'],
   },
   {
     title: 'Suporte',
-    links: ['Central de ajuda', 'Fale conosco', 'Termos de uso', 'Privacidade (LGPD)'],
+    links: ['Central de ajuda', 'Termos de uso', 'Privacidade (LGPD)'],
   },
 ];
 
@@ -143,6 +144,7 @@ const Sobre = () => {
           <nav className="nav-actions">
             {usuario ? (
               <>
+                <NotificacoesSino />
                 <Link to="/perfil" className="sobre-user-chip" title="Meu perfil">
                   <span className="sobre-user-avatar">
                     {usuario.foto_perfil
@@ -151,7 +153,7 @@ const Sobre = () => {
                   </span>
                   Olá, {usuario.nome}!
                 </Link>
-                <button onClick={handleLogout} className="sobre-logout-btn">
+                <button onClick={handleLogout} className="nav-btn" style={{ cursor: 'pointer', fontFamily: 'inherit' }}>
                   <IconLogout />
                   Sair
                 </button>
@@ -159,7 +161,7 @@ const Sobre = () => {
               </>
             ) : (
               <>
-                <Link to="/login">Entrar</Link>
+                <Link to="/login" className="nav-btn">Entrar</Link>
                 <Link to="/cadastro" className="btn-sell">+ Anunciar grátis</Link>
               </>
             )}
@@ -341,7 +343,11 @@ const Sobre = () => {
           {FOOTER_LINKS.map((col) => (
             <div key={col.title} className="footer-col">
               <h4>{col.title}</h4>
-              {col.links.map((l) => <a key={l} href="#">{l}</a>)}
+              {col.links.map((l) =>
+                l === 'Central de ajuda'
+                  ? <Link key={l} to="/central-ajuda">Central de ajuda</Link>
+                  : <a key={l} href="#">{l}</a>
+              )}
             </div>
           ))}
         </div>

@@ -1,0 +1,278 @@
+/* ============================================================
+   CENTRALAJUDA.CSS — Central de ajuda / suporte ao usuário
+   Tokens do projeto: --cream, --cream-soft, --paper, --border,
+   --ink, --ink-soft, --ink-muted, --terracotta, --forest,
+   --mustard, --radius-md, --radius-lg, --radius-pill,
+   --font-display
+   ============================================================ */
+
+.ajuda-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--cream);
+}
+
+.ajuda-container {
+  max-width: 1060px;
+  width: 100%;
+  margin: 2rem auto;
+  padding: 0 1.5rem 4rem;
+  flex: 1;
+}
+
+.ajuda-titulo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-bottom: 0.6rem;
+}
+.ajuda-titulo em { color: var(--terracotta); font-style: normal; }
+
+.ajuda-subtitulo {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--ink-muted);
+  max-width: 640px;
+  margin-bottom: 2rem;
+}
+
+.ajuda-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.ajuda-bloco {
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 1.75rem;
+}
+
+.ajuda-bloco h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin-bottom: 1rem;
+}
+
+/* ── FAQ ────────────────────────────────────────────────── */
+.ajuda-faq-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.ajuda-faq-item {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  background: var(--cream);
+}
+
+.ajuda-faq-item summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--ink);
+  list-style: none;
+}
+.ajuda-faq-item summary::-webkit-details-marker { display: none; }
+.ajuda-faq-item summary::before {
+  content: '+';
+  display: inline-block;
+  width: 1.1rem;
+  color: var(--terracotta);
+  font-weight: 700;
+}
+.ajuda-faq-item[open] summary::before { content: '−'; }
+
+.ajuda-faq-item p {
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--ink-muted);
+}
+
+/* ── Formulário de suporte ──────────────────────────────── */
+.ajuda-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ajuda-form label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin-top: 0.6rem;
+}
+
+.ajuda-form select,
+.ajuda-form textarea {
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 0.65rem 0.8rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--cream);
+  color: var(--ink);
+  resize: vertical;
+}
+.ajuda-form select:focus,
+.ajuda-form textarea:focus {
+  outline: 2px solid var(--terracotta);
+  outline-offset: 1px;
+}
+
+.btn-ajuda {
+  display: block;
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.85rem 1.5rem;
+  background: var(--ink);
+  color: var(--cream);
+  border: none;
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.92rem;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--terracotta);
+  transition: all 0.2s;
+}
+.btn-ajuda:hover:not(:disabled) {
+  background: var(--terracotta);
+  box-shadow: 5px 5px 0 var(--ink);
+  transform: translate(-1px, -1px);
+}
+.btn-ajuda:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ajuda-login-cta {
+  text-align: center;
+  padding: 1rem 0;
+}
+.ajuda-login-cta p {
+  font-size: 0.88rem;
+  color: var(--ink-muted);
+  margin-bottom: 1rem;
+}
+
+/* ── Alertas ────────────────────────────────────────────── */
+.ajuda-alerta {
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  margin-bottom: 0.5rem;
+}
+.ajuda-alerta.erro {
+  background: #FFF5F3;
+  border: 1.5px solid var(--terracotta);
+  color: var(--terracotta);
+}
+.ajuda-alerta.sucesso {
+  background: #F0F8EF;
+  border: 1.5px solid var(--forest);
+  color: var(--forest);
+}
+
+/* ── Histórico de solicitações ──────────────────────────── */
+.ajuda-historico {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px dashed var(--border);
+}
+
+.ajuda-historico h3 {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--ink);
+  margin-bottom: 0.75rem;
+}
+
+.ajuda-historico ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.ajuda-historico-item {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.9rem;
+  background: var(--cream);
+}
+
+.ajuda-historico-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  margin-bottom: 0.35rem;
+}
+
+.ajuda-historico-msg {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.ajuda-historico-resposta {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--border);
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  line-height: 1.5;
+}
+
+.ajuda-badge {
+  flex-shrink: 0;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+.ajuda-badge.aberto          { background: #FFF3E0; color: var(--mustard); }
+.ajuda-badge.em_atendimento  { background: #E8F0FE; color: #2a78d6; }
+.ajuda-badge.respondido      { background: #F0F8EF; color: var(--forest); }
+.ajuda-badge.encerrado       { background: var(--cream-soft); color: var(--ink-muted); }
+
+/* ── Responsivo ─────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .ajuda-grid { grid-template-columns: 1fr; }
+  .ajuda-bloco { padding: 1.25rem; }
+}
+
+/* ── Acessibilidade ─────────────────────────────────────── */
+.ajuda-wrapper button:focus-visible,
+.ajuda-wrapper a:focus-visible,
+.ajuda-wrapper input:focus-visible,
+.ajuda-wrapper select:focus-visible,
+.ajuda-wrapper textarea:focus-visible {
+  outline: 2px solid var(--terracotta);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-ajuda { transition: none; }
+  .btn-ajuda:hover:not(:disabled) { transform: none; }
+}

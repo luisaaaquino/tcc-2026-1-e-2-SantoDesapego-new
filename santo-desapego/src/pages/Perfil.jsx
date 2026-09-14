@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Perfil.css';
+import NotificacoesSino from '../componentes/NotificacoesSino';
 
 const API_URL = 'http://localhost:8080';
 
@@ -20,6 +21,7 @@ const I = {
   bag:     () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>,
   star:    () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
   message: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+  flag:    () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>,
   camera:  () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>,
   download: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
   trash:   () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
@@ -136,7 +138,11 @@ const Perfil = () => {
             Santo <em>Desapego</em>
           </Link>
           <nav className="nav-actions">
-            <Link to="/">← Voltar para a home</Link>
+            <NotificacoesSino />
+            <Link to="/" className="nav-btn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              Voltar para a home
+            </Link>
           </nav>
         </div>
       </header>
@@ -171,6 +177,10 @@ const Perfil = () => {
               onClick={() => setAba('avaliacoes')} role="tab">
               <I.star /> Avaliações
             </button>
+            <button className={`perfil-tab${aba === 'denuncias' ? ' active' : ''}`}
+              onClick={() => setAba('denuncias')} role="tab">
+              <I.flag /> Minhas denúncias
+            </button>
             <button className={`perfil-tab${aba === 'dados' ? ' active' : ''}`}
               onClick={() => setAba('dados')} role="tab">
               <I.user /> Dados pessoais
@@ -201,6 +211,7 @@ const Perfil = () => {
           {aba === 'anuncios'   && <SecaoAnuncios   />}
           {aba === 'compras'    && <SecaoCompras    />}
           {aba === 'avaliacoes' && <SecaoAvaliacoes />}
+          {aba === 'denuncias'  && <SecaoMinhasDenuncias />}
           {aba === 'dados'     && <SecaoDados     usuario={usuario} setUsuario={setUsuario} />}
           {aba === 'endereco'  && <SecaoEndereco  usuario={usuario} setUsuario={setUsuario} />}
           {aba === 'seguranca' && <SecaoSeguranca />}
@@ -603,6 +614,84 @@ const SecaoCompras = () => {
                   </button>
                 )}
               </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+};
+
+/* ════════════════════════════════════════════════════════════
+   SEÇÃO MINHAS DENÚNCIAS — acompanhamento do retorno dos admins
+   ════════════════════════════════════════════════════════════ */
+const MOTIVO_DENUNCIA_LABEL = {
+  conteudo_inadequado: 'Conteúdo inadequado',
+  fraude: 'Fraude',
+  violacao_termos: 'Violação dos termos',
+  outro: 'Outro',
+};
+
+const STATUS_DENUNCIA_LABEL = {
+  pendente: 'Pendente',
+  em_analise: 'Em análise',
+  resolvida: 'Resolvida',
+  arquivada: 'Arquivada',
+};
+
+const SecaoMinhasDenuncias = () => {
+  const [denuncias, setDenuncias] = useState(null);
+  const [carregando, setCarregando] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/denuncias`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('sd_token')}` },
+    })
+      .then((r) => r.json())
+      .then((data) => setDenuncias(data.denuncias || []))
+      .catch(() => setDenuncias([]))
+      .finally(() => setCarregando(false));
+  }, []);
+
+  return (
+    <>
+      <div className="perfil-section-head">
+        <h1>Minhas <em>denúncias</em></h1>
+        <p>Acompanhe o retorno da nossa equipe sobre as denúncias que você enviou.</p>
+      </div>
+
+      {carregando && <p className="perfil-loading">Carregando denúncias...</p>}
+
+      {!carregando && denuncias?.length === 0 && (
+        <div className="painel-empty">
+          <div className="painel-empty-icon">🚩</div>
+          <h4>Você ainda não fez nenhuma denúncia</h4>
+          <p>Se algo parecer errado com um anúncio ou usuário, use o botão de denúncia na página dele.</p>
+        </div>
+      )}
+
+      {!carregando && denuncias?.length > 0 && (
+        <div className="lista-denuncias">
+          {denuncias.map((d) => (
+            <div className="denuncia-card-perfil" key={d.id}>
+              <div className="denuncia-card-perfil-topo">
+                <h3>
+                  {d.anuncio_titulo
+                    ? <>Anúncio: {d.anuncio_id ? <Link to={`/anuncio/${d.anuncio_id}`}>{d.anuncio_titulo}</Link> : d.anuncio_titulo}</>
+                    : `Perfil: ${d.denunciado_nome || 'usuário removido'}`}
+                </h3>
+                <span className={`status-badge ${d.status}`}>{STATUS_DENUNCIA_LABEL[d.status] || d.status}</span>
+              </div>
+              <p>Motivo: {MOTIVO_DENUNCIA_LABEL[d.motivo] || d.motivo} · Enviada em {dataBR(d.criada_em)}</p>
+              {d.descricao && <p className="denuncia-descricao">"{d.descricao}"</p>}
+
+              {d.resolucao ? (
+                <div className="denuncia-resposta-admin">
+                  <strong>Retorno da equipe:</strong> {d.resolucao}
+                </div>
+              ) : (
+                <div className="denuncia-resposta-admin">Ainda sem retorno da nossa equipe — assim que analisarmos, você verá a resposta aqui.</div>
+              )}
             </div>
           ))}
         </div>

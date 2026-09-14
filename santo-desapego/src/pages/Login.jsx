@@ -144,7 +144,10 @@ const LoginContent = () => {
             Santo <em>Desapego</em>
           </Link>
           <nav className="nav-actions">
-            <Link to="/">Voltar para a home</Link>
+            <Link to="/" className="nav-btn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              Voltar para a home
+            </Link>
             <Link to="/cadastro" className="btn-sell">+ Criar conta</Link>
           </nav>
         </div>
@@ -270,7 +273,7 @@ const LoginContent = () => {
                   <input type="checkbox" name="remember" checked={formData.remember} onChange={handleChange} />
                   <span>Lembrar de mim</span>
                 </label>
-                <a href="#esqueci" className="forgot-link">Esqueci minha senha</a>
+                <Link to="/esqueci-senha" className="forgot-link">Esqueci minha senha</Link>
               </div>
 
               {/* Submit */}

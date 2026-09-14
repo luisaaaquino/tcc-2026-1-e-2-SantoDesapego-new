@@ -115,6 +115,30 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .nav-actions a:hover { color: var(--terracotta); }
 
+/* ── Botão de navegação (outline) — links do topo do site,
+   tipo "Voltar", "Sair", "Explorar" — em vez de texto solto ── */
+.nav-btn {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.1rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+  color: var(--ink-soft) !important;
+  font-weight: 600 !important;
+  font-size: 0.87rem !important;
+  white-space: nowrap;
+  transition: border-color 0.18s, background 0.18s, color 0.18s, transform 0.15s;
+}
+.nav-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+.nav-btn:hover {
+  border-color: var(--terracotta);
+  color: var(--terracotta) !important;
+  background: var(--cream-soft);
+  transform: translateY(-1px);
+}
+
 /* ── Botões globais ─────────────────────────────────────── */
 /* Botão CTA da nav (home / listagem) — mantém nome original do JSX */
 .btn-sell,
@@ -130,6 +154,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .btn-sell:hover,
 .btn-primary:hover {

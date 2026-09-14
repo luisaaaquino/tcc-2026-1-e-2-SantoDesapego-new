@@ -21,7 +21,9 @@ CREATE TABLE usuarios (
   foto_perfil        TEXT,
   data_cadastro      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
   papel              VARCHAR(20)   NOT NULL DEFAULT 'usuario' CHECK (papel IN ('usuario','administrador')),
-  status_conta       VARCHAR(20)   NOT NULL DEFAULT 'ativa' CHECK (status_conta IN ('ativa','suspensa'))
+  status_conta       VARCHAR(20)   NOT NULL DEFAULT 'ativa' CHECK (status_conta IN ('ativa','suspensa')),
+  reset_senha_token  VARCHAR(255),
+  reset_senha_expira TIMESTAMP
 );
 
 CREATE TABLE categorias (
@@ -136,6 +138,34 @@ CREATE TABLE logs_auditoria (
   criada_em   TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+-- Notificações — in-app e disparo de e-mail [RF18]
+CREATE TABLE notificacoes (
+  id          SERIAL PRIMARY KEY,
+  usuario_id  INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  tipo        VARCHAR(30) NOT NULL
+                CHECK (tipo IN ('nova_mensagem','intencao_compra','pagamento_confirmado','avaliacao_pendente','anuncio_expirando')),
+  titulo      VARCHAR(150) NOT NULL,
+  mensagem    TEXT NOT NULL,
+  link        VARCHAR(255),
+  lida        BOOLEAN NOT NULL DEFAULT FALSE,
+  criada_em   TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- Central de Ajuda — mensagens de suporte enviadas por usuários aos administradores
+CREATE TABLE mensagens_suporte (
+  id             SERIAL PRIMARY KEY,
+  usuario_id     INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  assunto        VARCHAR(30) NOT NULL
+                   CHECK (assunto IN ('duvida_conta','anuncio','pagamento','denuncia_seguranca','outro')),
+  mensagem       TEXT NOT NULL,
+  status         VARCHAR(20) NOT NULL DEFAULT 'aberto'
+                   CHECK (status IN ('aberto','em_atendimento','respondido','encerrado')),
+  resposta       TEXT,
+  respondida_por INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+  criada_em      TIMESTAMP NOT NULL DEFAULT NOW(),
+  respondida_em  TIMESTAMP
+);
+
 CREATE INDEX idx_usuarios_papel       ON usuarios(papel);
 CREATE INDEX idx_anuncios_status      ON anuncios(status);
 CREATE INDEX idx_anuncios_categoria   ON anuncios(categoria_id);
@@ -155,6 +185,10 @@ CREATE INDEX idx_denuncias_anuncio    ON denuncias(anuncio_id);
 CREATE INDEX idx_denuncias_denunciado ON denuncias(usuario_denunciado_id);
 CREATE INDEX idx_logs_criada_em       ON logs_auditoria(criada_em DESC);
 CREATE INDEX idx_logs_admin           ON logs_auditoria(admin_id);
+CREATE INDEX idx_suporte_status       ON mensagens_suporte(status, criada_em DESC);
+CREATE INDEX idx_suporte_usuario      ON mensagens_suporte(usuario_id, criada_em DESC);
+CREATE INDEX idx_notificacoes_usuario ON notificacoes(usuario_id, criada_em DESC);
+CREATE INDEX idx_notificacoes_nao_lidas ON notificacoes(usuario_id) WHERE lida = FALSE;
 
 -- ============================================================
 -- Categorias iniciais (necessárias para publicar anúncios)

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import './Home.css';
 import Mapa from '../componentes/Mapa';
 import SeletorBairro from '../componentes/SeletorBairro';
+import NotificacoesSino from '../componentes/NotificacoesSino';
 
 /* ── Dados — altere aqui sem tocar no JSX ──────────────────── */
 const STEPS = [
@@ -60,15 +61,15 @@ const HOODS = [
 const FOOTER_LINKS = [
   {
     title: 'Plataforma',
-    links: ['Como funciona', 'Anunciar', 'Categorias', 'Dicas de segurança'],
+    links: ['Como funciona', 'Anunciar', 'Categorias'],
   },
   {
     title: 'Comunidade',
-    links: ['Nosso impacto', 'Bairros atendidos', 'Blog', 'Indique um vizinho'],
+    links: ['Nosso impacto', 'Bairros atendidos', 'Indique um vizinho'],
   },
   {
     title: 'Suporte',
-    links: ['Central de ajuda', 'Fale conosco', 'Termos de uso', 'Privacidade (LGPD)'],
+    links: ['Central de ajuda', 'Termos de uso', 'Privacidade (LGPD)'],
   },
 ];
 
@@ -161,9 +162,11 @@ const IconHanger = () => (
     <path d="M12 8a2 2 0 1 1 0-4 2 2 0 0 1 2 2c0 1-.5 1.5-1 2l-9 7a1 1 0 0 0 .6 1.8h16.8a1 1 0 0 0 .6-1.8L12 8z"/>
   </svg>
 );
-const IconRefresh = () => (
+const IconMore = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/>
+    <circle cx="5" cy="12" r="1.4" fill="currentColor"/>
+    <circle cx="12" cy="12" r="1.4" fill="currentColor"/>
+    <circle cx="19" cy="12" r="1.4" fill="currentColor"/>
   </svg>
 );
 
@@ -294,7 +297,8 @@ const Home = () => {
           <nav className="nav-actions">
             {usuario ? (
               <>
-                <Link to="/sobre">Sobre nós</Link>
+                <NotificacoesSino />
+                <Link to="/sobre" className="nav-btn">Sobre nós</Link>
                 <Link to="/perfil" style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -324,21 +328,7 @@ const Home = () => {
                   </span>
                   Olá, {usuario.nome}!
                 </Link>
-                <button
-                  onClick={handleLogout}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--ink-muted)',
-                    fontSize: '0.88rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                  }}
-                >
+                <button onClick={handleLogout} className="nav-btn" style={{ cursor: 'pointer', fontFamily: 'inherit' }}>
                   <IconLogout />
                   Sair
                 </button>
@@ -346,8 +336,8 @@ const Home = () => {
               </>
             ) : (
               <>
-                <Link to="/sobre">Sobre nós</Link>
-                <Link to="/login">Entrar</Link>
+                <Link to="/sobre" className="nav-btn">Sobre nós</Link>
+                <Link to="/login" className="nav-btn">Entrar</Link>
                 <Link to="/cadastro" className="btn-sell">+ Anunciar grátis</Link>
               </>
             )}
@@ -366,8 +356,8 @@ const Home = () => {
           <Link to="/explorar?categoria_id=7"><IconPalette /><span>Arte & Decoração</span></Link>
           <Link to="/explorar?categoria_id=8"><IconWrench /><span>Ferramentas</span></Link>
           <span className="nav-sep" aria-hidden="true" />
-          <Link to="/explorar"><IconHanger /><span>Brechó vintage</span></Link>
-          <Link to="/explorar?aceita_troca=true"><IconRefresh /><span>Trocas</span></Link>
+          <Link to="/explorar?categoria_id=9"><IconHanger /><span>Brechó vintage</span></Link>
+          <Link to="/explorar?categoria_id=10"><IconMore /><span>Outros</span></Link>
         </nav>
       </header>
 
@@ -557,6 +547,8 @@ const Home = () => {
               {col.links.map((l) =>
                 l === 'Nosso impacto'
                   ? <Link key={l} to="/sobre">Sobre nós</Link>
+                  : l === 'Central de ajuda'
+                  ? <Link key={l} to="/central-ajuda">Central de ajuda</Link>
                   : <a key={l} href="#">{l}</a>
               )}
             </div>

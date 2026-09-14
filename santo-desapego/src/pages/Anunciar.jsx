@@ -338,7 +338,10 @@ const Anunciar = () => {
             Santo <em>Desapego</em>
           </Link>
           <nav className="nav-actions">
-            <Link to="/perfil">← Voltar para meu perfil</Link>
+            <Link to="/perfil" className="nav-btn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              Voltar para meu perfil
+            </Link>
           </nav>
         </div>
       </header>

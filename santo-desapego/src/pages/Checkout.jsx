@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import './Checkout.css';
+import NotificacoesSino from '../componentes/NotificacoesSino';
 
 const API_URL = 'http://localhost:8080';
 
@@ -90,7 +91,11 @@ const Checkout = () => {
           Santo <em>Desapego</em>
         </Link>
         <nav className="nav-actions">
-          <Link to={`/anuncio/${id}`}>← Voltar para o anúncio</Link>
+          <NotificacoesSino />
+          <Link to={`/anuncio/${id}`} className="nav-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Voltar para o anúncio
+          </Link>
         </nav>
       </div>
     </header>
@@ -227,36 +232,12 @@ const Checkout = () => {
 
             {/* Pagamento */}
             <section className="checkout-bloco">
-              <h2>Formas de pagamento</h2>
-
-              <ul className="checkout-metodos">
-                <li>
-                  <span className="checkout-metodo-icone">💳</span>
-                  <span>
-                    <strong>Cartão de crédito</strong>
-                    <em>Em até 12x — Visa, Mastercard, Elo, Amex e Hipercard</em>
-                  </span>
-                </li>
-                <li>
-                  <span className="checkout-metodo-icone">🏦</span>
-                  <span>
-                    <strong>Cartão de débito</strong>
-                    <em>Débito Visa, Mastercard e Elo</em>
-                  </span>
-                </li>
-                <li className="indisponivel">
-                  <span className="checkout-metodo-icone">⏳</span>
-                  <span>
-                    <strong>Pix e boleto</strong>
-                    <em>Em breve na plataforma</em>
-                  </span>
-                </li>
-              </ul>
+              <h2>Pagamento</h2>
 
               <p className="checkout-nota">
-                Você escolhe o cartão e o número de parcelas na próxima tela, no ambiente
-                seguro do Mercado Pago. O Santo Desapego nunca vê nem guarda os dados
-                do seu cartão.
+                Ao continuar, você será redirecionado para o ambiente seguro do
+                Mercado Pago, onde escolhe a forma de pagamento disponível e finaliza
+                a compra. O Santo Desapego nunca vê nem guarda os dados do seu pagamento.
               </p>
             </section>
           </div>

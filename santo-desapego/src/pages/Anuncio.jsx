@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import './Anuncio.css';
+import NotificacoesSino from '../componentes/NotificacoesSino';
 
 const API_URL = 'http://localhost:8080';
 
@@ -190,7 +191,11 @@ const Anuncio = () => {
           Santo <em>Desapego</em>
         </Link>
         <nav className="nav-actions">
-          <Link to="/explorar">← Voltar para o Explorar</Link>
+          <NotificacoesSino />
+          <Link to="/explorar" className="nav-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Voltar para o Explorar
+          </Link>
         </nav>
       </div>
     </header>

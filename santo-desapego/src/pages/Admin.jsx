@@ -12,6 +12,7 @@ const I = {
   layers:    () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>,
   flag:      () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>,
   clock:     () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  help:      () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
   shield:    () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
   plus:      () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
   search:    () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>,
@@ -264,8 +265,14 @@ const Admin = () => {
             Santo <em>Desapego</em>
           </Link>
           <nav className="nav-actions">
-            <Link to="/perfil">Meu perfil</Link>
-            <Link to="/">← Sair do painel</Link>
+            <Link to="/perfil" className="nav-btn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Meu perfil
+            </Link>
+            <Link to="/" className="nav-btn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              Sair do painel
+            </Link>
           </nav>
         </div>
       </header>
@@ -296,6 +303,9 @@ const Admin = () => {
             <button className={`admin-tab${aba === 'denuncias' ? ' active' : ''}`} onClick={() => setAba('denuncias')}>
               <I.flag /> Denúncias
             </button>
+            <button className={`admin-tab${aba === 'suporte' ? ' active' : ''}`} onClick={() => setAba('suporte')}>
+              <I.help /> Central de ajuda
+            </button>
             <button className={`admin-tab${aba === 'logs' ? ' active' : ''}`} onClick={() => setAba('logs')}>
               <I.clock /> Logs de auditoria
             </button>
@@ -308,6 +318,7 @@ const Admin = () => {
           {aba === 'anuncios'   && <SecaoAnuncios />}
           {aba === 'categorias' && <SecaoCategorias />}
           {aba === 'denuncias'  && <SecaoDenuncias />}
+          {aba === 'suporte'    && <SecaoSuporte />}
           {aba === 'logs'       && <SecaoLogs />}
         </main>
       </div>
@@ -368,6 +379,12 @@ const SecaoDashboard = () => {
               <div className="admin-stat-label">Denúncias pendentes</div>
               <div className="admin-stat-num">{dados.denuncias.pendentes}</div>
               <div className="admin-stat-sub">{dados.denuncias.total} no total</div>
+            </div>
+            <div className={`admin-stat${dados.suporte.pendentes > 0 ? ' alerta' : ''}`}>
+              <div className="admin-stat-icon terracotta"><I.help /></div>
+              <div className="admin-stat-label">Central de ajuda pendente</div>
+              <div className="admin-stat-num">{dados.suporte.pendentes}</div>
+              <div className="admin-stat-sub">{dados.suporte.total} solicitação(ões) no total</div>
             </div>
           </div>
 
@@ -951,6 +968,152 @@ const SecaoDenuncias = () => {
 };
 
 /* ════════════════════════════════════════════════════════════
+   CENTRAL DE AJUDA — fila de suporte dos usuários
+   ════════════════════════════════════════════════════════════ */
+const ASSUNTO_LABEL = {
+  duvida_conta: 'Dúvidas sobre a conta',
+  anuncio: 'Problemas com anúncio',
+  pagamento: 'Pagamentos',
+  denuncia_seguranca: 'Segurança / denúncia',
+  outro: 'Outro',
+};
+
+const FormResponderSuporte = ({ solicitacao, aoSalvar, aoCancelar }) => {
+  const [status, setStatus] = useState(solicitacao.status === 'aberto' ? 'em_atendimento' : solicitacao.status);
+  const [resposta, setResposta] = useState(solicitacao.resposta || '');
+  const [enviando, setEnviando] = useState(false);
+  const [erro, setErro] = useState('');
+
+  const salvar = async () => {
+    setEnviando(true);
+    setErro('');
+    try {
+      await aoSalvar(status, resposta);
+    } catch (e) {
+      setErro(e.message);
+      setEnviando(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={() => !enviando && aoCancelar()}>
+      <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+        <h2>Solicitação #{solicitacao.id}</h2>
+        <p>
+          <strong>{solicitacao.usuario_nome}</strong> ({solicitacao.usuario_email}) sobre{' '}
+          <strong>{ASSUNTO_LABEL[solicitacao.assunto] || solicitacao.assunto}</strong>.
+        </p>
+        <p style={{ fontStyle: 'italic' }}>"{solicitacao.mensagem}"</p>
+        {erro && <div className="admin-alert error">{erro}</div>}
+
+        <label>Status</label>
+        <select value={status} onChange={(e) => setStatus(e.target.value)}>
+          <option value="aberto">Aberto</option>
+          <option value="em_atendimento">Em atendimento</option>
+          <option value="respondido">Respondido</option>
+          <option value="encerrado">Encerrado</option>
+        </select>
+
+        <label>Resposta ao usuário</label>
+        <textarea rows={4} value={resposta} onChange={(e) => setResposta(e.target.value)} maxLength={2000} />
+
+        <div className="admin-modal-actions">
+          <button className="btn-modal-cancel" onClick={aoCancelar} disabled={enviando}>Cancelar</button>
+          <button className="btn-modal-confirm positivo" onClick={salvar} disabled={enviando}>
+            {enviando ? 'Salvando...' : 'Salvar'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const SecaoSuporte = () => {
+  const [solicitacoes, setSolicitacoes] = useState(null);
+  const [paginacao, setPaginacao] = useState(null);
+  const [pagina, setPagina] = useState(1);
+  const [statusFiltro, setStatusFiltro] = useState('');
+  const [feedback, setFeedback] = useState(null);
+  const [selecionada, setSelecionada] = useState(null);
+
+  const carregar = useCallback(() => {
+    const params = new URLSearchParams({ pagina, limite: 10 });
+    if (statusFiltro) params.set('status', statusFiltro);
+    apiFetch(`/api/admin/suporte?${params}`)
+      .then((d) => { setSolicitacoes(d.solicitacoes); setPaginacao(d.paginacao); })
+      .catch((e) => setFeedback({ tipo: 'error', msg: e.message }));
+  }, [pagina, statusFiltro]);
+
+  useEffect(() => { carregar(); }, [carregar]);
+
+  const salvar = async (status, resposta) => {
+    await apiFetch(`/api/admin/suporte/${selecionada.id}`, {
+      method: 'PUT', body: JSON.stringify({ status, resposta }),
+    });
+    setFeedback({ tipo: 'success', msg: `Solicitação #${selecionada.id} atualizada.` });
+    setSelecionada(null);
+    carregar();
+  };
+
+  return (
+    <>
+      <div className="admin-section-head">
+        <div>
+          <h1>Central de <em>ajuda</em></h1>
+          <p>Responda as mensagens de suporte enviadas pelos usuários da plataforma.</p>
+        </div>
+      </div>
+
+      {feedback && <div className={`admin-alert ${feedback.tipo}`}>{feedback.msg}</div>}
+
+      <div className="admin-filtros">
+        <select value={statusFiltro} onChange={(e) => { setStatusFiltro(e.target.value); setPagina(1); }}>
+          <option value="">Todos os status</option>
+          <option value="aberto">Aberto</option>
+          <option value="em_atendimento">Em atendimento</option>
+          <option value="respondido">Respondido</option>
+          <option value="encerrado">Encerrado</option>
+        </select>
+      </div>
+
+      {!solicitacoes && <div className="admin-loading">Carregando solicitações...</div>}
+
+      {solicitacoes && solicitacoes.length === 0 && (
+        <div className="admin-vazio"><span className="emoji">💬</span>Nenhuma solicitação de suporte encontrada.</div>
+      )}
+
+      {solicitacoes && solicitacoes.length > 0 && (
+        <div className="admin-table-wrap">
+          <table className="admin-table">
+            <thead><tr><th>Usuário</th><th>Assunto</th><th>Mensagem</th><th>Status</th><th>Data</th><th></th></tr></thead>
+            <tbody>
+              {solicitacoes.map((s) => (
+                <tr key={s.id}>
+                  <td>{s.usuario_nome}</td>
+                  <td>{ASSUNTO_LABEL[s.assunto] || s.assunto}</td>
+                  <td className="col-desc">{s.mensagem}</td>
+                  <td><span className={`badge-status ${s.status}`}>{s.status.replace('_', ' ')}</span></td>
+                  <td>{dataBR(s.criada_em)}</td>
+                  <td className="col-acoes">
+                    <button className="btn-admin-mini" onClick={() => setSelecionada(s)}>Responder</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <Paginacao paginacao={paginacao} pagina={pagina} setPagina={setPagina} />
+
+      {selecionada && (
+        <FormResponderSuporte solicitacao={selecionada} aoSalvar={salvar} aoCancelar={() => setSelecionada(null)} />
+      )}
+    </>
+  );
+};
+
+/* ════════════════════════════════════════════════════════════
    LOGS DE AUDITORIA
    ════════════════════════════════════════════════════════════ */
 const ACAO_LABEL = {
@@ -963,6 +1126,7 @@ const ACAO_LABEL = {
   editar_categoria: 'Editou categoria',
   excluir_categoria: 'Excluiu categoria',
   resolver_denuncia: 'Atualizou denúncia',
+  responder_suporte: 'Respondeu solicitação de suporte',
 };
 
 const SecaoLogs = () => {
