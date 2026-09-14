@@ -4,7 +4,7 @@ import './Mensagens.css';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
 
-const API_URL = 'http://localhost:8080';
+import { API_URL } from '../config';
 
 // De quanto em quanto tempo a tela procura mensagens novas
 const INTERVALO_MENSAGENS = 4000;   // 4s — conversa aberta

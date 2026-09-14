@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import './Anunciar.css';
 import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
 
-const API_URL = 'http://localhost:8080';
+import { API_URL } from '../config';
 
 // ── Limites do TCC [RNF19] ────────────────────────────────
 const MAX_IMAGENS  = 6;
@@ -24,6 +24,8 @@ const ESTADOS_CONSERVACAO = [
    ════════════════════════════════════════════════════════════ */
 const Anunciar = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const editando = Boolean(id); // [RF12] /anunciar/:id abre em modo de edição
 
   const [usuario, setUsuario] = useState(null);
   const [carregando, setCarregando] = useState(true);
@@ -51,22 +53,59 @@ const Anunciar = () => {
     const token = localStorage.getItem('sd_token');
     if (!token) { navigate('/login'); return; }
 
-    Promise.all([
+    const chamadas = [
       fetch(`${API_URL}/api/categorias`).then((r) => r.json()),
       fetch(`${API_URL}/api/usuario/perfil`, {
         headers: { Authorization: `Bearer ${token}` },
       }).then((r) => r.json().then((data) => ({ status: r.status, data }))),
-    ])
-      .then(([cats, perfil]) => {
+    ];
+    if (editando) {
+      chamadas.push(fetch(`${API_URL}/api/anuncios/${id}`).then((r) => r.json()));
+    }
+
+    Promise.all(chamadas)
+      .then(([cats, perfil, anuncioResp]) => {
         if (cats.categorias) setCategorias(cats.categorias);
         if (perfil.data.usuario) {
           setUsuario(perfil.data.usuario);
-          // Pré-preenche CEP e bairro do cadastro
-          setForm((f) => ({
-            ...f,
-            cep: maskCEP(perfil.data.usuario.cep || ''),
-            bairro: perfil.data.usuario.bairro || '',
-          }));
+
+          if (editando) {
+            const anuncio = anuncioResp?.anuncio;
+            if (!anuncio) {
+              setErroGlobal('Anúncio não encontrado.');
+              return;
+            }
+            if (anuncio.vendedor_id !== perfil.data.usuario.id) {
+              alert('Você só pode editar os seus próprios anúncios.');
+              navigate('/perfil');
+              return;
+            }
+            // Acha a categoria principal (pai) a partir da categoria/subcategoria salva
+            const principal = cats.categorias.find((c) =>
+              c.id === anuncio.categoria_id || c.subcategorias?.some((s) => s.id === anuncio.categoria_id)
+            );
+            const ehSubcategoria = principal?.subcategorias?.some((s) => s.id === anuncio.categoria_id);
+
+            setForm({
+              titulo: anuncio.titulo || '',
+              descricao: anuncio.descricao || '',
+              preco: String(anuncio.preco ?? ''),
+              aceita_troca: anuncio.aceita_troca === true,
+              estado_conservacao: anuncio.estado_conservacao || '',
+              categoria_principal: principal ? String(principal.id) : '',
+              categoria_id: ehSubcategoria ? String(anuncio.categoria_id) : '',
+              cep: maskCEP(anuncio.cep || ''),
+              bairro: anuncio.bairro || '',
+            });
+            setImagens(anuncio.imagens || []);
+          } else {
+            // Pré-preenche CEP e bairro do cadastro (só na criação)
+            setForm((f) => ({
+              ...f,
+              cep: maskCEP(perfil.data.usuario.cep || ''),
+              bairro: perfil.data.usuario.bairro || '',
+            }));
+          }
         } else if (perfil.status === 401) {
           localStorage.removeItem('sd_token');
           navigate('/login');
@@ -76,7 +115,7 @@ const Anunciar = () => {
       })
       .catch(() => alert('Erro ao carregar dados.'))
       .finally(() => setCarregando(false));
-  }, [navigate]);
+  }, [navigate, id, editando]);
 
   /* ── Máscaras ──────────────────────────────────────────── */
   const maskCEP = (v) => {
@@ -233,8 +272,8 @@ const Anunciar = () => {
     setEnviando(true);
 
     try {
-      const resposta = await fetch(`${API_URL}/api/anuncios`, {
-        method: 'POST',
+      const resposta = await fetch(`${API_URL}/api/anuncios${editando ? `/${id}` : ''}`, {
+        method: editando ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('sd_token')}`,
@@ -255,13 +294,17 @@ const Anunciar = () => {
       const dados = await resposta.json();
 
       if (!resposta.ok) {
-        setErroGlobal(dados.erro || 'Erro ao publicar anúncio.');
+        setErroGlobal(dados.erro || `Erro ao ${editando ? 'salvar' : 'publicar'} anúncio.`);
         setEnviando(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
 
-      setSubmitted(dados.anuncio);
+      if (editando) {
+        navigate(`/anuncio/${id}`);
+      } else {
+        setSubmitted(dados.anuncio);
+      }
     } catch (err) {
       console.error(err);
       setErroGlobal('Erro ao conectar com o servidor.');
@@ -332,8 +375,17 @@ const Anunciar = () => {
       <div className="anunciar-container">
 
         <div className="anunciar-header">
-          <h1>Criar <em>anúncio</em></h1>
-          <p>Transforme o que você não usa em renda extra. Vizinhos de Santo Amaro estão à procura.</p>
+          {editando ? (
+            <>
+              <h1>Editar <em>anúncio</em></h1>
+              <p>Atualize as informações do seu anúncio.</p>
+            </>
+          ) : (
+            <>
+              <h1>Criar <em>anúncio</em></h1>
+              <p>Transforme o que você não usa em renda extra. Vizinhos de Santo Amaro estão à procura.</p>
+            </>
+          )}
         </div>
 
         <div className="anunciar-card">
@@ -575,7 +627,9 @@ const Anunciar = () => {
             <div className="anunciar-actions">
               <Link to="/perfil" className="btn-anunciar-cancel">Cancelar</Link>
               <button type="submit" className="btn-anunciar-publish" disabled={enviando}>
-                {enviando ? 'Publicando...' : 'Publicar anúncio →'}
+                {editando
+                  ? (enviando ? 'Salvando...' : 'Salvar alterações →')
+                  : (enviando ? 'Publicando...' : 'Publicar anúncio →')}
               </button>
             </div>
           </form>

@@ -3,8 +3,9 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import './Anuncio.css';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
+import { IconHeart } from '../componentes/Icones';
 
-const API_URL = 'http://localhost:8080';
+import { API_URL } from '../config';
 
 const ESTADO_LABEL = {
   'novo':        { emoji: '✨', name: 'Novo / Na caixa' },
@@ -106,7 +107,10 @@ const Anuncio = () => {
     setCarregando(true);
     setErro('');
 
-    fetch(`${API_URL}/api/anuncios/${id}`)
+    const token = localStorage.getItem('sd_token');
+    fetch(`${API_URL}/api/anuncios/${id}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
       .then(async (res) => {
         const texto = await res.text();
 
@@ -148,6 +152,32 @@ const Anuncio = () => {
     const token = localStorage.getItem('sd_token');
     if (!token) { navigate('/login'); return; }
     navigate(`/checkout/${anuncio.id}`);
+  };
+
+  // [RF10] Favorita/desfavorita o anúncio em exibição
+  const alternarFavorito = async () => {
+    const token = localStorage.getItem('sd_token');
+    if (!token) { navigate('/login'); return; }
+
+    const jaFavoritado = anuncio.favoritado;
+    setAnuncio((prev) => ({ ...prev, favoritado: !jaFavoritado }));
+
+    try {
+      if (jaFavoritado) {
+        await fetch(`${API_URL}/api/favoritos/${anuncio.id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        await fetch(`${API_URL}/api/favoritos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ anuncio_id: anuncio.id }),
+        });
+      }
+    } catch {
+      setAnuncio((prev) => ({ ...prev, favoritado: jaFavoritado }));
+    }
   };
 
   // Abre (ou reaproveita) a conversa com o anunciante e vai para o chat
@@ -291,6 +321,14 @@ const Anuncio = () => {
               >
                 {abrindoChat ? 'Abrindo conversa...' : '💬 Conversar com o anunciante'}
               </button>
+              <button
+                type="button"
+                className={`btn-anuncio-favorito${anuncio.favoritado ? ' ativo' : ''}`}
+                onClick={alternarFavorito}
+              >
+                <IconHeart size={18} filled={anuncio.favoritado} />
+                {anuncio.favoritado ? 'Salvo nos favoritos' : 'Salvar nos favoritos'}
+              </button>
             </div>
 
             {erroAcao && <p className="anuncio-erro-pagamento">{erroAcao}</p>}
@@ -300,13 +338,13 @@ const Anuncio = () => {
               Combine a retirada pelo chat e nunca pague fora da plataforma.
             </p>
 
-            <div className="anuncio-vendedor">
+            <Link to={`/usuario/${anuncio.vendedor_id}`} className="anuncio-vendedor">
               <span className="vendedor-avatar">{vendedor[0]?.toUpperCase()}</span>
               <div>
                 <strong>{vendedor}</strong>
-                <p>Anunciante em {anuncio.bairro}</p>
+                <p>Anunciante em {anuncio.bairro} · Ver perfil</p>
               </div>
-            </div>
+            </Link>
 
             <button type="button" className="anuncio-denunciar" onClick={() => setDenunciando(true)}>
               🚩 Denunciar este anúncio

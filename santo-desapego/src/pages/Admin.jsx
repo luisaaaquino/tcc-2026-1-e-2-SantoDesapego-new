@@ -2,9 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Admin.css';
 import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
-import { IconUser, IconShield, IconTag, IconFlag, IconPlus } from '../componentes/Icones';
+import { IconUser, IconShield, IconTag, IconFlag, IconPlus, IconAlert } from '../componentes/Icones';
 
-const API_URL = 'http://localhost:8080';
+import { API_URL } from '../config';
 
 /* ── Ícones SVG ───────────────────────────────────────────── */
 const I = {
@@ -431,8 +431,8 @@ const SecaoUsuarios = ({ usuarioLogado }) => {
       await apiFetch(`/api/admin/usuarios/${usuario.id}/reativar`, { method: 'PUT' });
       setFeedback({ tipo: 'success', msg: `Conta de ${usuario.nome} reativada.` });
     } else if (tipo === 'excluir') {
-      await apiFetch(`/api/admin/usuarios/${usuario.id}`, { method: 'DELETE', body: JSON.stringify({ motivo }) });
-      setFeedback({ tipo: 'success', msg: `Conta de ${usuario.nome} excluída (LGPD).` });
+      const resultado = await apiFetch(`/api/admin/usuarios/${usuario.id}`, { method: 'DELETE', body: JSON.stringify({ motivo }) });
+      setFeedback({ tipo: 'success', msg: resultado.mensagem || `Conta de ${usuario.nome} excluída (LGPD).` });
     }
     setAcaoModal(null);
     carregar();
@@ -467,7 +467,21 @@ const SecaoUsuarios = ({ usuarioLogado }) => {
             <tbody>
               {usuarios.map((u) => (
                 <tr key={u.id}>
-                  <td>{u.nome} {u.sobrenome}</td>
+                  <td>
+                    {u.nome} {u.sobrenome}
+                    {u.termos_atualizados && (
+                      <span
+                        className="admin-termos-alerta"
+                        title={
+                          u.termos_aceitos_em
+                            ? `Termos desatualizados — aceitou a versão ${u.termos_versao} em ${dataHoraBR(u.termos_aceitos_em)}`
+                            : 'Nunca registrou o aceite dos Termos de Uso'
+                        }
+                      >
+                        <IconAlert size={13} />
+                      </span>
+                    )}
+                  </td>
                   <td>{u.email}</td>
                   <td>{u.bairro || '—'}</td>
                   <td><span className={`badge-status ${u.papel}`}>{u.papel === 'administrador' ? 'Admin' : 'Usuário'}</span></td>

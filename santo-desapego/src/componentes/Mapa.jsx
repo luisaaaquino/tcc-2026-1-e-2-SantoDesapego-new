@@ -4,8 +4,9 @@ import { Link } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './Mapa.css';
+import { API_URL as API_BASE } from '../config';
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = `${API_BASE}/api`;
 
 const CENTER_SANTO_AMARO = { lat: -23.6562, lng: -46.7191 };
 const CENTER = [CENTER_SANTO_AMARO.lat, CENTER_SANTO_AMARO.lng];

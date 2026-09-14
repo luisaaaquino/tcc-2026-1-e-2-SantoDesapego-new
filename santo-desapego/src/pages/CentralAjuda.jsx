@@ -4,7 +4,7 @@ import './CentralAjuda.css';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import SiteHeader from '../componentes/SiteHeader';
 
-const API_URL = 'http://localhost:8080';
+import { API_URL } from '../config';
 
 const ASSUNTO_LABEL = {
   duvida_conta: 'Dúvidas sobre minha conta',

@@ -6,10 +6,10 @@ import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
 import {
   IconUser, IconMail, IconLock, IconPin, IconPhone, IconHome, IconID,
   IconChevron, IconEye, IconCheck, IconAlert, IconShield, IconTag,
-  IconFlag, IconPlus, IconSearch,
+  IconFlag, IconPlus, IconSearch, IconHeart,
 } from '../componentes/Icones';
 
-const API_URL = 'http://localhost:8080';
+import { API_URL } from '../config';
 
 /* ── Ícones SVG ───────────────────────────────────────────── */
 const I = {
@@ -26,9 +26,10 @@ const I = {
 const BAIRROS = ['Santo Amaro Centro','Campo Belo','Brooklin','Granja Julieta','Jardim Marajoara','Vila Cruzeiro','Vila Mascote','Vila Sofia','Outro bairro'];
 
 const STATUS_ANUNCIO = {
-  ativo:   { label: 'Ativo',   cls: 'ativo' },
-  vendido: { label: 'Vendido', cls: 'vendido' },
-  pausado: { label: 'Pausado', cls: 'pausado' },
+  ativo:    { label: 'Ativo',    cls: 'ativo' },
+  vendido:  { label: 'Vendido',  cls: 'vendido' },
+  pausado:  { label: 'Pausado',  cls: 'pausado' },
+  expirado: { label: 'Expirado', cls: 'pausado' },
 };
 
 /* ── Utils ─────────────────────────────────────────────────── */
@@ -145,6 +146,10 @@ const Perfil = () => {
               onClick={() => setAba('anuncios')} role="tab">
               <IconTag /> Meus anúncios
             </button>
+            <button className={`perfil-tab${aba === 'favoritos' ? ' active' : ''}`}
+              onClick={() => setAba('favoritos')} role="tab">
+              <IconHeart size={16} /> Favoritos
+            </button>
             <button className={`perfil-tab${aba === 'compras' ? ' active' : ''}`}
               onClick={() => setAba('compras')} role="tab">
               <I.bag /> Compras realizadas
@@ -185,6 +190,7 @@ const Perfil = () => {
         <main className="perfil-content">
           {aba === 'painel'     && <SecaoPainel     usuario={usuario} estatisticas={estatisticas} />}
           {aba === 'anuncios'   && <SecaoAnuncios   />}
+          {aba === 'favoritos'  && <SecaoFavoritos  />}
           {aba === 'compras'    && <SecaoCompras    />}
           {aba === 'avaliacoes' && <SecaoAvaliacoes />}
           {aba === 'denuncias'  && <SecaoMinhasDenuncias />}
@@ -374,8 +380,9 @@ const SecaoPainel = ({ usuario, estatisticas }) => {
 const SecaoAnuncios = () => {
   const [anuncios, setAnuncios] = useState(null);
   const [carregando, setCarregando] = useState(true);
+  const [processando, setProcessando] = useState(null); // id do anúncio em ação
 
-  useEffect(() => {
+  const carregar = () => {
     fetch(`${API_URL}/api/usuario/anuncios`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('sd_token')}` },
     })
@@ -383,7 +390,44 @@ const SecaoAnuncios = () => {
       .then((data) => setAnuncios(data.anuncios || []))
       .catch(() => setAnuncios([]))
       .finally(() => setCarregando(false));
-  }, []);
+  };
+
+  useEffect(() => { carregar(); }, []);
+
+  // [RF12] Pausar / reativar / renovar / excluir o próprio anúncio
+  const executarAcao = async (e, anuncioId, acao) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (acao === 'excluir' && !window.confirm('Excluir este anúncio? Essa ação não pode ser desfeita.')) {
+      return;
+    }
+
+    setProcessando(anuncioId);
+    try {
+      const token = localStorage.getItem('sd_token');
+      const resposta = acao === 'excluir'
+        ? await fetch(`${API_URL}/api/anuncios/${anuncioId}`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` },
+          })
+        : await fetch(`${API_URL}/api/anuncios/${anuncioId}/${acao}`, {
+            method: 'PUT',
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+      const dados = await resposta.json();
+      if (!resposta.ok) {
+        alert(dados.erro || 'Não foi possível concluir a ação.');
+        return;
+      }
+      carregar();
+    } catch {
+      alert('Erro ao conectar com o servidor.');
+    } finally {
+      setProcessando(null);
+    }
+  };
 
   return (
     <>
@@ -409,6 +453,7 @@ const SecaoAnuncios = () => {
         <div className="lista-anuncios">
           {anuncios.map((a) => {
             const status = STATUS_ANUNCIO[a.status] || { label: a.status, cls: '' };
+            const emAcao = processando === a.id;
             return (
               <Link to={`/anuncio/${a.id}`} key={a.id} className="anuncio-card-perfil">
                 <div className="anuncio-card-perfil-img">
@@ -419,6 +464,35 @@ const SecaoAnuncios = () => {
                 <div className="anuncio-card-perfil-info">
                   <h3>{a.titulo}</h3>
                   <p>{a.categoria_nome} · publicado em {dataBR(a.data_criacao)}</p>
+                  {a.status !== 'vendido' && (
+                    <div className="anuncio-card-perfil-acoes">
+                      <Link to={`/anunciar/${a.id}`} className="btn-anuncio-mini" onClick={(e) => e.stopPropagation()}>
+                        Editar
+                      </Link>
+                      {a.status === 'ativo' && (
+                        <button type="button" className="btn-anuncio-mini" disabled={emAcao}
+                          onClick={(e) => executarAcao(e, a.id, 'pausar')}>
+                          Pausar
+                        </button>
+                      )}
+                      {a.status === 'pausado' && (
+                        <button type="button" className="btn-anuncio-mini" disabled={emAcao}
+                          onClick={(e) => executarAcao(e, a.id, 'reativar')}>
+                          Reativar
+                        </button>
+                      )}
+                      {a.status === 'expirado' && (
+                        <button type="button" className="btn-anuncio-mini" disabled={emAcao}
+                          onClick={(e) => executarAcao(e, a.id, 'renovar')}>
+                          Renovar
+                        </button>
+                      )}
+                      <button type="button" className="btn-anuncio-mini danger" disabled={emAcao}
+                        onClick={(e) => executarAcao(e, a.id, 'excluir')}>
+                        Excluir
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div className="anuncio-card-perfil-meta">
                   <span className={`status-badge ${status.cls}`}>{status.label}</span>
@@ -427,6 +501,91 @@ const SecaoAnuncios = () => {
               </Link>
             );
           })}
+        </div>
+      )}
+    </>
+  );
+};
+
+/* ════════════════════════════════════════════════════════════
+   FAVORITOS — itens salvos pelo comprador [RF10]
+   ════════════════════════════════════════════════════════════ */
+const SecaoFavoritos = () => {
+  const [favoritos, setFavoritos] = useState(null);
+  const [carregando, setCarregando] = useState(true);
+
+  const carregar = () => {
+    fetch(`${API_URL}/api/favoritos`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('sd_token')}` },
+    })
+      .then((r) => r.json())
+      .then((data) => setFavoritos(data.favoritos || []))
+      .catch(() => setFavoritos([]))
+      .finally(() => setCarregando(false));
+  };
+
+  useEffect(() => { carregar(); }, []);
+
+  const remover = async (e, anuncioId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setFavoritos((prev) => prev.filter((f) => f.id !== anuncioId));
+    try {
+      await fetch(`${API_URL}/api/favoritos/${anuncioId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${localStorage.getItem('sd_token')}` },
+      });
+    } catch {
+      carregar(); // Se a chamada falhar, recarrega pra não ficar com estado inconsistente
+    }
+  };
+
+  return (
+    <>
+      <div className="perfil-section-head">
+        <h1>Meus <em>favoritos</em></h1>
+        <p>Anúncios que você salvou pra ver com calma depois.</p>
+      </div>
+
+      {carregando && <p className="perfil-loading">Carregando favoritos...</p>}
+
+      {!carregando && favoritos?.length === 0 && (
+        <div className="painel-empty">
+          <div className="painel-empty-icon"><IconHeart size={40} /></div>
+          <h4>Você ainda não salvou nenhum anúncio</h4>
+          <p>Toque no coração de um anúncio no Explorar pra guardar aqui.</p>
+          <Link to="/explorar" className="painel-cta-btn painel-empty-btn">
+            <IconSearch /> Explorar desapegos
+          </Link>
+        </div>
+      )}
+
+      {!carregando && favoritos?.length > 0 && (
+        <div className="lista-anuncios">
+          {favoritos.map((f) => (
+            <Link to={`/anuncio/${f.id}`} key={f.id} className="anuncio-card-perfil">
+              <div className="anuncio-card-perfil-img">
+                {f.imagem_principal
+                  ? <img src={f.imagem_principal} alt={f.titulo} />
+                  : <span>📦</span>}
+              </div>
+              <div className="anuncio-card-perfil-info">
+                <h3>{f.titulo}</h3>
+                <p>{f.categoria_nome} · {f.bairro}</p>
+              </div>
+              <div className="anuncio-card-perfil-meta">
+                <strong>{brl(f.preco)}</strong>
+                <button
+                  type="button"
+                  className="btn-favorito-remover"
+                  onClick={(e) => remover(e, f.id)}
+                  aria-label="Remover dos favoritos"
+                >
+                  <IconHeart size={16} filled />
+                </button>
+              </div>
+            </Link>
+          ))}
         </div>
       )}
     </>
@@ -1204,18 +1363,48 @@ const SecaoLGPD = ({ usuario }) => {
   const [excluindo, setExcluindo] = useState(false);
   const [erroExcluir, setErroExcluir] = useState('');
 
-  const exportarDados = async () => {
-    setExportando(true);
+  // [RF03] Aceite de termos — versão + data/hora do aceite
+  const [termos, setTermos] = useState({
+    versao: usuario.termos_versao,
+    aceitosEm: usuario.termos_aceitos_em,
+    atualizados: usuario.termos_atualizados,
+  });
+  const [aceitando, setAceitando] = useState(false);
+
+  const reaceitarTermos = async () => {
+    setAceitando(true);
     try {
-      const resposta = await fetch(`${API_URL}/api/usuario/exportar`, {
+      const resposta = await fetch(`${API_URL}/api/usuario/aceitar-termos`, {
+        method: 'PUT',
         headers: { Authorization: `Bearer ${localStorage.getItem('sd_token')}` },
       });
       const dados = await resposta.json();
-      const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+      if (resposta.ok) {
+        setTermos({ versao: dados.termos_versao, aceitosEm: dados.termos_aceitos_em, atualizados: false });
+      } else {
+        alert(dados.erro || 'Erro ao registrar aceite dos termos.');
+      }
+    } catch {
+      alert('Erro ao conectar com o servidor.');
+    } finally {
+      setAceitando(false);
+    }
+  };
+
+  const exportarDados = async (formato) => {
+    setExportando(formato);
+    try {
+      const resposta = await fetch(`${API_URL}/api/usuario/exportar?formato=${formato}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('sd_token')}` },
+      });
+      const conteudo = formato === 'csv'
+        ? await resposta.text()
+        : JSON.stringify(await resposta.json(), null, 2);
+      const blob = new Blob([conteudo], { type: formato === 'csv' ? 'text/csv' : 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `santo-desapego-meus-dados-${Date.now()}.json`;
+      link.download = `santo-desapego-meus-dados-${Date.now()}.${formato}`;
       link.click();
       URL.revokeObjectURL(url);
     } catch {
@@ -1250,7 +1439,7 @@ const SecaoLGPD = ({ usuario }) => {
       }
       localStorage.removeItem('sd_token');
       localStorage.removeItem('sd_usuario');
-      alert('Sua conta foi excluída. Sentiremos sua falta!');
+      alert(dados.mensagem || 'Sua conta foi excluída. Sentiremos sua falta!');
       navigate('/');
     } catch {
       setErroExcluir('Erro ao conectar com o servidor.');
@@ -1273,10 +1462,41 @@ const SecaoLGPD = ({ usuario }) => {
             Faça o download de todos os dados pessoais que mantemos sobre você em formato JSON.
             Direito garantido pelo art. 18, II da LGPD.
           </p>
-          <button className="btn-perfil-secondary" onClick={exportarDados} disabled={exportando}>
-            {exportando ? 'Gerando arquivo...' : 'Baixar meus dados (.json)'}
-          </button>
+          <div className="lgpd-export-btns">
+            <button className="btn-perfil-secondary" onClick={() => exportarDados('json')} disabled={!!exportando}>
+              {exportando === 'json' ? 'Gerando arquivo...' : 'Baixar meus dados (.json)'}
+            </button>
+            <button className="btn-perfil-secondary" onClick={() => exportarDados('csv')} disabled={!!exportando}>
+              {exportando === 'csv' ? 'Gerando arquivo...' : 'Baixar meus dados (.csv)'}
+            </button>
+          </div>
           <small>Os dados incluem nome, e-mail, CPF, telefone, endereço e preferências.</small>
+        </div>
+      </div>
+
+      <div className={`lgpd-card${termos.atualizados ? ' danger' : ' info'}`}>
+        <div className="lgpd-card-icon"><IconCheck /></div>
+        <div className="lgpd-card-body">
+          <h3>Termos de Uso e Política de Privacidade</h3>
+          {termos.aceitosEm ? (
+            <p>
+              Você aceitou a versão <strong>{termos.versao}</strong> em{' '}
+              <strong>{new Date(termos.aceitosEm).toLocaleString('pt-BR')}</strong>.
+            </p>
+          ) : (
+            <p>Ainda não encontramos o registro do seu aceite.</p>
+          )}
+          {termos.atualizados && (
+            <>
+              <p>
+                Atualizamos os Termos de Uso / Política de Privacidade desde o seu último aceite.
+                Para continuar usando a plataforma normalmente, reaceite a versão vigente.
+              </p>
+              <button className="btn-perfil-secondary" onClick={reaceitarTermos} disabled={aceitando}>
+                {aceitando ? 'Registrando...' : 'Reaceitar termos vigentes'}
+              </button>
+            </>
+          )}
         </div>
       </div>
 

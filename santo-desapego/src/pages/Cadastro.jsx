@@ -14,7 +14,7 @@ const cepDentroDeSantoAmaro = (cepNumeros) => {
   return prefixo >= 4600 && prefixo <= 4799;
 };
 
-const API_URL = 'http://localhost:8080';
+import { API_URL } from '../config';
 
 // ============================================================
 //  Validação real de CPF — checa os 2 dígitos verificadores

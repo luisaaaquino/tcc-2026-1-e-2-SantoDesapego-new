@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './NotificacoesSino.css';
 
-const API_URL = 'http://localhost:8080';
+import { API_URL } from '../config';
 const INTERVALO = 20000; // 20s
 
 const ICONE_TIPO = {

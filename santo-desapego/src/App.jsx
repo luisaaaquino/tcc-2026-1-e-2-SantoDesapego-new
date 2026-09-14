@@ -3,6 +3,7 @@ import Home             from './pages/Home';
 import Login            from './pages/Login';
 import Cadastro         from './pages/Cadastro';
 import Perfil           from './pages/Perfil';
+import PerfilPublico    from './pages/PerfilPublico';
 import Anunciar         from './pages/Anunciar';
 import Explorar         from './pages/Explorar';
 import Sobre            from './pages/Sobre';
@@ -23,7 +24,9 @@ function App() {
         <Route path="/login"             element={<Login />}            />
         <Route path="/cadastro"          element={<Cadastro />}         />
         <Route path="/perfil"            element={<Perfil />}           />
+        <Route path="/usuario/:id"       element={<PerfilPublico />}    />
         <Route path="/anunciar"          element={<Anunciar />}         />
+        <Route path="/anunciar/:id"      element={<Anunciar />}         />
         <Route path="/explorar"          element={<Explorar />}         />
         <Route path="/sobre"             element={<Sobre />}            />
         <Route path="/anuncio/:id"       element={<Anuncio />}          />

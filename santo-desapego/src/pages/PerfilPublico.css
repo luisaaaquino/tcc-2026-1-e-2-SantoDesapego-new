@@ -1,0 +1,115 @@
+.perfilpub-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--cream);
+}
+
+.perfilpub-estado {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  padding: 4rem 1rem;
+  text-align: center;
+  color: var(--ink-soft);
+}
+.perfilpub-estado .btn-dark { width: auto; padding-inline: 2rem; }
+
+.perfilpub-container {
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2.5rem 2rem 4rem;
+}
+
+.perfilpub-card {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.perfilpub-avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: var(--terracotta);
+  color: var(--cream);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2.2rem;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.perfilpub-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.perfilpub-info h1 {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0.2rem;
+}
+
+.perfilpub-membro {
+  font-size: 0.88rem;
+  color: var(--ink-muted);
+  margin-bottom: 0.9rem;
+}
+
+.perfilpub-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.8rem;
+}
+.perfilpub-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.perfilpub-stat-num {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--ink);
+}
+.perfilpub-stat-texto {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+/* ── Estrelas ── */
+.estrelas-display { display: flex; gap: 2px; }
+.estrelas-display span { color: var(--border); }
+.estrelas-display span.cheia { color: #E4A020; }
+
+.perfilpub-secao-titulo {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 1.2rem;
+}
+
+.perfilpub-sem-anuncios {
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+  padding: 2rem 0;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .perfilpub-container { padding: 1.5rem 1rem 3rem; }
+  .perfilpub-card { flex-direction: column; text-align: center; padding: 1.5rem; }
+  .perfilpub-stats { justify-content: center; }
+}

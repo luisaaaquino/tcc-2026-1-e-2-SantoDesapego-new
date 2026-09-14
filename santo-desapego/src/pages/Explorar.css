@@ -66,6 +66,11 @@
   font-size: 0.88rem;
   color: var(--ink-soft);
 }
+.explorar-sort-aviso {
+  font-size: 0.78rem;
+  color: var(--terracotta);
+  font-style: italic;
+}
 .explorar-sort select {
   padding: 0.5rem 2rem 0.5rem 0.75rem;
   border: 1.5px solid var(--border);
@@ -374,6 +379,23 @@
   white-space: nowrap;
 }
 
+.ecard-favorito {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  background: rgba(251, 248, 241, 0.9);
+  border-radius: 50%;
+  color: var(--ink-soft);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  transition: transform 0.15s, color 0.15s;
+}
+.ecard-favorito:hover { transform: scale(1.1); color: var(--terracotta); }
+.ecard-favorito.ativo { color: var(--terracotta); }
+
 .ecard-info {
   display: flex;
   flex-direction: column;
@@ -404,6 +426,7 @@
   color: var(--ink-muted);
   margin-bottom: 0.75rem;
 }
+.ecard-distancia { color: var(--forest); font-weight: 600; }
 .ecard-meta {
   display: flex;
   align-items: center;

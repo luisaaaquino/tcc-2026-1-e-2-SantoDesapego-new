@@ -378,6 +378,28 @@
   text-overflow: ellipsis;
 }
 .anuncio-card-perfil-info p { font-size: 0.78rem; color: var(--ink-muted); }
+.anuncio-card-perfil-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.55rem;
+}
+.btn-anuncio-mini {
+  background: var(--paper);
+  color: var(--ink-soft);
+  border: 1.3px solid var(--border);
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.btn-anuncio-mini:hover { border-color: var(--ink); color: var(--ink); }
+.btn-anuncio-mini:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-anuncio-mini.danger { color: var(--terracotta); }
+.btn-anuncio-mini.danger:hover { border-color: var(--terracotta); background: rgba(193, 75, 53, 0.06); }
 .anuncio-card-perfil-meta {
   display: flex;
   flex-direction: column;
@@ -386,6 +408,12 @@
   flex-shrink: 0;
 }
 .anuncio-card-perfil-meta strong { font-family: var(--font-display); font-size: 1rem; color: var(--ink); }
+.btn-favorito-remover {
+  color: var(--terracotta);
+  padding: 0.2rem;
+  transition: transform 0.15s;
+}
+.btn-favorito-remover:hover { transform: scale(1.15); }
 
 .status-badge {
   font-size: 0.7rem;
@@ -855,6 +883,11 @@
   color: var(--ink-soft);
   line-height: 1.5;
   margin-bottom: 0.85rem;
+}
+.lgpd-export-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
 }
 .lgpd-card-body small {
   display: block;

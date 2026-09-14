@@ -4,7 +4,7 @@ import './Checkout.css';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
 
-const API_URL = 'http://localhost:8080';
+import { API_URL } from '../config';
 
 const brl = (v) =>
   Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });

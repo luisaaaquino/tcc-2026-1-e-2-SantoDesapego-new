@@ -17,13 +17,16 @@ CREATE TABLE usuarios (
   bairro             VARCHAR(100),
   cpf                CHAR(11)      NOT NULL UNIQUE,
   aceita_termos      BOOLEAN       NOT NULL DEFAULT FALSE,
+  termos_versao      VARCHAR(20),
+  termos_aceitos_em  TIMESTAMP,
   recebe_newsletter  BOOLEAN       DEFAULT FALSE,
   foto_perfil        TEXT,
   data_cadastro      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
   papel              VARCHAR(20)   NOT NULL DEFAULT 'usuario' CHECK (papel IN ('usuario','administrador')),
   status_conta       VARCHAR(20)   NOT NULL DEFAULT 'ativa' CHECK (status_conta IN ('ativa','suspensa')),
   reset_senha_token  VARCHAR(255),
-  reset_senha_expira TIMESTAMP
+  reset_senha_expira TIMESTAMP,
+  anonimizada_em     TIMESTAMP
 );
 
 CREATE TABLE categorias (
@@ -166,6 +169,14 @@ CREATE TABLE mensagens_suporte (
   respondida_em  TIMESTAMP
 );
 
+CREATE TABLE favoritos (
+  id          SERIAL PRIMARY KEY,
+  usuario_id  INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  anuncio_id  INTEGER NOT NULL REFERENCES anuncios(id) ON DELETE CASCADE,
+  criado_em   TIMESTAMP NOT NULL DEFAULT NOW(),
+  UNIQUE (usuario_id, anuncio_id)
+);
+
 CREATE INDEX idx_usuarios_papel       ON usuarios(papel);
 CREATE INDEX idx_anuncios_status      ON anuncios(status);
 CREATE INDEX idx_anuncios_categoria   ON anuncios(categoria_id);
@@ -189,6 +200,8 @@ CREATE INDEX idx_suporte_status       ON mensagens_suporte(status, criada_em DES
 CREATE INDEX idx_suporte_usuario      ON mensagens_suporte(usuario_id, criada_em DESC);
 CREATE INDEX idx_notificacoes_usuario ON notificacoes(usuario_id, criada_em DESC);
 CREATE INDEX idx_notificacoes_nao_lidas ON notificacoes(usuario_id) WHERE lida = FALSE;
+CREATE INDEX idx_favoritos_usuario    ON favoritos(usuario_id, criado_em DESC);
+CREATE INDEX idx_favoritos_anuncio    ON favoritos(anuncio_id);
 
 -- ============================================================
 -- Categorias iniciais (necessárias para publicar anúncios)

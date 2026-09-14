@@ -6,9 +6,11 @@ import NotificacoesSino from '../componentes/NotificacoesSino';
 import {
   IconSearch, IconLogout, IconGrid, IconSofa, IconLaptop, IconShirt,
   IconBaby, IconBook, IconBike, IconPalette, IconWrench, IconHanger, IconMore,
+  IconHeart,
 } from '../componentes/Icones';
+import { API_URL as API_BASE } from '../config';
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = `${API_BASE}/api`;
 
 /* ── Condição do produto — emoji + rótulo legível ─────────── */
 const ESTADO_LABEL = {
@@ -138,7 +140,10 @@ const Explorar = () => {
       const buscaUrl = searchParams.get('busca');
       if (buscaUrl) params.append('busca', buscaUrl);
 
-      const res = await fetch(`${API_URL}/anuncios?${params}`);
+      const token = localStorage.getItem('sd_token');
+      const res = await fetch(`${API_URL}/anuncios?${params}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       const data = await res.json();
 
       // Se uma busca mais nova já foi disparada enquanto esta esperava a
@@ -162,6 +167,35 @@ const Explorar = () => {
     const novoLimite = limite + 12;
     setLimite(novoLimite);
     buscarAnuncios(novoLimite);
+  };
+
+  // [RF10] Favorita/desfavorita direto no card, sem sair da listagem
+  const alternarFavorito = async (e, anuncio) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const token = localStorage.getItem('sd_token');
+    if (!token) { navigate('/login'); return; }
+
+    const jaFavoritado = anuncio.favoritado;
+    setAnuncios((prev) => prev.map((a) => (a.id === anuncio.id ? { ...a, favoritado: !jaFavoritado } : a)));
+
+    try {
+      if (jaFavoritado) {
+        await fetch(`${API_URL}/favoritos/${anuncio.id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        await fetch(`${API_URL}/favoritos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ anuncio_id: anuncio.id }),
+        });
+      }
+    } catch {
+      // Reverte a marcação otimista se a chamada falhar
+      setAnuncios((prev) => prev.map((a) => (a.id === anuncio.id ? { ...a, favoritado: jaFavoritado } : a)));
+    }
   };
 
   const handleLogout = () => {
@@ -334,9 +368,13 @@ const Explorar = () => {
               <span>Ordenar por:</span>
               <select value={ordenacao} onChange={(e) => setOrdenacao(e.target.value)}>
                 <option value="recentes">Mais recentes</option>
+                <option value="distancia">Mais próximos</option>
                 <option value="preco-menor">Menor preço</option>
                 <option value="preco-maior">Maior preço</option>
               </select>
+              {ordenacao === 'distancia' && !usuario && (
+                <span className="explorar-sort-aviso">Faça login pra ver os mais próximos do seu bairro</span>
+              )}
             </div>
           </div>
 
@@ -467,11 +505,24 @@ const Explorar = () => {
                         {anuncio.aceita_troca && (
                           <span className="ecard-badge">🔄 Aceita troca</span>
                         )}
+                        <button
+                          type="button"
+                          className={`ecard-favorito${anuncio.favoritado ? ' ativo' : ''}`}
+                          onClick={(e) => alternarFavorito(e, anuncio)}
+                          aria-label={anuncio.favoritado ? 'Remover dos favoritos' : 'Salvar nos favoritos'}
+                        >
+                          <IconHeart size={17} filled={anuncio.favoritado} />
+                        </button>
                       </div>
                       <div className="ecard-info">
                         <h3 className="ecard-titulo">{anuncio.titulo}</h3>
                         <p className="ecard-preco">{formatarPreco(anuncio.preco)}</p>
-                        <p className="ecard-local">📍 {anuncio.bairro || 'Santo Amaro'}</p>
+                        <p className="ecard-local">
+                          📍 {anuncio.bairro || 'Santo Amaro'}
+                          {typeof anuncio.distancia_km === 'number' && (
+                            <span className="ecard-distancia"> · {anuncio.distancia_km < 1 ? 'menos de 1 km' : `${anuncio.distancia_km.toFixed(1)} km`}</span>
+                          )}
+                        </p>
                         <div className="ecard-meta">
                           <span className="ecard-condicao">{estado.emoji} {estado.label}</span>
                           <span className="ecard-tempo">{tempoRelativo(anuncio.data_criacao)}</span>

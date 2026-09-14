@@ -212,6 +212,25 @@
 }
 .btn-anuncio-proposta:hover { border-color: var(--ink); background: var(--cream-soft); }
 
+.btn-anuncio-favorito {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: var(--ink-soft);
+  border: 1.5px solid var(--border);
+  padding: 0.7rem 1.75rem;
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s, color 0.18s;
+}
+.btn-anuncio-favorito:hover { border-color: var(--terracotta); color: var(--terracotta); }
+.btn-anuncio-favorito.ativo { border-color: var(--terracotta); color: var(--terracotta); background: rgba(193, 75, 53, 0.06); }
+
 .anuncio-nota {
   font-size: 0.8rem;
   line-height: 1.5;

@@ -4,7 +4,7 @@ import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 import './Login.css';
 import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
 
-const API_URL = 'http://localhost:8080';
+import { API_URL } from '../config';
 
 const GOOGLE_CLIENT_ID = '113184048014-ramhhojnofdd511oh1nl3h2ibono7581.apps.googleusercontent.com';
 

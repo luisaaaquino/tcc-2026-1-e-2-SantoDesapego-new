@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import './Login.css';
 import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
 
-const API_URL = 'http://localhost:8080';
+import { API_URL } from '../config';
 
 const EsqueciSenha = () => {
   const [email, setEmail] = useState('');

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import './CompraRealizada.css';
 
-const API_URL = 'http://localhost:8080';
+import { API_URL } from '../config';
 
 const brl = (v) =>
   Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
