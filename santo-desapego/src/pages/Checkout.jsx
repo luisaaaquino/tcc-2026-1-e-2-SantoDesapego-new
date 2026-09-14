@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import './Checkout.css';
 import NotificacoesSino from '../componentes/NotificacoesSino';
+import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
 
 const API_URL = 'http://localhost:8080';
 
@@ -84,21 +85,10 @@ const Checkout = () => {
   };
 
   const Header = () => (
-    <header className="site-header">
-      <div className="nav-top">
-        <Link to="/" className="logo">
-          <span className="logo-mark">SD</span>
-          Santo <em>Desapego</em>
-        </Link>
-        <nav className="nav-actions">
-          <NotificacoesSino />
-          <Link to={`/anuncio/${id}`} className="nav-btn">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            Voltar para o anúncio
-          </Link>
-        </nav>
-      </div>
-    </header>
+    <SiteHeader>
+      <NotificacoesSino />
+      <NavBackButton to={`/anuncio/${id}`}>Voltar para o anúncio</NavBackButton>
+    </SiteHeader>
   );
 
   if (carregando) {

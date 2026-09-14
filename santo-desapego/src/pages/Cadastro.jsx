@@ -2,6 +2,11 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Cadastro.css';
 import { BAIRROS } from '../componentes/SeletorBairro';
+import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
+import {
+  IconUser, IconMail, IconLock, IconPin, IconPhone, IconHome, IconID,
+  IconChevron, IconEye, IconCheck, IconAlert, IconArrowRight,
+} from '../componentes/Icones';
 
 // RN01 — mesma faixa de CEP de Santo Amaro validada no back-end
 const cepDentroDeSantoAmaro = (cepNumeros) => {
@@ -264,20 +269,6 @@ const Cadastro = () => {
   const segClass = (i) => `strength-seg${i < passwordStrength.score ? ' ' + passwordStrength.cls : ''}`;
 
   /* ── Ícones reutilizáveis ── */
-  const IconUser  = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
-  const IconMail  = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>;
-  const IconLock  = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
-  const IconPin   = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
-  const IconPhone = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1.2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.8a16 16 0 0 0 6.29 6.29l.96-.96a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>;
-  const IconHome  = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
-  const IconID    = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="14" x="3" y="5" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M14 9h4M14 13h4M6.5 17.5c0-1 1-2 2.5-2s2.5 1 2.5 2"/></svg>;
-  const IconChevron = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>;
-  const IconEye   = (open) => open
-    ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-    : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>;
-  const IconCheck = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>;
-  const IconAlert = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>;
-  const IconArrow = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>;
 
   return (
     <div className="cadastro-wrapper">
@@ -286,20 +277,9 @@ const Cadastro = () => {
         🎉 <strong>Novo!</strong> Cadastro gratuito — Anuncie seu primeiro item em menos de 2 minutos
       </div>
 
-      <header className="site-header">
-        <div className="nav-top">
-          <Link to="/" className="logo">
-            <span className="logo-mark">SD</span>
-            Santo <em>Desapego</em>
-          </Link>
-          <nav className="nav-actions">
-            <Link to="/" className="nav-btn">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-              Voltar para a home
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <SiteHeader>
+        <NavBackButton to="/">Voltar para a home</NavBackButton>
+      </SiteHeader>
 
       <div className="cadastro-page">
 
@@ -345,7 +325,7 @@ const Cadastro = () => {
               <h2>Bem-vinda ao <em>vizinhado</em>!</h2>
               <p>Sua conta foi criada com sucesso. Agora é só fazer login.</p>
               <Link to="/login" className="btn-success">
-                Fazer login agora <IconArrow />
+                Fazer login agora <IconArrowRight />
               </Link>
             </div>
           ) : (
@@ -586,7 +566,7 @@ const Cadastro = () => {
                 </div>
 
                 <button type="submit" className="btn-dark btn-submit" disabled={loading}>
-                  {loading ? 'Criando sua conta...' : <> Criar minha conta grátis <IconArrow /> </>}
+                  {loading ? 'Criando sua conta...' : <> Criar minha conta grátis <IconArrowRight /> </>}
                 </button>
               </form>
 

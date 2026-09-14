@@ -2,38 +2,25 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Perfil.css';
 import NotificacoesSino from '../componentes/NotificacoesSino';
+import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
+import {
+  IconUser, IconMail, IconLock, IconPin, IconPhone, IconHome, IconID,
+  IconChevron, IconEye, IconCheck, IconAlert, IconShield, IconTag,
+  IconFlag, IconPlus, IconSearch,
+} from '../componentes/Icones';
 
 const API_URL = 'http://localhost:8080';
 
 /* ── Ícones SVG ───────────────────────────────────────────── */
 const I = {
-  user:    () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
-  mail:    () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>,
-  lock:    () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
-  pin:     () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>,
-  phone:   () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1.2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.8a16 16 0 0 0 6.29 6.29l.96-.96a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>,
-  home:    () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
-  id:      () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="14" x="3" y="5" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M14 9h4M14 13h4M6.5 17.5c0-1 1-2 2.5-2s2.5 1 2.5 2"/></svg>,
-  shield:  () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
   data:    () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>,
   layout:  () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M3 9h18"/></svg>,
-  tag:     () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>,
   bag:     () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>,
   star:    () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
   message: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
-  flag:    () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>,
   camera:  () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>,
   download: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
   trash:   () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
-  plus:    () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
-  search:  () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>,
-  check:   () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>,
-  alert:   () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
-  arrow:   () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>,
-  arrowR:  () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>,
-  eye:     (open) => open
-    ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-    : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>,
 };
 
 const BAIRROS = ['Santo Amaro Centro','Campo Belo','Brooklin','Granja Julieta','Jardim Marajoara','Vila Cruzeiro','Vila Mascote','Vila Sofia','Outro bairro'];
@@ -131,21 +118,10 @@ const Perfil = () => {
         🌱 Cuidando dos seus dados — Esta página está em conformidade com a LGPD
       </div>
 
-      <header className="site-header">
-        <div className="nav-top">
-          <Link to="/" className="logo">
-            <span className="logo-mark">SD</span>
-            Santo <em>Desapego</em>
-          </Link>
-          <nav className="nav-actions">
-            <NotificacoesSino />
-            <Link to="/" className="nav-btn">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-              Voltar para a home
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <SiteHeader>
+        <NotificacoesSino />
+        <NavBackButton to="/">Voltar para a home</NavBackButton>
+      </SiteHeader>
 
       <div className="perfil-layout">
 
@@ -155,7 +131,7 @@ const Perfil = () => {
             <AvatarUpload usuario={usuario} setUsuario={setUsuario} />
             <h3>{usuario.nome} {usuario.sobrenome}</h3>
             <span className="user-meta">
-              <I.pin />
+              <IconPin />
               {usuario.bairro || 'Bairro não informado'}
             </span>
           </div>
@@ -167,7 +143,7 @@ const Perfil = () => {
             </button>
             <button className={`perfil-tab${aba === 'anuncios' ? ' active' : ''}`}
               onClick={() => setAba('anuncios')} role="tab">
-              <I.tag /> Meus anúncios
+              <IconTag /> Meus anúncios
             </button>
             <button className={`perfil-tab${aba === 'compras' ? ' active' : ''}`}
               onClick={() => setAba('compras')} role="tab">
@@ -179,19 +155,19 @@ const Perfil = () => {
             </button>
             <button className={`perfil-tab${aba === 'denuncias' ? ' active' : ''}`}
               onClick={() => setAba('denuncias')} role="tab">
-              <I.flag /> Minhas denúncias
+              <IconFlag /> Minhas denúncias
             </button>
             <button className={`perfil-tab${aba === 'dados' ? ' active' : ''}`}
               onClick={() => setAba('dados')} role="tab">
-              <I.user /> Dados pessoais
+              <IconUser /> Dados pessoais
             </button>
             <button className={`perfil-tab${aba === 'endereco' ? ' active' : ''}`}
               onClick={() => setAba('endereco')} role="tab">
-              <I.pin /> Endereço
+              <IconPin /> Endereço
             </button>
             <button className={`perfil-tab${aba === 'seguranca' ? ' active' : ''}`}
               onClick={() => setAba('seguranca')} role="tab">
-              <I.shield /> Segurança
+              <IconShield /> Segurança
             </button>
             <button className={`perfil-tab danger${aba === 'lgpd' ? ' active' : ''}`}
               onClick={() => setAba('lgpd')} role="tab">
@@ -199,7 +175,7 @@ const Perfil = () => {
             </button>
             {usuario.papel === 'administrador' && (
               <Link to="/admin" className="perfil-tab">
-                <I.shield /> Painel administrativo
+                <IconShield /> Painel administrativo
               </Link>
             )}
           </nav>
@@ -336,7 +312,7 @@ const SecaoPainel = ({ usuario, estatisticas }) => {
       {/* Estatísticas em cards */}
       <div className="painel-stats">
         <div className="painel-stat">
-          <div className="painel-stat-icon terracotta"><I.tag /></div>
+          <div className="painel-stat-icon terracotta"><IconTag /></div>
           <div className="painel-stat-num">{e.anuncios_ativos ?? 0}</div>
           <div className="painel-stat-label">Anúncios ativos</div>
         </div>
@@ -364,11 +340,11 @@ const SecaoPainel = ({ usuario, estatisticas }) => {
       {/* CTAs — vendedor e comprador */}
       <div className="painel-cta-grid">
         <div className="painel-cta sell">
-          <div className="painel-cta-icon"><I.tag /></div>
+          <div className="painel-cta-icon"><IconTag /></div>
           <h3>Quer anunciar algo?</h3>
           <p>Transforme o que você não usa em renda extra. Vizinhos do bairro estão à procura.</p>
           <Link to="/anunciar" className="painel-cta-btn">
-            <I.plus /> Criar anúncio
+            <IconPlus /> Criar anúncio
           </Link>
         </div>
 
@@ -377,7 +353,7 @@ const SecaoPainel = ({ usuario, estatisticas }) => {
           <h3>Procurando algo?</h3>
           <p>Descubra desapegos perto de você. Tudo a poucos minutos de casa.</p>
           <Link to="/" className="painel-cta-btn">
-            <I.search /> Explorar desapegos
+            <IconSearch size={16} /> Explorar desapegos
           </Link>
         </div>
       </div>
@@ -424,7 +400,7 @@ const SecaoAnuncios = () => {
           <h4>Você ainda não publicou nenhum anúncio</h4>
           <p>Que tal transformar o que você não usa mais em renda extra?</p>
           <Link to="/anunciar" className="painel-cta-btn painel-empty-btn">
-            <I.plus /> Criar anúncio
+            <IconPlus /> Criar anúncio
           </Link>
         </div>
       )}
@@ -527,7 +503,7 @@ const FormAvaliar = ({ compra, aoEnviar, aoCancelar }) => {
         maxLength={500}
         onChange={(e) => setComentario(e.target.value)}
       />
-      {erro && <span className="avaliar-erro"><I.alert /> {erro}</span>}
+      {erro && <span className="avaliar-erro"><IconAlert /> {erro}</span>}
       <div className="avaliar-form-acoes">
         <button type="button" className="btn-perfil-primary" onClick={enviar} disabled={enviando}>
           {enviando ? 'Enviando...' : 'Enviar avaliação'}
@@ -580,7 +556,7 @@ const SecaoCompras = () => {
           <h4>Você ainda não fez nenhuma compra</h4>
           <p>Quando você comprar algo, o histórico aparece aqui.</p>
           <Link to="/explorar" className="painel-cta-btn painel-empty-btn">
-            <I.search /> Explorar desapegos
+            <IconSearch size={16} /> Explorar desapegos
           </Link>
         </div>
       )}
@@ -600,7 +576,7 @@ const SecaoCompras = () => {
                 <strong>{brl(c.preco)}</strong>
 
                 {c.ja_avaliei ? (
-                  <span className="avaliei-badge"><I.check /> Você avaliou esta compra</span>
+                  <span className="avaliei-badge"><IconCheck /> Você avaliou esta compra</span>
                 ) : abrirAvaliar === c.id ? (
                   <FormAvaliar
                     compra={c}
@@ -848,7 +824,7 @@ const SecaoDados = ({ usuario, setUsuario }) => {
 
       {feedback && (
         <div className={`perfil-alert ${feedback.tipo}`}>
-          {feedback.tipo === 'success' ? <I.check /> : <I.alert />}
+          {feedback.tipo === 'success' ? <IconCheck /> : <IconAlert />}
           {feedback.msg}
         </div>
       )}
@@ -858,7 +834,7 @@ const SecaoDados = ({ usuario, setUsuario }) => {
           <div className="perfil-field">
             <label className="perfil-field-label">Nome <span className="required">*</span></label>
             <div className="perfil-input-wrap">
-              <I.user />
+              <IconUser />
               <input className="perfil-input" type="text" value={form.nome}
                 onChange={(e) => setForm({ ...form, nome: e.target.value })} required />
             </div>
@@ -866,7 +842,7 @@ const SecaoDados = ({ usuario, setUsuario }) => {
           <div className="perfil-field">
             <label className="perfil-field-label">Sobrenome <span className="required">*</span></label>
             <div className="perfil-input-wrap">
-              <I.user />
+              <IconUser />
               <input className="perfil-input" type="text" value={form.sobrenome}
                 onChange={(e) => setForm({ ...form, sobrenome: e.target.value })} required />
             </div>
@@ -876,10 +852,10 @@ const SecaoDados = ({ usuario, setUsuario }) => {
         <div className="perfil-form-row">
           <div className="perfil-field">
             <label className="perfil-field-label">
-              CPF <span className="lock-badge"><I.lock /> não editável</span>
+              CPF <span className="lock-badge"><IconLock /> não editável</span>
             </label>
             <div className="perfil-input-wrap">
-              <I.id />
+              <IconID />
               <input className="perfil-input locked" type="text"
                 value={maskCPF(usuario.cpf)} disabled readOnly />
             </div>
@@ -891,7 +867,7 @@ const SecaoDados = ({ usuario, setUsuario }) => {
           <div className="perfil-field">
             <label className="perfil-field-label">Telefone / WhatsApp</label>
             <div className="perfil-input-wrap">
-              <I.phone />
+              <IconPhone />
               <input className="perfil-input" type="tel" placeholder="(11) 99999-9999"
                 value={form.telefone}
                 onChange={(e) => formatPhone(e.target.value)} />
@@ -901,10 +877,10 @@ const SecaoDados = ({ usuario, setUsuario }) => {
 
         <div className="perfil-field">
           <label className="perfil-field-label">
-            E-mail <span className="lock-badge"><I.lock /> não editável</span>
+            E-mail <span className="lock-badge"><IconLock /> não editável</span>
           </label>
           <div className="perfil-input-wrap">
-            <I.mail />
+            <IconMail />
             <input className="perfil-input locked" type="email"
               value={usuario.email} disabled readOnly />
           </div>
@@ -923,7 +899,7 @@ const SecaoDados = ({ usuario, setUsuario }) => {
 
         <div className="perfil-actions">
           <button type="submit" className="btn-perfil-primary" disabled={salvando}>
-            {salvando ? 'Salvando...' : (<>Salvar alterações <I.check /></>)}
+            {salvando ? 'Salvando...' : (<>Salvar alterações <IconCheck /></>)}
           </button>
         </div>
       </form>
@@ -1003,7 +979,7 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
 
       {feedback && (
         <div className={`perfil-alert ${feedback.tipo}`}>
-          {feedback.tipo === 'success' ? <I.check /> : <I.alert />}
+          {feedback.tipo === 'success' ? <IconCheck /> : <IconAlert />}
           {feedback.msg}
         </div>
       )}
@@ -1013,7 +989,7 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
           <div className="perfil-field">
             <label className="perfil-field-label">CEP</label>
             <div className="perfil-input-wrap">
-              <I.pin />
+              <IconPin />
               <input className="perfil-input" type="text" placeholder="00000-000"
                 value={form.cep} onChange={(e) => formatCEP(e.target.value)} maxLength={9} />
             </div>
@@ -1021,13 +997,13 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
           <div className="perfil-field">
             <label className="perfil-field-label">Bairro</label>
             <div className="perfil-input-wrap">
-              <I.pin />
+              <IconPin />
               <select className="perfil-select" value={form.bairro}
                 onChange={(e) => setForm({ ...form, bairro: e.target.value })}>
                 <option value="">Selecione...</option>
                 {BAIRROS.map((b) => <option key={b}>{b}</option>)}
               </select>
-              <span className="perfil-select-arrow"><I.arrow /></span>
+              <span className="perfil-select-arrow"><IconChevron /></span>
             </div>
           </div>
         </div>
@@ -1035,7 +1011,7 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
         <div className="perfil-field">
           <label className="perfil-field-label">Logradouro</label>
           <div className="perfil-input-wrap">
-            <I.home />
+            <IconHome />
             <input className="perfil-input" type="text" placeholder="Rua, Av., Travessa..."
               value={form.logradouro}
               onChange={(e) => setForm({ ...form, logradouro: e.target.value })} />
@@ -1046,7 +1022,7 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
           <div className="perfil-field">
             <label className="perfil-field-label">Número</label>
             <div className="perfil-input-wrap">
-              <I.home />
+              <IconHome />
               <input className="perfil-input" type="text" placeholder="Ex: 123"
                 value={form.numero}
                 onChange={(e) => setForm({ ...form, numero: e.target.value })} />
@@ -1055,7 +1031,7 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
           <div className="perfil-field">
             <label className="perfil-field-label">Complemento</label>
             <div className="perfil-input-wrap">
-              <I.home />
+              <IconHome />
               <input className="perfil-input" type="text" placeholder="Apto, Bloco..."
                 value={form.complemento}
                 onChange={(e) => setForm({ ...form, complemento: e.target.value })} />
@@ -1065,7 +1041,7 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
 
         <div className="perfil-actions">
           <button type="submit" className="btn-perfil-primary" disabled={salvando}>
-            {salvando ? 'Salvando...' : (<>Salvar endereço <I.check /></>)}
+            {salvando ? 'Salvando...' : (<>Salvar endereço <IconCheck /></>)}
           </button>
         </div>
       </form>
@@ -1137,7 +1113,7 @@ const SecaoSeguranca = () => {
 
       {feedback && (
         <div className={`perfil-alert ${feedback.tipo}`}>
-          {feedback.tipo === 'success' ? <I.check /> : <I.alert />}
+          {feedback.tipo === 'success' ? <IconCheck /> : <IconAlert />}
           {feedback.msg}
         </div>
       )}
@@ -1146,7 +1122,7 @@ const SecaoSeguranca = () => {
         <div className="perfil-field">
           <label className="perfil-field-label">Senha atual <span className="required">*</span></label>
           <div className="perfil-input-wrap">
-            <I.lock />
+            <IconLock />
             <input className="perfil-input"
               type={show.atual ? 'text' : 'password'}
               value={form.senhaAtual}
@@ -1154,7 +1130,7 @@ const SecaoSeguranca = () => {
               autoComplete="current-password" required />
             <button type="button" className="password-toggle"
               onClick={() => setShow({ ...show, atual: !show.atual })}>
-              {I.eye(show.atual)}
+              {IconEye(show.atual)}
             </button>
           </div>
         </div>
@@ -1162,7 +1138,7 @@ const SecaoSeguranca = () => {
         <div className="perfil-field">
           <label className="perfil-field-label">Nova senha <span className="required">*</span></label>
           <div className="perfil-input-wrap">
-            <I.lock />
+            <IconLock />
             <input className="perfil-input"
               type={show.nova ? 'text' : 'password'}
               value={form.novaSenha}
@@ -1171,7 +1147,7 @@ const SecaoSeguranca = () => {
               autoComplete="new-password" required minLength={8} />
             <button type="button" className="password-toggle"
               onClick={() => setShow({ ...show, nova: !show.nova })}>
-              {I.eye(show.nova)}
+              {IconEye(show.nova)}
             </button>
           </div>
           {form.novaSenha && (
@@ -1189,7 +1165,7 @@ const SecaoSeguranca = () => {
         <div className="perfil-field">
           <label className="perfil-field-label">Confirmar nova senha <span className="required">*</span></label>
           <div className="perfil-input-wrap">
-            <I.lock />
+            <IconLock />
             <input className="perfil-input"
               type={show.confirm ? 'text' : 'password'}
               value={form.confirmar}
@@ -1197,19 +1173,19 @@ const SecaoSeguranca = () => {
               autoComplete="new-password" required />
             <button type="button" className="password-toggle"
               onClick={() => setShow({ ...show, confirm: !show.confirm })}>
-              {I.eye(show.confirm)}
+              {IconEye(show.confirm)}
             </button>
           </div>
           {form.confirmar && form.confirmar !== form.novaSenha && (
             <span style={{ fontSize: '0.76rem', color: 'var(--terracotta)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-              <I.alert /> As senhas não coincidem.
+              <IconAlert /> As senhas não coincidem.
             </span>
           )}
         </div>
 
         <div className="perfil-actions">
           <button type="submit" className="btn-perfil-primary" disabled={salvando}>
-            {salvando ? 'Atualizando...' : (<>Alterar senha <I.shield /></>)}
+            {salvando ? 'Atualizando...' : (<>Alterar senha <IconShield /></>)}
           </button>
         </div>
       </form>
@@ -1330,13 +1306,13 @@ const SecaoLGPD = ({ usuario }) => {
             </p>
             {erroExcluir && (
               <div className="perfil-alert error">
-                <I.alert /> {erroExcluir}
+                <IconAlert /> {erroExcluir}
               </div>
             )}
             <div className="perfil-field">
               <label className="perfil-field-label">Senha <span className="required">*</span></label>
               <div className="perfil-input-wrap">
-                <I.lock />
+                <IconLock />
                 <input className="perfil-input" type="password"
                   placeholder="Digite sua senha pra confirmar"
                   value={senhaExcluir}

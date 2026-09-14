@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Sobre.css';
 import NotificacoesSino from '../componentes/NotificacoesSino';
+import { IconArrowRight, IconLogout } from '../componentes/Icones';
 
 /* ── Dados — altere aqui sem tocar no JSX ──────────────────── */
 
@@ -76,19 +77,6 @@ const FOOTER_LINKS = [
   },
 ];
 
-/* ── Ícones ─────────────────────────────────────────────────── */
-const IconArrow = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round">
-    <path d="M5 12h14M13 5l7 7-7 7"/>
-  </svg>
-);
-const IconLogout = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-    <polyline points="16 17 21 12 16 7"/>
-    <line x1="21" y1="12" x2="9" y2="12"/>
-  </svg>
-);
 
 /* ════════════════════════════════════════════════════════════
    COMPONENTE
@@ -322,7 +310,7 @@ const Sobre = () => {
           <h2>Quer fazer parte<br />dessa <em>história</em>?</h2>
           <p>Anuncie o que está parado, encontre o que procura e conheça seus vizinhos no caminho.</p>
           <Link to={linkAnunciar} className="btn-home-primary cta-btn">
-            Começar a desapegar <IconArrow />
+            Começar a desapegar <IconArrowRight />
           </Link>
         </div>
       </section>

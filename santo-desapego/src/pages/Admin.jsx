@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Admin.css';
+import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
+import { IconUser, IconShield, IconTag, IconFlag, IconPlus } from '../componentes/Icones';
 
 const API_URL = 'http://localhost:8080';
 
@@ -8,15 +10,9 @@ const API_URL = 'http://localhost:8080';
 const I = {
   dashboard: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>,
   users:     () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
-  tag:       () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>,
   layers:    () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>,
-  flag:      () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>,
   clock:     () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
   help:      () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
-  shield:    () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
-  plus:      () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
-  search:    () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>,
-  lock:      () => <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
 };
 
 const dataBR = (v) => v ? new Date(v).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
@@ -258,29 +254,18 @@ const Admin = () => {
     <div className="admin-wrapper">
       <div className="announcement">🛡️ Painel Administrativo — Santo Desapego</div>
 
-      <header className="site-header">
-        <div className="nav-top">
-          <Link to="/" className="logo">
-            <span className="logo-mark">SD</span>
-            Santo <em>Desapego</em>
-          </Link>
-          <nav className="nav-actions">
-            <Link to="/perfil" className="nav-btn">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              Meu perfil
-            </Link>
-            <Link to="/" className="nav-btn">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-              Sair do painel
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <SiteHeader>
+        <Link to="/perfil" className="nav-btn">
+          <IconUser size={15} strokeWidth={2.3} />
+          Meu perfil
+        </Link>
+        <NavBackButton to="/">Sair do painel</NavBackButton>
+      </SiteHeader>
 
       <div className="admin-layout">
         <aside className="admin-sidebar">
           <div className="admin-sidebar-head">
-            <div className="badge-admin"><I.shield /></div>
+            <div className="badge-admin"><IconShield size={20} /></div>
             <div>
               <h3>{usuario.nome}</h3>
               <span>Administrador(a)</span>
@@ -295,13 +280,13 @@ const Admin = () => {
               <I.users /> Usuários
             </button>
             <button className={`admin-tab${aba === 'anuncios' ? ' active' : ''}`} onClick={() => setAba('anuncios')}>
-              <I.tag /> Anúncios
+              <IconTag size={16} /> Anúncios
             </button>
             <button className={`admin-tab${aba === 'categorias' ? ' active' : ''}`} onClick={() => setAba('categorias')}>
               <I.layers /> Categorias
             </button>
             <button className={`admin-tab${aba === 'denuncias' ? ' active' : ''}`} onClick={() => setAba('denuncias')}>
-              <I.flag /> Denúncias
+              <IconFlag size={16} /> Denúncias
             </button>
             <button className={`admin-tab${aba === 'suporte' ? ' active' : ''}`} onClick={() => setAba('suporte')}>
               <I.help /> Central de ajuda
@@ -363,7 +348,7 @@ const SecaoDashboard = () => {
               <div className="admin-stat-sub">{dados.usuarios.suspensos} suspenso(s)</div>
             </div>
             <div className="admin-stat">
-              <div className="admin-stat-icon terracotta"><I.tag /></div>
+              <div className="admin-stat-icon terracotta"><IconTag size={16} /></div>
               <div className="admin-stat-label">Anúncios</div>
               <div className="admin-stat-num">{dados.anuncios.total}</div>
               <div className="admin-stat-sub">{dados.anuncios.ativos} ativos · {dados.anuncios.vendidos} vendidos</div>
@@ -375,7 +360,7 @@ const SecaoDashboard = () => {
               <div className="admin-stat-sub">{dados.compras.total} compra(s) aprovada(s)</div>
             </div>
             <div className={`admin-stat${dados.denuncias.pendentes > 0 ? ' alerta' : ''}`}>
-              <div className="admin-stat-icon ink"><I.flag /></div>
+              <div className="admin-stat-icon ink"><IconFlag size={16} /></div>
               <div className="admin-stat-label">Denúncias pendentes</div>
               <div className="admin-stat-num">{dados.denuncias.pendentes}</div>
               <div className="admin-stat-sub">{dados.denuncias.total} no total</div>
@@ -776,7 +761,7 @@ const SecaoCategorias = () => {
           <h1>Gerenciar <em>categorias</em></h1>
           <p>Organize categorias e subcategorias usadas pelos anúncios.</p>
         </div>
-        <button className="btn-admin-add" onClick={() => setEditando({})}><I.plus /> Nova categoria</button>
+        <button className="btn-admin-add" onClick={() => setEditando({})}><IconPlus size={14} /> Nova categoria</button>
       </div>
 
       {feedback && <div className={`admin-alert ${feedback.tipo}`}>{feedback.msg}</div>}

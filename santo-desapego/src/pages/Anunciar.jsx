@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Anunciar.css';
+import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
 
 const API_URL = 'http://localhost:8080';
 
@@ -285,14 +286,7 @@ const Anunciar = () => {
   if (submitted) {
     return (
       <div className="anunciar-wrapper">
-        <header className="site-header">
-          <div className="nav-top">
-            <Link to="/" className="logo">
-              <span className="logo-mark">SD</span>
-              Santo <em>Desapego</em>
-            </Link>
-          </div>
-        </header>
+        <SiteHeader />
 
         <div className="anunciar-container">
           <div className="anunciar-card">
@@ -331,20 +325,9 @@ const Anunciar = () => {
     <div className="anunciar-wrapper">
 
       {/* Header */}
-      <header className="site-header">
-        <div className="nav-top">
-          <Link to="/" className="logo">
-            <span className="logo-mark">SD</span>
-            Santo <em>Desapego</em>
-          </Link>
-          <nav className="nav-actions">
-            <Link to="/perfil" className="nav-btn">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-              Voltar para meu perfil
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <SiteHeader>
+        <NavBackButton to="/perfil">Voltar para meu perfil</NavBackButton>
+      </SiteHeader>
 
       <div className="anunciar-container">
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 import './Login.css';
+import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
 
 const API_URL = 'http://localhost:8080';
 
@@ -137,21 +138,10 @@ const LoginContent = () => {
         <strong>já evitamos 2,4 toneladas</strong> de descarte neste mês.
       </div>
 
-      <header className="site-header">
-        <div className="nav-top auth-nav-top">
-          <Link to="/" className="logo">
-            <span className="logo-mark">SD</span>
-            Santo <em>Desapego</em>
-          </Link>
-          <nav className="nav-actions">
-            <Link to="/" className="nav-btn">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-              Voltar para a home
-            </Link>
-            <Link to="/cadastro" className="btn-sell">+ Criar conta</Link>
-          </nav>
-        </div>
-      </header>
+      <SiteHeader variant="auth-nav-top">
+        <NavBackButton to="/">Voltar para a home</NavBackButton>
+        <Link to="/cadastro" className="btn-sell">+ Criar conta</Link>
+      </SiteHeader>
 
       <main className="auth-container">
 

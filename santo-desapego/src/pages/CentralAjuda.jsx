@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './CentralAjuda.css';
 import NotificacoesSino from '../componentes/NotificacoesSino';
+import SiteHeader from '../componentes/SiteHeader';
 
 const API_URL = 'http://localhost:8080';
 
@@ -110,19 +111,11 @@ const CentralAjuda = () => {
 
   return (
     <div className="ajuda-wrapper">
-      <header className="site-header">
-        <div className="nav-top">
-          <Link to="/" className="logo">
-            <span className="logo-mark">SD</span>
-            Santo <em>Desapego</em>
-          </Link>
-          <nav className="nav-actions">
-            <NotificacoesSino />
-            <Link to="/explorar" className="nav-btn">Explorar</Link>
-            <Link to="/sobre" className="nav-btn">Sobre nós</Link>
-          </nav>
-        </div>
-      </header>
+      <SiteHeader>
+        <NotificacoesSino />
+        <Link to="/explorar" className="nav-btn">Explorar</Link>
+        <Link to="/sobre" className="nav-btn">Sobre nós</Link>
+      </SiteHeader>
 
       <div className="ajuda-container">
         <h1 className="ajuda-titulo">Central de <em>ajuda</em></h1>
