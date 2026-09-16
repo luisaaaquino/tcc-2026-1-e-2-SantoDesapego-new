@@ -579,7 +579,7 @@ const Cadastro = () => {
       </div>
 
       <footer className="site-footer">
-        <span>© 2025 Santo Desapego — Projeto acadêmico TCC · SENAC Santo Amaro · </span>
+        <span>© 2025 Santo Desapego · </span>
         <a href="#">Privacidade</a> · <a href="#">Termos</a>
       </footer>
     </div>

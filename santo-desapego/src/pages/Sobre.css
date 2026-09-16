@@ -367,77 +367,6 @@
 .sobre-team-card--mustard p { color: var(--ink); }
 .sobre-team-card--mustard .sobre-team-role { color: rgba(0, 0, 0, 0.55); }
 
-/* ==========================================================
-   CONTEXTO ACADÊMICO — faixa forest com marca d'água
-   ========================================================== */
-.sobre-academico {
-  background: var(--forest);
-  color: var(--cream);
-  position: relative;
-  overflow: hidden;
-  border-top: 6px solid var(--mustard);
-}
-.sobre-academico::before {
-  content: "TCC 2026";
-  position: absolute;
-  top: 50%;
-  right: -1rem;
-  transform: translateY(-50%);
-  font-family: var(--font-display);
-  font-weight: 900;
-  font-style: italic;
-  font-size: clamp(6rem, 15vw, 13rem);
-  color: rgba(244, 239, 228, 0.06);
-  letter-spacing: -0.05em;
-  pointer-events: none;
-  user-select: none;
-  white-space: nowrap;
-}
-
-.sobre-academico-wrap {
-  position: relative;
-  z-index: 1;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 5.5rem 2rem;
-  display: grid;
-  grid-template-columns: 1fr 1.1fr;
-  gap: 4rem;
-  align-items: center;
-}
-
-.sobre-academico .badge-ods {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(244, 239, 228, 0.25);
-  color: var(--cream);
-}
-.sobre-academico .badge-ods::before { background: var(--mustard); }
-
-.sobre-academico h2 {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(1.9rem, 3.8vw, 2.8rem);
-  letter-spacing: -0.02em;
-  line-height: 1.12;
-  color: var(--cream);
-  margin-top: 1.1rem;
-}
-.sobre-academico h2 em { font-style: italic; color: var(--mustard); font-weight: 400; }
-
-.sobre-academico-text {
-  border-left: 2px solid rgba(244, 239, 228, 0.18);
-  padding-left: 2.2rem;
-}
-.sobre-academico-text p {
-  color: rgba(244, 239, 228, 0.8);
-  font-size: 1.03rem;
-  line-height: 1.75;
-  margin-bottom: 1.3rem;
-}
-.sobre-academico-text p:last-child { margin-bottom: 0; }
-.sobre-academico-text strong { color: var(--mustard); }
-
-
 @media (prefers-reduced-motion: reduce) {
   .sobre-hero h1,
   .sobre-lede { animation: none; }
@@ -455,11 +384,9 @@
 
   .sobre-hero::before { font-size: clamp(4rem, 16vw, 7rem); }
 
-  .sobre-manifesto-wrap,
-  .sobre-academico-wrap { grid-template-columns: 1fr; gap: 2.5rem; }
+  .sobre-manifesto-wrap { grid-template-columns: 1fr; gap: 2.5rem; }
   .sobre-manifesto-title { position: static; }
-  .sobre-manifesto-text,
-  .sobre-academico-text { border-left: none; padding-left: 0; }
+  .sobre-manifesto-text { border-left: none; padding-left: 0; }
 
   /* timeline vertical com régua à esquerda */
   .sobre-timeline { grid-template-columns: 1fr; gap: 0; }
@@ -488,8 +415,7 @@
      texto e sair da caixa; reduz o mínimo e garante quebra segura. */
   .sobre-hero h1 { font-size: clamp(2.2rem, 9vw, 5.2rem); overflow-wrap: break-word; }
   .sobre-valores-grid { grid-template-columns: 1fr; }
-  .sobre-manifesto-wrap,
-  .sobre-academico-wrap { padding: 3.5rem 1.25rem; }
+  .sobre-manifesto-wrap { padding: 3.5rem 1.25rem; }
 
   /* nav-actions com usuário logado (sino + chip + sair + anunciar)
      estoura a largura da tela — some com "Sobre nós"/"Sair", mas o
@@ -497,7 +423,7 @@
      nenhum jeito de chegar no /perfil pela Sobre no mobile. */
   /* !important necessário: Home.css também define essa mesma regra
      (classe .nav-actions é compartilhada) e teria prioridade aqui. */
-  .nav-actions a:not(.btn-sell):not(.nav-profile-chip):not(.sobre-user-chip) { display: none !important; }
+  .nav-actions a:not(.btn-sell):not(.nav-profile-chip):not(.sobre-user-chip):not(.nav-login-btn) { display: none !important; }
   .sobre-user-chip { font-size: 0 !important; gap: 0 !important; }
   .nav-actions button.nav-btn { display: none !important; }
   .nav-actions .btn-sell { padding: 0.55rem 0.85rem; font-size: 0.82rem; }

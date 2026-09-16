@@ -316,7 +316,7 @@ const Explorar = () => {
               </>
             ) : (
               <>
-                <Link to="/login" className="nav-btn">Entrar</Link>
+                <Link to="/login" className="nav-btn nav-login-btn">Entrar</Link>
                 <Link to="/cadastro" className="btn-sell">+ Anunciar grátis</Link>
               </>
             )}
@@ -591,9 +591,6 @@ const Explorar = () => {
         </div>
 
         <div className="footer-tcc">
-          <div>
-            <strong>Projeto acadêmico</strong> — Trabalho de Conclusão de Curso • Bacharelado em Sistemas de Informação • Centro Universitário Senac Santo Amaro
-          </div>
           <div>Luisa Aquino • Maria Erica Cruz • Paulo Santana</div>
         </div>
       </footer>

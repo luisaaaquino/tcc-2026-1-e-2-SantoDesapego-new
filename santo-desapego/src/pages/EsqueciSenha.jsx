@@ -144,7 +144,7 @@ const EsqueciSenha = () => {
       </main>
 
       <footer className="auth-mini-footer">
-        © 2026 Santo Desapego — Projeto acadêmico TCC · Centro Universitário Senac Santo Amaro
+        © 2026 Santo Desapego
       </footer>
     </div>
   );

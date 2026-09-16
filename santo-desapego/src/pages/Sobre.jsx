@@ -57,7 +57,7 @@ const VALORES = [
 
 const MARCOS = [
   { data: '2025', titulo: 'A pergunta', desc: 'Nasce a inquietação: por que é tão difícil desapegar de algo bom para alguém que mora a duas quadras?' },
-  { data: '2026.1', titulo: 'O projeto', desc: 'O Santo Desapego vira Trabalho de Conclusão de Curso: pesquisa, prototipação e as primeiras linhas de código.' },
+  { data: '2026.1', titulo: 'O projeto', desc: 'O Santo Desapego sai do papel: pesquisa, prototipação e as primeiras linhas de código.' },
   { data: '2026.2', titulo: 'A plataforma', desc: 'React, Node.js e PostgreSQL dão forma ao marketplace hiperlocal, com cadastro, anúncios e busca por bairro.' },
   { data: 'Futuro', titulo: 'O bairro inteiro', desc: 'Chat entre vizinhos, entregas de bike e a meta de cobrir os mais de 20 bairros do distrito.' },
 ];
@@ -149,7 +149,7 @@ const Sobre = () => {
               </>
             ) : (
               <>
-                <Link to="/login" className="nav-btn">Entrar</Link>
+                <Link to="/login" className="nav-btn nav-login-btn">Entrar</Link>
                 <Link to="/cadastro" className="btn-sell">+ Anunciar grátis</Link>
               </>
             )}
@@ -277,32 +277,6 @@ const Sobre = () => {
       </section>
 
       {/* ══════════════════════════════════
-          CONTEXTO ACADÊMICO
-          ══════════════════════════════════ */}
-      <section className="sobre-academico">
-        <div className="sobre-academico-wrap">
-          <div>
-            <span className="badge-ods">Projeto acadêmico</span>
-            <h2>Nascido na sala de aula,<br />pensado para a <em>rua</em>.</h2>
-          </div>
-          <div className="sobre-academico-text">
-            <p>
-              O Santo Desapego é o Trabalho de Conclusão de Curso do Bacharelado em
-              Sistemas de Informação do <strong>Centro Universitário Senac Santo
-              Amaro</strong> — desenvolvido, não por acaso, no mesmo distrito que a
-              plataforma atende.
-            </p>
-            <p>
-              A aplicação foi construída com React no frontend, Node.js na API e
-              PostgreSQL no banco de dados, e se alinha aos Objetivos de
-              Desenvolvimento Sustentável da ONU, em especial o consumo e a
-              produção responsáveis.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════
           CTA
           ══════════════════════════════════ */}
       <section className="cta-section">
@@ -342,9 +316,6 @@ const Sobre = () => {
 
         <div className="footer-tcc">
           <div className="footer-tcc-info">
-            <div>
-              <strong>Projeto acadêmico</strong> — Trabalho de Conclusão de Curso • Bacharelado em Sistemas de Informação • Centro Universitário Senac Santo Amaro
-            </div>
             <div>Luisa Aquino • Maria Erica Cruz • Paulo Santana</div>
           </div>
 

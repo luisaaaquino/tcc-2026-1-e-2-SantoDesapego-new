@@ -10,6 +10,7 @@ import {
   IconHanger, IconMore,
 } from '../componentes/Icones';
 import { API_URL } from '../config';
+import { TERMOS_USO, POLITICA_PRIVACIDADE } from './termosContent';
 
 /* ── Dados — altere aqui sem tocar no JSX ──────────────────── */
 const STEPS = [
@@ -108,6 +109,21 @@ const Home = () => {
 
   // ── Estado do usuário logado (lê do localStorage)
   const [usuario, setUsuario] = useState(null);
+
+  // ── Modal de Termos de Uso / Privacidade (aberto pelos links do rodapé)
+  const [legalAberto, setLegalAberto] = useState(null); // null | 'termos' | 'privacidade'
+  const abrirLegal = (aba) => (e) => {
+    e.preventDefault();
+    setLegalAberto(aba);
+  };
+  const fecharLegal = () => setLegalAberto(null);
+
+  useEffect(() => {
+    if (!legalAberto) return;
+    const onKeyDown = (e) => { if (e.key === 'Escape') fecharLegal(); };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [legalAberto]);
 
   useEffect(() => {
     const usuarioSalvo = localStorage.getItem('sd_usuario');
@@ -260,7 +276,7 @@ const Home = () => {
             ) : (
               <>
                 <Link to="/sobre" className="nav-btn">Sobre nós</Link>
-                <Link to="/login" className="nav-btn">Entrar</Link>
+                <Link to="/login" className="nav-btn nav-login-btn">Entrar</Link>
                 <Link to="/cadastro" className="btn-sell">+ Anunciar grátis</Link>
               </>
             )}
@@ -467,22 +483,19 @@ const Home = () => {
           {FOOTER_LINKS.map((col) => (
             <div key={col.title} className="footer-col">
               <h4>{col.title}</h4>
-              {col.links.map((l) =>
-                l === 'Nosso impacto'
-                  ? <Link key={l} to="/sobre">Sobre nós</Link>
-                  : l === 'Central de ajuda'
-                  ? <Link key={l} to="/central-ajuda">Central de ajuda</Link>
-                  : <a key={l} href="#">{l}</a>
-              )}
+              {col.links.map((l) => {
+                if (l === 'Nosso impacto') return <Link key={l} to="/sobre">Sobre nós</Link>;
+                if (l === 'Central de ajuda') return <Link key={l} to="/central-ajuda">Central de ajuda</Link>;
+                if (l === 'Termos de uso') return <a key={l} href="#termos" onClick={abrirLegal('termos')}>{l}</a>;
+                if (l === 'Privacidade (LGPD)') return <a key={l} href="#termos" onClick={abrirLegal('privacidade')}>{l}</a>;
+                return <a key={l} href="#">{l}</a>;
+              })}
             </div>
           ))}
         </div>
 
         <div className="footer-tcc">
           <div className="footer-tcc-info">
-            <div>
-              <strong>Projeto acadêmico</strong> — Trabalho de Conclusão de Curso • Bacharelado em Sistemas de Informação • Centro Universitário Senac Santo Amaro
-            </div>
             <div>Luisa Aquino • Maria Erica Cruz • Paulo Santana</div>
           </div>
 
@@ -504,6 +517,66 @@ const Home = () => {
           </div>
         </div>
       </footer>
+
+      {/* ══════════════════════════════════
+          MODAL — TERMOS DE USO / PRIVACIDADE
+          ══════════════════════════════════ */}
+      {legalAberto && (
+        <div className="legal-overlay" onClick={fecharLegal}>
+          <div
+            className="legal-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Termos de Uso e Política de Privacidade"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="legal-modal-head">
+              <div className="legal-tabs" role="tablist">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={legalAberto === 'termos'}
+                  className={`legal-tab${legalAberto === 'termos' ? ' active' : ''}`}
+                  onClick={() => setLegalAberto('termos')}
+                >
+                  Termos de Uso
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={legalAberto === 'privacidade'}
+                  className={`legal-tab${legalAberto === 'privacidade' ? ' active' : ''}`}
+                  onClick={() => setLegalAberto('privacidade')}
+                >
+                  Privacidade (LGPD)
+                </button>
+              </div>
+              <button type="button" className="legal-modal-close" aria-label="Fechar" onClick={fecharLegal}>×</button>
+            </div>
+
+            <div className="legal-box" role="tabpanel">
+              {(legalAberto === 'termos' ? TERMOS_USO : POLITICA_PRIVACIDADE).map((sec) => (
+                <div key={sec.titulo} className="legal-item">
+                  <h3>{sec.titulo}</h3>
+                  {sec.paragrafos?.map((p, i) => <p key={i}>{p}</p>)}
+                  {sec.lista && (
+                    <ul>
+                      {sec.lista.map((l, i) => <li key={i}>{l}</li>)}
+                    </ul>
+                  )}
+                  {sec.rodape && <p className="legal-rodape">{sec.rodape}</p>}
+                  {sec.subsecoes?.map((sub) => (
+                    <div key={sub.titulo} className="legal-subitem">
+                      <h4>{sub.titulo}</h4>
+                      {sub.paragrafos?.map((p, i) => <p key={i}>{p}</p>)}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

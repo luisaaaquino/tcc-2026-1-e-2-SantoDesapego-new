@@ -201,7 +201,7 @@ const CentralAjuda = () => {
       </div>
 
       <footer className="site-footer">
-        <span>© 2026 Santo Desapego — Projeto acadêmico TCC · SENAC Santo Amaro</span>
+        <span>© 2026 Santo Desapego</span>
       </footer>
     </div>
   );

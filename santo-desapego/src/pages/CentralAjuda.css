@@ -264,8 +264,10 @@
 
 @media (max-width: 480px) {
   /* "Explorar" + "Sobre nós" lado a lado no header estouram a
-     largura em telas pequenas — mantém só o sino de notificações. */
-  .nav-actions a.nav-btn { display: none !important; }
+     largura em telas pequenas — mantém só o sino de notificações.
+     .nav-btn é usado em outras páginas (ex.: Home/Sobre) pro link
+     "Entrar" também — exclui .nav-login-btn pra não escondê-lo lá. */
+  .nav-actions a.nav-btn:not(.nav-login-btn) { display: none !important; }
 }
 
 /* ── Acessibilidade ─────────────────────────────────────── */
