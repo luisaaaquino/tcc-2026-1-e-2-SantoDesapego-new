@@ -1,4 +1,5 @@
 const express = require('express');
+const PDFDocument = require('pdfkit');
 const { Preference, Payment } = require('mercadopago');
 const pool = require('../db');
 const { autenticar } = require('../middleware/auth');
@@ -238,6 +239,87 @@ router.post('/api/compras/confirmar', autenticar, async (req, res) => {
   } catch (erro) {
     console.error('Erro ao confirmar compra:', erro);
     return res.status(500).json({ erro: 'Erro ao confirmar a compra.' });
+  }
+});
+
+// ============================================================
+//  COMPROVANTE EM PDF — emitido pra comprador ou vendedor [RF17]
+// ============================================================
+router.get('/api/compras/:id/comprovante', autenticar, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const resultado = await pool.query(
+      `SELECT co.id, co.preco, co.status, co.metodo_pagamento, co.parcelas,
+              co.payment_id, co.criada_em, co.comprador_id, co.vendedor_id,
+              a.titulo AS anuncio_titulo,
+              cat.nome AS categoria_nome,
+              comp.nome AS comprador_nome, comp.sobrenome AS comprador_sobrenome,
+              vend.nome AS vendedor_nome, vend.sobrenome AS vendedor_sobrenome
+         FROM compras co
+         JOIN anuncios a ON a.id = co.anuncio_id
+         JOIN categorias cat ON cat.id = a.categoria_id
+         JOIN usuarios comp ON comp.id = co.comprador_id
+         JOIN usuarios vend ON vend.id = co.vendedor_id
+        WHERE co.id = $1`,
+      [id]
+    );
+
+    if (resultado.rows.length === 0) {
+      return res.status(404).json({ erro: 'Compra não encontrada.' });
+    }
+
+    const compra = resultado.rows[0];
+    if (compra.comprador_id !== req.userId && compra.vendedor_id !== req.userId) {
+      return res.status(403).json({ erro: 'Você não tem acesso a este comprovante.' });
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="comprovante-santo-desapego-${compra.id}.pdf"`);
+
+    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    doc.pipe(res);
+
+    doc.fontSize(20).fillColor('#1F4F3F').text('Santo Desapego');
+    doc.fontSize(11).fillColor('#7A7A7A').text('Comprovante de transação');
+    doc.moveDown(1);
+    doc.strokeColor('#D6CFBD').moveTo(50, doc.y).lineTo(545, doc.y).stroke();
+    doc.moveDown(1);
+
+    const linha = (label, valor) => {
+      doc.fontSize(10).fillColor('#1A1A1A')
+        .font('Helvetica-Bold').text(label, { continued: true })
+        .font('Helvetica').text(`  ${valor}`);
+      doc.moveDown(0.4);
+    };
+
+    const preco = Number(compra.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const pagamento = compra.metodo_pagamento
+      ? `${compra.metodo_pagamento}${compra.parcelas > 1 ? ` em ${compra.parcelas}x` : ''}`
+      : '—';
+
+    linha('Nº da transação:', String(compra.id));
+    linha('Data:', new Date(compra.criada_em).toLocaleString('pt-BR'));
+    linha('Status:', compra.status);
+    linha('Item:', compra.anuncio_titulo);
+    linha('Categoria:', compra.categoria_nome);
+    linha('Valor:', preco);
+    linha('Forma de pagamento:', pagamento);
+    linha('ID do pagamento (Mercado Pago):', compra.payment_id || '—');
+    doc.moveDown(0.6);
+    linha('Comprador:', `${compra.comprador_nome} ${compra.comprador_sobrenome}`);
+    linha('Vendedor:', `${compra.vendedor_nome} ${compra.vendedor_sobrenome}`);
+
+    doc.moveDown(2);
+    doc.fontSize(8).fillColor('#7A7A7A').text(
+      'Documento gerado eletronicamente pela plataforma Santo Desapego — projeto acadêmico TCC, ' +
+      'Centro Universitário Senac Santo Amaro. Não possui valor fiscal.'
+    );
+
+    doc.end();
+  } catch (erro) {
+    console.error('Erro ao gerar comprovante:', erro);
+    return res.status(500).json({ erro: 'Erro ao gerar comprovante.' });
   }
 });
 

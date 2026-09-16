@@ -154,6 +154,10 @@ const Perfil = () => {
               onClick={() => setAba('compras')} role="tab">
               <I.bag /> Compras realizadas
             </button>
+            <button className={`perfil-tab${aba === 'vendas' ? ' active' : ''}`}
+              onClick={() => setAba('vendas')} role="tab">
+              <IconTag /> Vendas realizadas
+            </button>
             <button className={`perfil-tab${aba === 'avaliacoes' ? ' active' : ''}`}
               onClick={() => setAba('avaliacoes')} role="tab">
               <I.star /> Avaliações
@@ -192,6 +196,7 @@ const Perfil = () => {
           {aba === 'anuncios'   && <SecaoAnuncios   />}
           {aba === 'favoritos'  && <SecaoFavoritos  />}
           {aba === 'compras'    && <SecaoCompras    />}
+          {aba === 'vendas'     && <SecaoVendas      />}
           {aba === 'avaliacoes' && <SecaoAvaliacoes />}
           {aba === 'denuncias'  && <SecaoMinhasDenuncias />}
           {aba === 'dados'     && <SecaoDados     usuario={usuario} setUsuario={setUsuario} />}
@@ -678,18 +683,70 @@ const FormAvaliar = ({ compra, aoEnviar, aoCancelar }) => {
 /* ════════════════════════════════════════════════════════════
    SEÇÃO COMPRAS REALIZADAS
    ════════════════════════════════════════════════════════════ */
+// [RF17] Baixa o comprovante em PDF de uma transação (compra ou venda)
+const baixarComprovante = async (compraId) => {
+  try {
+    const resposta = await fetch(`${API_URL}/api/compras/${compraId}/comprovante`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('sd_token')}` },
+    });
+    if (!resposta.ok) { alert('Erro ao gerar comprovante.'); return; }
+    const blob = await resposta.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `comprovante-santo-desapego-${compraId}.pdf`;
+    link.click();
+    URL.revokeObjectURL(url);
+  } catch {
+    alert('Erro ao conectar com o servidor.');
+  }
+};
+
+// [RF17] Filtro de período/status reutilizado em Compras e Vendas
+const FiltroHistorico = ({ status, setStatus, dataInicio, setDataInicio, dataFim, setDataFim }) => (
+  <div className="filtro-historico">
+    <div className="filtro-historico-campo">
+      <label>Status</label>
+      <select value={status} onChange={(e) => setStatus(e.target.value)}>
+        <option value="">Todos</option>
+        <option value="approved">Aprovado</option>
+        <option value="pending">Pendente</option>
+        <option value="rejected">Recusado</option>
+      </select>
+    </div>
+    <div className="filtro-historico-campo">
+      <label>De</label>
+      <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} />
+    </div>
+    <div className="filtro-historico-campo">
+      <label>Até</label>
+      <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} />
+    </div>
+    {(status || dataInicio || dataFim) && (
+      <button type="button" className="btn-perfil-secondary filtro-historico-limpar"
+        onClick={() => { setStatus(''); setDataInicio(''); setDataFim(''); }}>
+        Limpar filtros
+      </button>
+    )}
+  </div>
+);
+
 const SecaoCompras = () => {
   const [compras, setCompras] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [abrirAvaliar, setAbrirAvaliar] = useState(null);
-
-  const recarregar = () => {
-    setCarregando(true);
-    carregar();
-  };
+  const [status, setStatus] = useState('');
+  const [dataInicio, setDataInicio] = useState('');
+  const [dataFim, setDataFim] = useState('');
 
   const carregar = () => {
-    fetch(`${API_URL}/api/usuario/compras`, {
+    setCarregando(true);
+    const params = new URLSearchParams();
+    if (status) params.append('status', status);
+    if (dataInicio) params.append('data_inicio', dataInicio);
+    if (dataFim) params.append('data_fim', dataFim);
+
+    fetch(`${API_URL}/api/usuario/compras?${params}`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('sd_token')}` },
     })
       .then((r) => r.json())
@@ -698,7 +755,7 @@ const SecaoCompras = () => {
       .finally(() => setCarregando(false));
   };
 
-  useEffect(() => { carregar(); }, []);
+  useEffect(() => { carregar(); }, [status, dataInicio, dataFim]);
 
   return (
     <>
@@ -707,12 +764,14 @@ const SecaoCompras = () => {
         <p>Histórico do que você já garimpou no Santo Desapego.</p>
       </div>
 
+      <FiltroHistorico {...{ status, setStatus, dataInicio, setDataInicio, dataFim, setDataFim }} />
+
       {carregando && <p className="perfil-loading">Carregando compras...</p>}
 
       {!carregando && compras?.length === 0 && (
         <div className="painel-empty">
           <div className="painel-empty-icon">🛍️</div>
-          <h4>Você ainda não fez nenhuma compra</h4>
+          <h4>{status || dataInicio || dataFim ? 'Nenhuma compra encontrada com esses filtros' : 'Você ainda não fez nenhuma compra'}</h4>
           <p>Quando você comprar algo, o histórico aparece aqui.</p>
           <Link to="/explorar" className="painel-cta-btn painel-empty-btn">
             <IconSearch size={16} /> Explorar desapegos
@@ -731,23 +790,102 @@ const SecaoCompras = () => {
               </Link>
               <div className="compra-card-perfil-info">
                 <Link to={`/anuncio/${c.anuncio_id}`}><h3>{c.anuncio_titulo}</h3></Link>
-                <p>Vendido por {c.vendedor_nome} {c.vendedor_sobrenome} · {dataBR(c.criada_em)}</p>
+                <p>Vendido por {c.vendedor_nome} {c.vendedor_sobrenome} · {dataBR(c.criada_em)} · {c.status}</p>
                 <strong>{brl(c.preco)}</strong>
 
-                {c.ja_avaliei ? (
-                  <span className="avaliei-badge"><IconCheck /> Você avaliou esta compra</span>
-                ) : abrirAvaliar === c.id ? (
+                <div className="compra-card-perfil-acoes">
+                  <button type="button" className="btn-perfil-secondary avaliar-btn" onClick={() => baixarComprovante(c.id)}>
+                    <I.download /> Comprovante (PDF)
+                  </button>
+                  {c.ja_avaliei ? (
+                    <span className="avaliei-badge"><IconCheck /> Você avaliou esta compra</span>
+                  ) : abrirAvaliar === c.id ? null : (
+                    <button type="button" className="btn-perfil-secondary avaliar-btn"
+                      onClick={() => setAbrirAvaliar(c.id)}>
+                      <I.star /> Avaliar vendedor
+                    </button>
+                  )}
+                </div>
+
+                {!c.ja_avaliei && abrirAvaliar === c.id && (
                   <FormAvaliar
                     compra={c}
-                    aoEnviar={() => { setAbrirAvaliar(null); recarregar(); }}
+                    aoEnviar={() => { setAbrirAvaliar(null); carregar(); }}
                     aoCancelar={() => setAbrirAvaliar(null)}
                   />
-                ) : (
-                  <button type="button" className="btn-perfil-secondary avaliar-btn"
-                    onClick={() => setAbrirAvaliar(c.id)}>
-                    <I.star /> Avaliar vendedor
-                  </button>
                 )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+};
+
+/* ════════════════════════════════════════════════════════════
+   SEÇÃO MINHAS VENDAS [RF17]
+   ════════════════════════════════════════════════════════════ */
+const SecaoVendas = () => {
+  const [vendas, setVendas] = useState(null);
+  const [carregando, setCarregando] = useState(true);
+  const [status, setStatus] = useState('');
+  const [dataInicio, setDataInicio] = useState('');
+  const [dataFim, setDataFim] = useState('');
+
+  useEffect(() => {
+    setCarregando(true);
+    const params = new URLSearchParams();
+    if (status) params.append('status', status);
+    if (dataInicio) params.append('data_inicio', dataInicio);
+    if (dataFim) params.append('data_fim', dataFim);
+
+    fetch(`${API_URL}/api/usuario/vendas?${params}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('sd_token')}` },
+    })
+      .then((r) => r.json())
+      .then((data) => setVendas(data.vendas || []))
+      .catch(() => setVendas([]))
+      .finally(() => setCarregando(false));
+  }, [status, dataInicio, dataFim]);
+
+  return (
+    <>
+      <div className="perfil-section-head">
+        <h1>Vendas <em>realizadas</em></h1>
+        <p>Histórico do que você já vendeu no Santo Desapego.</p>
+      </div>
+
+      <FiltroHistorico {...{ status, setStatus, dataInicio, setDataInicio, dataFim, setDataFim }} />
+
+      {carregando && <p className="perfil-loading">Carregando vendas...</p>}
+
+      {!carregando && vendas?.length === 0 && (
+        <div className="painel-empty">
+          <div className="painel-empty-icon">💰</div>
+          <h4>{status || dataInicio || dataFim ? 'Nenhuma venda encontrada com esses filtros' : 'Você ainda não vendeu nada'}</h4>
+          <p>Quando alguém comprar um dos seus anúncios, o histórico aparece aqui.</p>
+        </div>
+      )}
+
+      {!carregando && vendas?.length > 0 && (
+        <div className="lista-compras">
+          {vendas.map((v) => (
+            <div className="compra-card-perfil" key={v.id}>
+              <Link to={`/anuncio/${v.anuncio_id}`} className="compra-card-perfil-img">
+                {v.anuncio_imagem
+                  ? <img src={v.anuncio_imagem} alt={v.anuncio_titulo} />
+                  : <span>📦</span>}
+              </Link>
+              <div className="compra-card-perfil-info">
+                <Link to={`/anuncio/${v.anuncio_id}`}><h3>{v.anuncio_titulo}</h3></Link>
+                <p>Comprado por {v.comprador_nome} {v.comprador_sobrenome} · {dataBR(v.criada_em)} · {v.status}</p>
+                <strong>{brl(v.preco)}</strong>
+                <div className="compra-card-perfil-acoes">
+                  <button type="button" className="btn-perfil-secondary avaliar-btn" onClick={() => baixarComprovante(v.id)}>
+                    <I.download /> Comprovante (PDF)
+                  </button>
+                </div>
               </div>
             </div>
           ))}

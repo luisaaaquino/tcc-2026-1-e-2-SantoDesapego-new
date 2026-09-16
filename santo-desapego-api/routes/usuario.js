@@ -396,11 +396,30 @@ router.get('/api/usuario/anuncios', autenticar, async (req, res) => {
 });
 
 // ============================================================
-//  GET MINHAS COMPRAS — compras do comprador logado
-//  Usado na aba "Compras" do perfil.
+//  GET MINHAS COMPRAS — compras do comprador logado [RF17]
+//  Usado na aba "Compras" do perfil. Aceita filtro por status e
+//  por período (data_inicio/data_fim, sobre a data da transação).
 // ============================================================
 router.get('/api/usuario/compras', autenticar, async (req, res) => {
   try {
+    const { status, data_inicio, data_fim } = req.query;
+    const params = [req.userId];
+    let filtro = '';
+
+    if (status) {
+      const statuses = status.split(',').map((s) => s.trim()).filter(Boolean);
+      params.push(statuses);
+      filtro += ` AND co.status = ANY($${params.length}::text[])`;
+    }
+    if (data_inicio) {
+      params.push(data_inicio);
+      filtro += ` AND co.criada_em >= $${params.length}`;
+    }
+    if (data_fim) {
+      params.push(data_fim);
+      filtro += ` AND co.criada_em < ($${params.length}::date + INTERVAL '1 day')`;
+    }
+
     const resultado = await pool.query(
       `SELECT
          co.id, co.preco, co.status, co.metodo_pagamento, co.parcelas, co.criada_em,
@@ -413,15 +432,61 @@ router.get('/api/usuario/compras', autenticar, async (req, res) => {
        JOIN anuncios a ON a.id = co.anuncio_id
        JOIN usuarios u ON u.id = co.vendedor_id
        LEFT JOIN avaliacoes av ON av.compra_id = co.id
-       WHERE co.comprador_id = $1
+       WHERE co.comprador_id = $1${filtro}
        ORDER BY co.criada_em DESC`,
-      [req.userId]
+      params
     );
 
     return res.json({ compras: resultado.rows });
   } catch (erro) {
     console.error('Erro ao listar compras:', erro);
     return res.status(500).json({ erro: 'Erro ao listar suas compras.' });
+  }
+});
+
+// ============================================================
+//  GET MINHAS VENDAS — vendas do vendedor logado [RF17]
+//  Usado na aba "Vendas" do perfil. Mesmos filtros de compras.
+// ============================================================
+router.get('/api/usuario/vendas', autenticar, async (req, res) => {
+  try {
+    const { status, data_inicio, data_fim } = req.query;
+    const params = [req.userId];
+    let filtro = '';
+
+    if (status) {
+      const statuses = status.split(',').map((s) => s.trim()).filter(Boolean);
+      params.push(statuses);
+      filtro += ` AND co.status = ANY($${params.length}::text[])`;
+    }
+    if (data_inicio) {
+      params.push(data_inicio);
+      filtro += ` AND co.criada_em >= $${params.length}`;
+    }
+    if (data_fim) {
+      params.push(data_fim);
+      filtro += ` AND co.criada_em < ($${params.length}::date + INTERVAL '1 day')`;
+    }
+
+    const resultado = await pool.query(
+      `SELECT
+         co.id, co.preco, co.status, co.metodo_pagamento, co.parcelas, co.criada_em,
+         a.id AS anuncio_id, a.titulo AS anuncio_titulo,
+         u.id AS comprador_id, u.nome AS comprador_nome, u.sobrenome AS comprador_sobrenome,
+         (SELECT imagem FROM anuncio_imagens
+           WHERE anuncio_id = a.id AND is_principal = TRUE LIMIT 1) AS anuncio_imagem
+       FROM compras co
+       JOIN anuncios a ON a.id = co.anuncio_id
+       JOIN usuarios u ON u.id = co.comprador_id
+       WHERE co.vendedor_id = $1${filtro}
+       ORDER BY co.criada_em DESC`,
+      params
+    );
+
+    return res.json({ vendas: resultado.rows });
+  } catch (erro) {
+    console.error('Erro ao listar vendas:', erro);
+    return res.status(500).json({ erro: 'Erro ao listar suas vendas.' });
   }
 });
 

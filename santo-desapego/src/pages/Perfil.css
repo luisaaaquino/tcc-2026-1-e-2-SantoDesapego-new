@@ -166,6 +166,44 @@
   font-size: 0.92rem;
 }
 
+/* [RF17] Filtro de período/status do histórico de compras e vendas */
+.filtro-historico {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+.filtro-historico-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.filtro-historico-campo label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.filtro-historico-campo select,
+.filtro-historico-campo input {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.7rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: var(--ink);
+  background: var(--paper);
+}
+.filtro-historico-limpar { padding: 0.45rem 1rem; font-size: 0.8rem; }
+
+.compra-card-perfil-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.3rem;
+}
+
 .perfil-alert {
   padding: 0.85rem 1rem;
   border-radius: var(--radius-md);
