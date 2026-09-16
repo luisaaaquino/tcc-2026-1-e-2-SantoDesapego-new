@@ -530,7 +530,11 @@
    NAV CATEGORIAS — versão editorial com line icons
    (replicado aqui para a página ser autossuficiente)
    ========================================================== */
-.nav-categories {
+/* Escopado em .explorar-wrapper: .nav-categories é uma classe
+   global (também usada na Home, com overflow-x:auto) — sem esse
+   escopo essas regras vazam para as outras páginas via bundle CSS
+   compartilhado e quebram o scroll horizontal da Home no mobile. */
+.explorar-wrapper .nav-categories {
   display: flex !important;
   flex-wrap: wrap;
   align-items: center;
@@ -541,7 +545,7 @@
   overflow-x: visible !important;
 }
 
-.nav-categories a {
+.explorar-wrapper .nav-categories a {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
@@ -561,36 +565,36 @@
               color 0.18s ease, transform 0.18s ease;
 }
 
-.nav-categories a svg {
+.explorar-wrapper .nav-categories a svg {
   opacity: 0.7;
   color: var(--ink-muted);
   flex-shrink: 0;
   transition: opacity 0.18s ease, color 0.18s ease;
 }
 
-.nav-categories a:hover {
+.explorar-wrapper .nav-categories a:hover {
   color: var(--ink);
   background: var(--cream-deep);
   border-color: var(--border);
   transform: translateY(-1px);
 }
-.nav-categories a:hover svg {
+.explorar-wrapper .nav-categories a:hover svg {
   opacity: 1;
   color: var(--terracotta);
 }
 
 /* Estado ativo — chip preenchido em terracota */
-.nav-categories a.active {
+.explorar-wrapper .nav-categories a.active {
   color: var(--cream);
   background: var(--terracotta);
   border-color: var(--terracotta);
   box-shadow: 2px 2px 0 var(--ink);
 }
-.nav-categories a.active svg {
+.explorar-wrapper .nav-categories a.active svg {
   opacity: 1;
   color: var(--cream);
 }
-.nav-categories a.active:hover { transform: none; }
+.explorar-wrapper .nav-categories a.active:hover { transform: none; }
 
 /* Separador entre categorias principais e extras */
 .nav-sep {
@@ -636,7 +640,22 @@
   }
 }
 
+@media (max-width: 768px) {
+  /* No mobile, categorias quebrando em várias linhas empurra muito
+     conteúdo pra baixo e fica com linhas desiguais — troca pra
+     rolagem horizontal numa linha só, igual a Home. */
+  .explorar-wrapper .nav-categories {
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    overflow-x: auto !important;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .explorar-wrapper .nav-categories::-webkit-scrollbar { display: none; }
+  .explorar-wrapper .nav-categories a { flex-shrink: 0; }
+}
+
 @media (max-width: 600px) {
-  .nav-categories { padding: 0.5rem 1rem 0.75rem !important; }
+  .explorar-wrapper .nav-categories { padding: 0.5rem 1rem 0.75rem !important; }
   .nav-sep { display: none; }
 }

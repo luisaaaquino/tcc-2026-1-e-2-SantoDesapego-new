@@ -445,6 +445,21 @@
   gap: 0.4rem;
   flex-shrink: 0;
 }
+
+/* Em telas estreitas, status+preço não cabem espremidos na mesma
+   linha da imagem+texto — viram uma faixa própria embaixo do card,
+   em vez de vazar pra fora da borda. */
+@media (max-width: 480px) {
+  .anuncio-card-perfil { flex-wrap: wrap; }
+  .anuncio-card-perfil-meta {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex-basis: 100%;
+    order: 3;
+    margin-top: 0.3rem;
+  }
+}
 .anuncio-card-perfil-meta strong { font-family: var(--font-display); font-size: 1rem; color: var(--ink); }
 .btn-favorito-remover {
   color: var(--terracotta);

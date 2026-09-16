@@ -139,6 +139,12 @@ const Mapa = ({ bairroFoco }) => {
         center={CENTER}
         zoom={ZOOM_INICIAL}
         scrollWheelZoom={false}
+        /* zoomAnimation cria um proxy de crossfade (.leaflet-proxy) cujo
+           transform inicial é calculado em coordenadas absolutas do mundo
+           antes do primeiro _resetView — isso empurra a página inteira
+           pra um scroll horizontal gigante (centenas de milhares de px).
+           Sem essa animação o mapa troca de zoom direto, sem o bug. */
+        zoomAnimation={false}
         className="leaflet-map"
         attributionControl={false}
       >

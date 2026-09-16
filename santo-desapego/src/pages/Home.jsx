@@ -9,6 +9,7 @@ import {
   IconShirt, IconBaby, IconBook, IconBike, IconPalette, IconWrench,
   IconHanger, IconMore,
 } from '../componentes/Icones';
+import { API_URL } from '../config';
 
 /* ── Dados — altere aqui sem tocar no JSX ──────────────────── */
 const STEPS = [
@@ -131,7 +132,7 @@ const Home = () => {
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(
-          `http://localhost:8080/api/anuncios?busca=${encodeURIComponent(termoBusca.trim())}&limite=5`
+          `${API_URL}/api/anuncios?busca=${encodeURIComponent(termoBusca.trim())}&limite=5`
         );
         const data = await res.json();
         setSugestoes(data.anuncios || []);
@@ -221,7 +222,7 @@ const Home = () => {
               <>
                 <NotificacoesSino />
                 <Link to="/sobre" className="nav-btn">Sobre nós</Link>
-                <Link to="/perfil" style={{
+                <Link to="/perfil" className="nav-profile-chip" style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.5rem',

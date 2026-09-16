@@ -153,5 +153,18 @@
 }
 
 @media (max-width: 480px) {
-  .sino-painel { position: fixed; top: 62px; right: 8px; left: 8px; width: auto; }
+  /* position:fixed relativo à viewport (não ao sininho) — o botão
+     pode estar em qualquer ponto horizontal do cabeçalho dependendo
+     da página/layout, então ancorar o painel nele (right:0 relativo
+     ao sino) podia jogar o painel pra fora da tela pela esquerda.
+     --sino-painel-top vem do JS (posição real do botão), com um
+     fallback caso o JS não tenha calculado ainda. */
+  .sino-painel {
+    position: fixed;
+    top: var(--sino-painel-top, 70px);
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: none;
+  }
 }

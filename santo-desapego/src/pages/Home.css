@@ -105,7 +105,7 @@
    Cada categoria é um chip arredondado; "Todos" fica sempre
    preenchido em terracota como atalho principal.
    ========================================================== */
-.nav-categories {
+.home-page .nav-categories {
   display: flex !important;
   flex-wrap: nowrap !important;
   align-items: center;
@@ -119,10 +119,10 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-.nav-categories::-webkit-scrollbar { display: none; }
+.home-page .nav-categories::-webkit-scrollbar { display: none; }
 
 /* ── Item (chip) ── */
-.nav-categories a {
+.home-page .nav-categories a {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -143,7 +143,7 @@
               color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
 }
 
-.nav-categories a svg {
+.home-page .nav-categories a svg {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
@@ -153,35 +153,35 @@
 }
 
 /* ── Hover ── */
-.nav-categories a:hover {
+.home-page .nav-categories a:hover {
   color: var(--ink);
   background: var(--cream-deep);
   border-color: var(--border);
   transform: translateY(-1px);
 }
-.nav-categories a:hover svg { opacity: 1; color: var(--terracotta); }
+.home-page .nav-categories a:hover svg { opacity: 1; color: var(--terracotta); }
 
 /* ── Ativo — chip preenchido em terracota ── */
-.nav-categories a.active {
+.home-page .nav-categories a.active {
   color: var(--cream);
   background: var(--terracotta);
   border-color: var(--terracotta);
   box-shadow: 2px 2px 0 var(--ink);
 }
-.nav-categories a.active svg { opacity: 1; color: var(--cream); }
-.nav-categories a.active:hover { transform: none; }
+.home-page .nav-categories a.active svg { opacity: 1; color: var(--cream); }
+.home-page .nav-categories a.active:hover { transform: none; }
 
 /* ── "Todos" — atalho principal, sempre preenchido ── */
-.nav-categories a.nav-cat-all {
+.home-page .nav-categories a.nav-cat-all {
   color: var(--cream);
   background: var(--terracotta);
   border-color: var(--terracotta);
   box-shadow: 2px 2px 0 var(--ink);
 }
-.nav-categories a.nav-cat-all svg { opacity: 1; color: var(--cream); }
-.nav-categories a.nav-cat-all:hover { transform: none; }
+.home-page .nav-categories a.nav-cat-all svg { opacity: 1; color: var(--cream); }
+.home-page .nav-categories a.nav-cat-all:hover { transform: none; }
 
-.nav-categories a:focus-visible {
+.home-page .nav-categories a:focus-visible {
   outline: 2px solid var(--terracotta);
   outline-offset: 2px;
 }
@@ -198,8 +198,8 @@
 
 /* Telas médias: chips um pouco mais compactos, ícones seguem visíveis */
 @media (max-width: 1240px) {
-  .nav-categories { gap: 0.4rem !important; }
-  .nav-categories a { font-size: 0.82rem; padding: 0.45rem 0.85rem; }
+  .home-page .nav-categories { gap: 0.4rem !important; }
+  .home-page .nav-categories a { font-size: 0.82rem; padding: 0.45rem 0.85rem; }
 }
 
 /* ==========================================================
@@ -847,7 +847,11 @@
    ========================================================== */
 @media (max-width: 1024px) {
   .home-nav { grid-template-columns: auto 1fr !important; }
-  .home-nav .search-bar { grid-column: 1 / -1; order: 3; }
+  /* item de grid sem min-width:0 herda o min-content dos filhos
+     (busca + seletor de bairro + botão) e estoura a coluna 1fr,
+     empurrando a página inteira pra scroll horizontal no mobile. */
+  .home-nav > * { min-width: 0; }
+  .home-nav .search-bar { grid-column: 1 / -1; order: 3; max-width: none; }
   .search-location { display: none; }
   .hero { grid-template-columns: 1fr; gap: 2rem; padding: 2rem 1.5rem 3rem; }
   .hero-visual { height: 420px; max-width: 500px; margin: 0 auto; }
@@ -858,11 +862,61 @@
   .footer-wrap { grid-template-columns: 1fr 1fr; gap: 2rem; }
 }
 
+/* Fileira de categorias não pode ficar "center" quando estoura a
+   largura — centralizar um conteúdo que rola horizontalmente faz o
+   primeiro item nascer cortado (o scroll começa deslocado). */
+@media (max-width: 768px) {
+  .home-page .nav-categories { justify-content: flex-start !important; }
+}
+
+/* Abaixo de 768px o collage de cards do hero (posição absoluta +
+   rotação, pensado pra telas largas) vira uma grade simples 2x2,
+   sem overlap nem corte de conteúdo. */
+@media (max-width: 768px) {
+  .hero-visual {
+    position: static;
+    height: auto;
+    min-height: 0;
+    max-width: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.9rem;
+  }
+  .hero-card {
+    position: static;
+    width: auto !important;
+    top: auto; left: auto; right: auto; bottom: auto;
+    transform: none !important;
+  }
+  .hero-card:hover { transform: none !important; }
+}
+
 @media (max-width: 600px) {
   .section { padding: 3rem 1.25rem; }
-  .nav-categories { padding: 0.6rem 1rem !important; }
-  .nav-actions a:not(.btn-sell) { display: none; }
-  .hero-trust { flex-wrap: wrap; gap: 1.5rem; }
+  .home-page .nav-categories { padding: 0.6rem 1rem !important; }
+  /* !important necessário: os links usam style inline no JSX, que
+     vence uma regra comum. O chip de perfil fica visível (só o
+     texto "Olá, nome!" some) — sem isso não sobra nenhum jeito de
+     chegar no /perfil pela Home no mobile. */
+  /* .nav-actions é compartilhado (Home/Explorar usam a mesma classe
+     do header) então essa regra também é lida na página Sobre —
+     precisa excluir o chip de perfil de lá também (classe diferente). */
+  .nav-actions a:not(.btn-sell):not(.nav-profile-chip):not(.sobre-user-chip) { display: none !important; }
+  .nav-profile-chip { font-size: 0 !important; gap: 0 !important; }
+
+  /* Linha 1 (logo | ações) vira flex-wrap em vez de grid: se não
+     couber tudo numa linha só, "Anunciar grátis" desce pra linha
+     de baixo inteira, em vez de ficar cortado/espremido no canto. */
+  .home-nav { display: flex !important; flex-wrap: wrap; padding: 1rem !important; gap: 0.6rem !important; }
+  .home-nav .logo { order: 1; font-size: 1.25rem; gap: 0.4rem; }
+  .home-nav .logo-mark { width: 32px; height: 32px; font-size: 0.95rem; }
+  .nav-actions { order: 2; margin-left: auto; gap: 0.5rem; }
+  .nav-actions .btn-sell { padding: 0.55rem 0.85rem; font-size: 0.82rem; }
+  .home-nav .search-bar { order: 3; flex-basis: 100%; }
+
+  /* 3 itens com flex-wrap "sobram" 1 sozinho numa segunda linha
+     desalinhado — em coluna fica limpo e sem quebra estranha. */
+  .hero-trust { flex-direction: column; gap: 1rem; }
   .cat-grid { grid-template-columns: repeat(2, 1fr); }
   .products-grid { grid-template-columns: 1fr; }
   .impact-grid { grid-template-columns: 1fr; }
@@ -871,6 +925,6 @@
 
 /* ── Acessibilidade ─────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .nav-categories a,
-  .nav-categories a svg { transition: none; }
+  .home-page .nav-categories a,
+  .home-page .nav-categories a svg { transition: none; }
 }

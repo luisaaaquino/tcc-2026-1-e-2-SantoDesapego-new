@@ -262,6 +262,12 @@
   .ajuda-bloco { padding: 1.25rem; }
 }
 
+@media (max-width: 480px) {
+  /* "Explorar" + "Sobre nós" lado a lado no header estouram a
+     largura em telas pequenas — mantém só o sino de notificações. */
+  .nav-actions a.nav-btn { display: none !important; }
+}
+
 /* ── Acessibilidade ─────────────────────────────────────── */
 .ajuda-wrapper button:focus-visible,
 .ajuda-wrapper a:focus-visible,

@@ -30,7 +30,9 @@ const NotificacoesSino = () => {
   const [notificacoes, setNotificacoes] = useState([]);
   const [totalNaoLidas, setTotalNaoLidas] = useState(0);
   const [logado, setLogado] = useState(!!localStorage.getItem('sd_token'));
+  const [painelTop, setPainelTop] = useState(null);
   const wrapRef = useRef(null);
+  const btnRef = useRef(null);
 
   const carregar = useCallback(() => {
     const token = localStorage.getItem('sd_token');
@@ -98,8 +100,18 @@ const NotificacoesSino = () => {
     <div className="sino-wrap" ref={wrapRef}>
       <button
         type="button"
+        ref={btnRef}
         className="sino-btn"
-        onClick={() => setAberto((s) => !s)}
+        onClick={() => {
+          // A altura do cabeçalho varia por página (algumas têm busca +
+          // categorias empilhadas no mobile) — calcula a posição real
+          // do sino em vez de supor um valor fixo em CSS, senão o
+          // painel nasce por cima do resto do cabeçalho.
+          if (!aberto && btnRef.current) {
+            setPainelTop(btnRef.current.getBoundingClientRect().bottom + 10);
+          }
+          setAberto((s) => !s);
+        }}
         aria-label={`Notificações${totalNaoLidas > 0 ? ` (${totalNaoLidas} não lidas)` : ''}`}
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -110,7 +122,10 @@ const NotificacoesSino = () => {
       </button>
 
       {aberto && (
-        <div className="sino-painel">
+        <div
+          className="sino-painel"
+          style={painelTop != null ? { '--sino-painel-top': `${painelTop}px` } : undefined}
+        >
           <div className="sino-painel-head">
             <strong>Notificações</strong>
             {totalNaoLidas > 0 && (

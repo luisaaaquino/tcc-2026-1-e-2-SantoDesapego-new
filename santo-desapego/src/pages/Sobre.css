@@ -483,7 +483,30 @@
 
 @media (max-width: 600px) {
   .sobre-hero { padding: 4.5rem 1.25rem 3rem; }
+  /* clamp() tinha um mínimo fixo de 2.8rem — em telas bem estreitas
+     uma palavra em negrito/itálico pode não caber na largura do
+     texto e sair da caixa; reduz o mínimo e garante quebra segura. */
+  .sobre-hero h1 { font-size: clamp(2.2rem, 9vw, 5.2rem); overflow-wrap: break-word; }
   .sobre-valores-grid { grid-template-columns: 1fr; }
   .sobre-manifesto-wrap,
   .sobre-academico-wrap { padding: 3.5rem 1.25rem; }
+
+  /* nav-actions com usuário logado (sino + chip + sair + anunciar)
+     estoura a largura da tela — some com "Sobre nós"/"Sair", mas o
+     chip de perfil fica (só o nome some) — sem isso não sobra
+     nenhum jeito de chegar no /perfil pela Sobre no mobile. */
+  /* !important necessário: Home.css também define essa mesma regra
+     (classe .nav-actions é compartilhada) e teria prioridade aqui. */
+  .nav-actions a:not(.btn-sell):not(.nav-profile-chip):not(.sobre-user-chip) { display: none !important; }
+  .sobre-user-chip { font-size: 0 !important; gap: 0 !important; }
+  .nav-actions button.nav-btn { display: none !important; }
+  .nav-actions .btn-sell { padding: 0.55rem 0.85rem; font-size: 0.82rem; }
+
+  /* grid "auto 1fr auto" não sobra espaço pro nav-actions quando
+     logado (sino + avatar + anunciar) — flex-wrap deixa a linha
+     de ações cair pra baixo do logo em vez de estourar a tela. */
+  .sobre-nav { display: flex !important; flex-wrap: wrap; gap: 0.6rem !important; padding: 1rem !important; }
+  .sobre-nav .logo { order: 1; font-size: 1.25rem; gap: 0.4rem; }
+  .sobre-nav .logo-mark { width: 32px; height: 32px; font-size: 0.95rem; }
+  .sobre-nav .nav-actions { order: 2; margin-left: auto; }
 }
