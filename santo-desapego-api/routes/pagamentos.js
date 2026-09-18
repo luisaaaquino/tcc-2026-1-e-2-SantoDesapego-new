@@ -1,18 +1,35 @@
 const express = require('express');
 const PDFDocument = require('pdfkit');
-const { Preference, Payment } = require('mercadopago');
+const { MercadoPagoConfig, Payment } = require('mercadopago');
 const pool = require('../db');
 const { autenticar } = require('../middleware/auth');
 const { criarNotificacao } = require('../utils/notificacoes');
-const mp = require('../config/mercadopago');
-
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const { garantirTokenVendedorValido, createSplitPreference } = require('../services/mercadoPagoService');
 
 const router = express.Router();
+
+// Busca o anúncio + as credenciais Mercado Pago do vendedor dono dele.
+// Usado tanto pra criar a preference quanto pra consultar/confirmar o pagamento
+// (a consulta também precisa do access_token do vendedor, já que a preference
+// foi criada com a conta dele, não com a da plataforma).
+const buscarAnuncioComVendedor = (anuncioId) =>
+  pool.query(
+    `SELECT a.id, a.titulo, a.preco, a.status, a.vendedor_id,
+            c.nome AS categoria_nome,
+            u.mp_conectado, u.mp_access_token, u.mp_refresh_token, u.mp_token_expira_em
+       FROM anuncios a
+       JOIN categorias c ON c.id = a.categoria_id
+       JOIN usuarios u ON u.id = a.vendedor_id
+      WHERE a.id = $1`,
+    [anuncioId]
+  );
 
 // ============================================================
 //  PAGAMENTO — cria a preferência do Checkout Pro (só cartão)
 //  Chamada pela tela de revisão do pedido (/checkout/:id).
+//  [Marketplace] Usa o access_token do VENDEDOR (não o da
+//  plataforma) e retém 5% de comissão via marketplace_fee — é
+//  isso que faz o dinheiro cair direto na conta de cada vendedor.
 // ============================================================
 router.post('/api/pagamentos/preferencia', autenticar, async (req, res) => {
   try {
@@ -23,14 +40,7 @@ router.post('/api/pagamentos/preferencia', autenticar, async (req, res) => {
     }
 
     // O preço vem SEMPRE do banco — nunca do que o front mandou
-    const resultado = await pool.query(
-      `SELECT a.id, a.titulo, a.preco, a.status, a.vendedor_id,
-              c.nome AS categoria_nome
-         FROM anuncios a
-         JOIN categorias c ON c.id = a.categoria_id
-        WHERE a.id = $1`,
-      [anuncio_id]
-    );
+    const resultado = await buscarAnuncioComVendedor(anuncio_id);
 
     if (resultado.rows.length === 0) {
       return res.status(404).json({ erro: 'Anúncio não encontrado.' });
@@ -44,6 +54,11 @@ router.post('/api/pagamentos/preferencia', autenticar, async (req, res) => {
     if (anuncio.vendedor_id === req.userId) {
       return res.status(400).json({ erro: 'Você não pode comprar o seu próprio anúncio.' });
     }
+    if (!anuncio.mp_conectado) {
+      return res.status(400).json({
+        erro: 'Este vendedor ainda não habilitou o recebimento de pagamentos pelo Mercado Pago.',
+      });
+    }
 
     // Dados do comprador ajudam o Mercado Pago a aprovar mais pagamentos
     const comprador = await pool.query(
@@ -51,55 +66,21 @@ router.post('/api/pagamentos/preferencia', autenticar, async (req, res) => {
       [req.userId]
     );
 
-    const preference = new Preference(mp);
-
-    const resposta = await preference.create({
-      body: {
-        items: [
-          {
-            id: String(anuncio.id),
-            title: anuncio.titulo,
-            description: anuncio.categoria_nome,
-            quantity: 1,
-            currency_id: 'BRL',
-            unit_price: Number(anuncio.preco),
-          },
-        ],
-
-        payer: {
-          name: comprador.rows[0]?.nome,
-          surname: comprador.rows[0]?.sobrenome,
-          email: comprador.rows[0]?.email,
-        },
-
-        // Só cartão — sem Pix, boleto ou lotérica
-        payment_methods: {
-          excluded_payment_types: [
-            { id: 'ticket' },         // boleto e lotérica
-            { id: 'bank_transfer' },  // Pix
-            { id: 'atm' },            // caixa eletrônico
-          ],
-          installments: 12,
-        },
-
-        back_urls: {
-          success: `${FRONTEND_URL}/compra-realizada`,
-          pending: `${FRONTEND_URL}/compra-realizada`,
-          failure: `${FRONTEND_URL}/checkout/${anuncio.id}?falhou=1`,
-        },
-
-        // auto_return não funciona com localhost — o Mercado Pago exige uma
-        // URL pública com HTTPS. Em desenvolvimento, o comprador volta pelo
-        // botão "Voltar ao site" na tela de confirmação do Mercado Pago.
-        // Ao publicar o projeto com domínio real, basta descomentar:
-        // auto_return: 'approved',
-
-        external_reference: String(anuncio.id),
-        statement_descriptor: 'SANTO DESAPEGO',
-      },
+    const sellerAccessToken = await garantirTokenVendedorValido({
+      id: anuncio.vendedor_id,
+      mp_conectado: anuncio.mp_conectado,
+      mp_access_token: anuncio.mp_access_token,
+      mp_refresh_token: anuncio.mp_refresh_token,
+      mp_token_expira_em: anuncio.mp_token_expira_em,
     });
 
-    console.log(`💳 Preferência criada — anúncio #${anuncio.id}`);
+    const resposta = await createSplitPreference({
+      sellerAccessToken,
+      anuncio,
+      comprador: comprador.rows[0] || {},
+    });
+
+    console.log(`💳 Preferência criada (split) — anúncio #${anuncio.id}, vendedor #${anuncio.vendedor_id}`);
 
     // [RF18] Notifica o vendedor da intenção de compra
     criarNotificacao(
@@ -112,9 +93,6 @@ router.post('/api/pagamentos/preferencia', autenticar, async (req, res) => {
 
     return res.json({
       preference_id: resposta.id,
-      // Com credenciais TEST-, o init_point normal já roda em modo de teste.
-      // Não usamos sandbox_init_point: aquele subdomínio (sandbox.mercadopago
-      // .com.br) entra em loop de login com usuários de teste.
       init_point: resposta.init_point,
     });
 
@@ -126,6 +104,10 @@ router.post('/api/pagamentos/preferencia', autenticar, async (req, res) => {
     console.error('Detalhes:', JSON.stringify(erro.cause || erro.error || {}, null, 2));
     console.error('───────────────────────────────────');
 
+    if (erro.codigo === 'VENDEDOR_NAO_CONECTADO') {
+      return res.status(400).json({ erro: erro.message });
+    }
+
     return res.status(500).json({
       erro: 'Não foi possível iniciar o pagamento.',
       detalhe: erro.message,
@@ -135,11 +117,33 @@ router.post('/api/pagamentos/preferencia', autenticar, async (req, res) => {
 
 // ============================================================
 //  PAGAMENTO — consulta o status real de um pagamento
-//  A tela de confirmação usa o payment_id que vem na URL.
+//  A tela de confirmação usa o payment_id e o external_reference
+//  (anuncio_id) que vêm na URL de retorno do Mercado Pago — o
+//  segundo é obrigatório aqui porque a consulta precisa do
+//  access_token do VENDEDOR dono da preference original.
 // ============================================================
 router.get('/api/pagamentos/:paymentId', async (req, res) => {
   try {
-    const payment = new Payment(mp);
+    const { anuncio_id } = req.query;
+    if (!anuncio_id) {
+      return res.status(400).json({ erro: 'Informe o anuncio_id (external_reference) do pagamento.' });
+    }
+
+    const resultado = await buscarAnuncioComVendedor(anuncio_id);
+    if (resultado.rows.length === 0) {
+      return res.status(404).json({ erro: 'Anúncio da compra não foi encontrado.' });
+    }
+    const anuncio = resultado.rows[0];
+
+    const sellerAccessToken = await garantirTokenVendedorValido({
+      id: anuncio.vendedor_id,
+      mp_conectado: anuncio.mp_conectado,
+      mp_access_token: anuncio.mp_access_token,
+      mp_refresh_token: anuncio.mp_refresh_token,
+      mp_token_expira_em: anuncio.mp_token_expira_em,
+    });
+
+    const payment = new Payment(new MercadoPagoConfig({ accessToken: sellerAccessToken }));
     const dados = await payment.get({ id: req.params.paymentId });
 
     return res.json({
@@ -168,29 +172,38 @@ router.get('/api/pagamentos/:paymentId', async (req, res) => {
 // ============================================================
 router.post('/api/compras/confirmar', autenticar, async (req, res) => {
   try {
-    const { payment_id } = req.body;
-    if (!payment_id) {
-      return res.status(400).json({ erro: 'Informe o payment_id do pagamento.' });
+    const { payment_id, anuncio_id } = req.body;
+    if (!payment_id || !anuncio_id) {
+      return res.status(400).json({ erro: 'Informe o payment_id e o anuncio_id do pagamento.' });
     }
 
-    const payment = new Payment(mp);
+    const anuncioResultado = await buscarAnuncioComVendedor(anuncio_id);
+    if (anuncioResultado.rows.length === 0) {
+      return res.status(404).json({ erro: 'Anúncio da compra não foi encontrado.' });
+    }
+    const anuncioComVendedor = anuncioResultado.rows[0];
+
+    const sellerAccessToken = await garantirTokenVendedorValido({
+      id: anuncioComVendedor.vendedor_id,
+      mp_conectado: anuncioComVendedor.mp_conectado,
+      mp_access_token: anuncioComVendedor.mp_access_token,
+      mp_refresh_token: anuncioComVendedor.mp_refresh_token,
+      mp_token_expira_em: anuncioComVendedor.mp_token_expira_em,
+    });
+
+    const payment = new Payment(new MercadoPagoConfig({ accessToken: sellerAccessToken }));
     const dados = await payment.get({ id: payment_id });
+
+    // O pagamento tem que realmente ser da preference criada pra este anúncio
+    if (String(dados.external_reference) !== String(anuncio_id)) {
+      return res.status(400).json({ erro: 'O pagamento informado não corresponde a este anúncio.' });
+    }
 
     if (dados.status !== 'approved') {
       return res.status(200).json({ registrada: false, status: dados.status });
     }
 
-    const anuncioId = dados.external_reference;
-    const anuncio = await pool.query(
-      'SELECT id, titulo, vendedor_id, preco, status FROM anuncios WHERE id = $1',
-      [anuncioId]
-    );
-
-    if (anuncio.rows.length === 0) {
-      return res.status(404).json({ erro: 'Anúncio da compra não foi encontrado.' });
-    }
-
-    const { titulo, vendedor_id, preco } = anuncio.rows[0];
+    const { titulo, vendedor_id, preco } = anuncioComVendedor;
 
     if (vendedor_id === req.userId) {
       return res.status(400).json({ erro: 'Você não pode confirmar uma compra do seu próprio anúncio.' });
@@ -203,14 +216,14 @@ router.post('/api/compras/confirmar', autenticar, async (req, res) => {
        ON CONFLICT (payment_id) DO UPDATE SET status = EXCLUDED.status
        RETURNING id, anuncio_id, preco, status, criada_em, (xmax = 0) AS inserida`,
       [
-        anuncioId, req.userId, vendedor_id, preco,
+        anuncio_id, req.userId, vendedor_id, preco,
         String(payment_id), dados.status, dados.payment_method_id, dados.installments,
       ]
     );
 
     await pool.query(
       `UPDATE anuncios SET status = 'vendido' WHERE id = $1 AND status = 'ativo'`,
-      [anuncioId]
+      [anuncio_id]
     );
 
     // [RF18] Só notifica na primeira confirmação — evita duplicar em chamadas idempotentes

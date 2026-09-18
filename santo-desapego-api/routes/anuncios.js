@@ -452,6 +452,7 @@ router.get('/api/anuncios', autenticarOpcional, async (req, res) => {
         c.nome AS categoria_nome,
         u.nome AS vendedor_nome,
         u.foto_perfil AS vendedor_foto,
+        u.mp_conectado AS vendedor_recebe_pagamentos,
         (SELECT imagem FROM anuncio_imagens WHERE anuncio_id = a.id AND is_principal = true LIMIT 1) AS imagem_principal
       FROM anuncios a
       JOIN categorias c ON a.categoria_id = c.id
@@ -562,7 +563,8 @@ router.get('/api/anuncios/:id', autenticarOpcional, async (req, res) => {
          u.nome AS vendedor_nome,
          u.nome AS usuario_nome,
          u.sobrenome AS vendedor_sobrenome,
-         u.foto_perfil AS vendedor_foto
+         u.foto_perfil AS vendedor_foto,
+         u.mp_conectado AS vendedor_recebe_pagamentos
        FROM anuncios a
        JOIN categorias c ON a.categoria_id = c.id
        JOIN usuarios   u ON a.vendedor_id  = u.id

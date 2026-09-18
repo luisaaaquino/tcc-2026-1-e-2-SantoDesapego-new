@@ -427,6 +427,13 @@
   margin-bottom: 0.75rem;
 }
 .ecard-distancia { color: var(--forest); font-weight: 600; }
+.ecard-selo-pagamento {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--forest);
+  margin-bottom: 0.6rem;
+}
+.ecard-selo-pagamento.indisponivel { color: var(--ink-muted); font-weight: 500; }
 .ecard-meta {
   display: flex;
   align-items: center;
@@ -531,19 +538,25 @@
    (replicado aqui para a página ser autossuficiente)
    ========================================================== */
 /* Escopado em .explorar-wrapper: .nav-categories é uma classe
-   global (também usada na Home, com overflow-x:auto) — sem esse
-   escopo essas regras vazam para as outras páginas via bundle CSS
-   compartilhado e quebram o scroll horizontal da Home no mobile. */
+   global (também usada na Home) — sem esse escopo essas regras
+   vazam para as outras páginas via bundle CSS compartilhado.
+   Mesma abordagem de scroll horizontal da Home (não quebra linha):
+   flex-start, não center — com overflow-x:auto, centralizar um
+   conteúdo que estoura a largura faz o primeiro item nascer cortado
+   à esquerda, fora do alcance do scroll. */
 .explorar-wrapper .nav-categories {
   display: flex !important;
-  flex-wrap: wrap;
+  flex-wrap: nowrap !important;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start !important;
   gap: 0.55rem !important;
   padding: 0.85rem 2rem !important;
   border-top: 1px solid var(--border-soft);
-  overflow-x: visible !important;
+  overflow-x: auto !important;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+.explorar-wrapper .nav-categories::-webkit-scrollbar { display: none; }
 
 .explorar-wrapper .nav-categories a {
   display: inline-flex;
@@ -560,6 +573,7 @@
   border: 1.5px solid var(--border-soft);
   border-radius: var(--radius-pill);
   white-space: nowrap;
+  flex-shrink: 0;
   position: relative;
   transition: background 0.18s ease, border-color 0.18s ease,
               color 0.18s ease, transform 0.18s ease;

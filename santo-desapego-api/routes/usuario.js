@@ -86,7 +86,7 @@ router.get('/api/usuario/perfil', autenticar, async (req, res) => {
       `SELECT id, nome, sobrenome, cpf, telefone, email,
               cep, logradouro, numero, complemento, bairro,
               recebe_newsletter, aceita_termos, foto_perfil, papel,
-              termos_versao, termos_aceitos_em
+              termos_versao, termos_aceitos_em, mp_conectado
        FROM usuarios WHERE id = $1`, [req.userId]
     );
 

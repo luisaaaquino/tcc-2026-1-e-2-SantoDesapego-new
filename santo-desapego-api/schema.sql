@@ -26,7 +26,17 @@ CREATE TABLE usuarios (
   status_conta       VARCHAR(20)   NOT NULL DEFAULT 'ativa' CHECK (status_conta IN ('ativa','suspensa')),
   reset_senha_token  VARCHAR(255),
   reset_senha_expira TIMESTAMP,
-  anonimizada_em     TIMESTAMP
+  anonimizada_em     TIMESTAMP,
+
+  -- Mercado Pago Marketplace [split de pagamento] — credenciais OAuth da
+  -- conta MP do próprio vendedor, usadas pra criar a preference da venda
+  -- dele e reter a comissão da plataforma via marketplace_fee.
+  mp_user_id         BIGINT,
+  mp_access_token    TEXT,
+  mp_refresh_token   TEXT,
+  mp_public_key      TEXT,
+  mp_token_expira_em TIMESTAMPTZ,
+  mp_conectado       BOOLEAN       NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE categorias (

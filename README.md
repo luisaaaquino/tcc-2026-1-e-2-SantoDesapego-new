@@ -56,6 +56,10 @@ JWT_SECRET=
 PORT=
 FRONTEND_URL=
 MP_ACCESS_TOKEN=
+MP_CLIENT_ID=
+MP_CLIENT_SECRET=
+MP_REDIRECT_URI=
+MP_MARKETPLACE_FEE_PERCENT=5
 ```
 Crie o banco de dados usando o script `schema.sql` e inicie o servidor:
 ```bash

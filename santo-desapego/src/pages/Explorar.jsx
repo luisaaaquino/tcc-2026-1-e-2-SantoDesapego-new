@@ -523,6 +523,11 @@ const Explorar = () => {
                             <span className="ecard-distancia"> · {anuncio.distancia_km < 1 ? 'menos de 1 km' : `${anuncio.distancia_km.toFixed(1)} km`}</span>
                           )}
                         </p>
+                        {anuncio.vendedor_recebe_pagamentos ? (
+                          <p className="ecard-selo-pagamento">✓ Recebe pagamentos</p>
+                        ) : (
+                          <p className="ecard-selo-pagamento indisponivel">Vendedor ainda não habilitou pagamentos</p>
+                        )}
                         <div className="ecard-meta">
                           <span className="ecard-condicao">{estado.emoji} {estado.label}</span>
                           <span className="ecard-tempo">{tempoRelativo(anuncio.data_criacao)}</span>

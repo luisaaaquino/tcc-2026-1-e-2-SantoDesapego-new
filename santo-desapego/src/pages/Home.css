@@ -109,7 +109,10 @@
   display: flex !important;
   flex-wrap: nowrap !important;
   align-items: center;
-  justify-content: center !important;
+  /* flex-start, não center: com overflow-x:auto, centralizar um
+     conteúdo que estoura a largura faz o primeiro item nascer cortado
+     à esquerda, fora do alcance do scroll. */
+  justify-content: flex-start !important;
   gap: 0.55rem !important;
   padding: 0.85rem 1.25rem !important;
   border-top: 1px solid var(--border-soft);
@@ -194,12 +197,6 @@
   height: 22px;
   margin: 0 0.15rem;
   background: var(--border);
-}
-
-/* Telas médias: chips um pouco mais compactos, ícones seguem visíveis */
-@media (max-width: 1240px) {
-  .home-page .nav-categories { gap: 0.4rem !important; }
-  .home-page .nav-categories a { font-size: 0.82rem; padding: 0.45rem 0.85rem; }
 }
 
 /* ==========================================================
@@ -950,13 +947,6 @@
   .steps { grid-template-columns: 1fr; }
   .impact-wrap, .local-wrap { grid-template-columns: 1fr; gap: 2.5rem; }
   .footer-wrap { grid-template-columns: 1fr 1fr; gap: 2rem; }
-}
-
-/* Fileira de categorias não pode ficar "center" quando estoura a
-   largura — centralizar um conteúdo que rola horizontalmente faz o
-   primeiro item nascer cortado (o scroll começa deslocado). */
-@media (max-width: 768px) {
-  .home-page .nav-categories { justify-content: flex-start !important; }
 }
 
 /* Abaixo de 768px o collage de cards do hero (posição absoluta +

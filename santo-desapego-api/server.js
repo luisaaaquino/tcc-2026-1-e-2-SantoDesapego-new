@@ -38,6 +38,7 @@ app.use(require('./routes/anuncios'));
 app.use(require('./routes/favoritos'));
 app.use(require('./routes/conversas'));
 app.use(require('./routes/pagamentos'));
+app.use(require('./routes/mercadoPago'));
 app.use(require('./routes/admin'));
 
 // ============================================================

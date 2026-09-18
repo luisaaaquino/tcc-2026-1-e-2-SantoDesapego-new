@@ -115,7 +115,8 @@ const Checkout = () => {
 
   const indisponivel = anuncio.status !== 'ativo';
   const meuProprioAnuncio = usuario && anuncio.vendedor_id === usuario.id;
-  const bloqueado = indisponivel || meuProprioAnuncio;
+  const vendedorSemPagamentos = !anuncio.vendedor_recebe_pagamentos;
+  const bloqueado = indisponivel || meuProprioAnuncio || vendedorSemPagamentos;
 
   return (
     <div className="checkout-wrapper">
@@ -145,6 +146,12 @@ const Checkout = () => {
         {meuProprioAnuncio && (
           <div className="checkout-alerta erro">
             Este anúncio é seu — não dá para comprar de você mesmo.
+          </div>
+        )}
+        {!indisponivel && !meuProprioAnuncio && vendedorSemPagamentos && (
+          <div className="checkout-alerta erro">
+            Este vendedor ainda não habilitou o recebimento de pagamentos pelo Mercado Pago.
+            A compra fica indisponível até lá.
           </div>
         )}
 

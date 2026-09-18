@@ -302,6 +302,9 @@ const Anuncio = () => {
             <div className="anuncio-tags">
               <span className="anuncio-tag">{estado.emoji} {estado.name}</span>
               {anuncio.aceita_troca && <span className="anuncio-tag troca">🔄 Aceita troca</span>}
+              {anuncio.vendedor_recebe_pagamentos && (
+                <span className="anuncio-tag troca">✓ Vendedor recebe pagamentos</span>
+              )}
             </div>
 
             <p className="anuncio-local">
@@ -310,7 +313,12 @@ const Anuncio = () => {
             </p>
 
             <div className="anuncio-acoes">
-              <button type="button" className="btn-anuncio-comprar" onClick={comprar}>
+              <button
+                type="button"
+                className="btn-anuncio-comprar"
+                onClick={comprar}
+                disabled={!anuncio.vendedor_recebe_pagamentos}
+              >
                 Comprar agora
               </button>
               <button
@@ -330,6 +338,13 @@ const Anuncio = () => {
                 {anuncio.favoritado ? 'Salvo nos favoritos' : 'Salvar nos favoritos'}
               </button>
             </div>
+
+            {!anuncio.vendedor_recebe_pagamentos && (
+              <p className="anuncio-erro-pagamento">
+                Este vendedor ainda não habilitou o recebimento de pagamentos pelo Mercado Pago.
+                Você pode conversar com ele, mas a compra fica indisponível até lá.
+              </p>
+            )}
 
             {erroAcao && <p className="anuncio-erro-pagamento">{erroAcao}</p>}
 
@@ -372,7 +387,12 @@ const Anuncio = () => {
           <span>{anuncio.titulo}</span>
           <strong>{brl(anuncio.preco)}</strong>
         </div>
-        <button type="button" className="btn-anuncio-comprar" onClick={comprar}>
+        <button
+          type="button"
+          className="btn-anuncio-comprar"
+          onClick={comprar}
+          disabled={!anuncio.vendedor_recebe_pagamentos}
+        >
           Comprar agora
         </button>
       </div>

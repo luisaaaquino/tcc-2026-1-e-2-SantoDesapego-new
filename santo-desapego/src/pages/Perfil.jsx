@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import './Perfil.css';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
@@ -20,6 +20,7 @@ const I = {
   message: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
   camera:  () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>,
   download: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
+  wallet:  () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>,
   trash:   () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
 };
 
@@ -70,9 +71,10 @@ const Avatar = ({ usuario, size = 88 }) => {
    ════════════════════════════════════════════════════════════ */
 const Perfil = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [usuario, setUsuario] = useState(null);
   const [estatisticas, setEstatisticas] = useState(null);
-  const [aba, setAba] = useState('painel');
+  const [aba, setAba] = useState(searchParams.get('mp') ? 'pagamentos' : 'painel');
   const [carregando, setCarregando] = useState(true);
 
   // Carrega dados ao montar
@@ -158,6 +160,10 @@ const Perfil = () => {
               onClick={() => setAba('vendas')} role="tab">
               <IconTag /> Vendas realizadas
             </button>
+            <button className={`perfil-tab${aba === 'pagamentos' ? ' active' : ''}`}
+              onClick={() => setAba('pagamentos')} role="tab">
+              <I.wallet /> Recebimentos
+            </button>
             <button className={`perfil-tab${aba === 'avaliacoes' ? ' active' : ''}`}
               onClick={() => setAba('avaliacoes')} role="tab">
               <I.star /> Avaliações
@@ -197,6 +203,7 @@ const Perfil = () => {
           {aba === 'favoritos'  && <SecaoFavoritos  />}
           {aba === 'compras'    && <SecaoCompras    />}
           {aba === 'vendas'     && <SecaoVendas      />}
+          {aba === 'pagamentos' && <SecaoPagamentos  usuario={usuario} setUsuario={setUsuario} mpParam={searchParams.get('mp')} limparMpParam={() => setSearchParams({})} />}
           {aba === 'avaliacoes' && <SecaoAvaliacoes />}
           {aba === 'denuncias'  && <SecaoMinhasDenuncias />}
           {aba === 'dados'     && <SecaoDados     usuario={usuario} setUsuario={setUsuario} />}
@@ -969,6 +976,107 @@ const SecaoMinhasDenuncias = () => {
           ))}
         </div>
       )}
+    </>
+  );
+};
+
+/* ════════════════════════════════════════════════════════════
+   SEÇÃO RECEBIMENTOS — conexão da conta Mercado Pago do vendedor
+   [Marketplace] Sem isso conectado, o vendedor não recebe as
+   vendas dele (nem consegue vender — os anúncios ficam bloqueados
+   pra compra até a conta ser conectada).
+   ════════════════════════════════════════════════════════════ */
+const SecaoPagamentos = ({ usuario, setUsuario, mpParam, limparMpParam }) => {
+  const [conectando, setConectando] = useState(false);
+  const [erro, setErro] = useState('');
+  const [feedback] = useState(
+    mpParam === 'conectado'
+      ? { tipo: 'success', msg: 'Conta do Mercado Pago conectada com sucesso! Agora suas vendas caem direto na sua conta.' }
+      : mpParam === 'erro'
+      ? { tipo: 'error', msg: 'Não foi possível conectar sua conta do Mercado Pago. Tente novamente.' }
+      : null
+  );
+
+  // Ao voltar do Mercado Pago, atualiza o status na tela e limpa o
+  // ?mp=... da URL pra não reaparecer se a página for recarregada.
+  useEffect(() => {
+    if (!mpParam) return;
+    if (mpParam === 'conectado') {
+      setUsuario((prev) => ({ ...prev, mp_conectado: true }));
+    }
+    limparMpParam();
+  }, [mpParam]);
+
+  const conectar = async () => {
+    setConectando(true);
+    setErro('');
+    try {
+      const resposta = await fetch(`${API_URL}/api/mp/connect`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('sd_token')}` },
+      });
+      const dados = await resposta.json();
+      if (!resposta.ok || !dados.url) {
+        setErro(dados.erro || 'Não foi possível iniciar a conexão com o Mercado Pago.');
+        setConectando(false);
+        return;
+      }
+      window.location.href = dados.url;
+    } catch {
+      setErro('Erro ao conectar com o servidor.');
+      setConectando(false);
+    }
+  };
+
+  const conectado = usuario?.mp_conectado === true;
+
+  return (
+    <>
+      <div className="perfil-section-head">
+        <h1>Recebimentos <em>Mercado Pago</em></h1>
+        <p>Conecte sua conta pra receber o valor das suas vendas direto, sem intermediário.</p>
+      </div>
+
+      {feedback && (
+        <div className={`perfil-alert ${feedback.tipo}`}>
+          {feedback.tipo === 'success' ? <IconCheck /> : <IconAlert />}
+          {feedback.msg}
+        </div>
+      )}
+      {erro && (
+        <div className="perfil-alert error">
+          <IconAlert /> {erro}
+        </div>
+      )}
+
+      <div className={`painel-cta ${conectado ? 'sell' : 'buy'}`} style={{ maxWidth: 520 }}>
+        <div className="painel-cta-icon"><I.wallet /></div>
+        {conectado ? (
+          <>
+            <h3>Conta conectada ✓</h3>
+            <p>
+              Suas vendas são pagas direto na sua conta do Mercado Pago.
+              A plataforma retém apenas a comissão de intermediação sobre cada venda.
+            </p>
+          </>
+        ) : (
+          <>
+            <h3>Você ainda não pode vender</h3>
+            <p>
+              Pra receber pagamentos, conecte sua conta do Mercado Pago. Sem isso,
+              seus anúncios ficam visíveis mas ninguém consegue comprar deles.
+            </p>
+            <button
+              type="button"
+              className="painel-cta-btn"
+              onClick={conectar}
+              disabled={conectando}
+              style={{ border: 'none', cursor: 'pointer' }}
+            >
+              <I.wallet /> {conectando ? 'Abrindo Mercado Pago...' : 'Conectar minha conta Mercado Pago'}
+            </button>
+          </>
+        )}
+      </div>
     </>
   );
 };

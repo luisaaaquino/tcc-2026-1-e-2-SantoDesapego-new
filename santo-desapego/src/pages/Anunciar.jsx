@@ -89,7 +89,7 @@ const Anunciar = () => {
             setForm({
               titulo: anuncio.titulo || '',
               descricao: anuncio.descricao || '',
-              preco: String(anuncio.preco ?? ''),
+              preco: String(anuncio.preco ?? '').replace('.', ','),
               aceita_troca: anuncio.aceita_troca === true,
               estado_conservacao: anuncio.estado_conservacao || '',
               categoria_principal: principal ? String(principal.id) : '',
@@ -125,13 +125,17 @@ const Anunciar = () => {
   };
 
   const formatPreco = (value) => {
-    // Aceita só números, vírgula e ponto
-    let v = value.replace(/[^\d,]/g, '').replace(/,/g, '.');
-    // Mantém só 1 ponto decimal
-    const partes = v.split('.');
-    if (partes.length > 2) v = partes[0] + '.' + partes.slice(1).join('');
+    // Padrão brasileiro: só dígitos e vírgula, no máximo 2 casas decimais.
+    // Nunca converte pra ponto aqui — isso é o que fazia o campo "comer"
+    // os centavos (o ponto virava inválido de novo na tecla seguinte).
+    let v = value.replace(/[^\d,]/g, '');
+    const [inteiro, ...resto] = v.split(',');
+    v = resto.length > 0 ? `${inteiro},${resto.join('').slice(0, 2)}` : inteiro;
     setForm({ ...form, preco: v });
   };
+
+  // Converte "1.234,56" (exibido) pra 1234.56 (número) só na hora de usar
+  const precoParaNumero = (v) => parseFloat((v || '').replace(',', '.'));
 
   /* ── Subcategorias da principal selecionada ────────────── */
   const subcategorias = (() => {
@@ -233,7 +237,7 @@ const Anunciar = () => {
     if (principal?.subcategorias?.length > 0 && !form.categoria_id)
       return 'Selecione uma subcategoria.';
 
-    const precoNum = parseFloat(form.preco);
+    const precoNum = precoParaNumero(form.preco);
     if (!precoNum || precoNum <= 0)
       return 'Informe um preço válido (maior que zero).';
     if (precoNum > 999999.99)
@@ -281,7 +285,7 @@ const Anunciar = () => {
         body: JSON.stringify({
           titulo: form.titulo.trim(),
           descricao: form.descricao.trim(),
-          preco: parseFloat(form.preco),
+          preco: precoParaNumero(form.preco),
           aceita_troca: form.aceita_troca,
           estado_conservacao: form.estado_conservacao,
           categoria_id: parseInt(categoria_id_final),
@@ -528,7 +532,7 @@ const Anunciar = () => {
                       onChange={(e) => formatPreco(e.target.value)}
                       required />
                   </div>
-                  <span className="anunciar-field-hint">Use ponto ou vírgula para os centavos.</span>
+                  <span className="anunciar-field-hint">Use vírgula para os centavos. Ex: 89,90</span>
                 </div>
 
                 <div className="anunciar-field">

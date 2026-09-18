@@ -31,19 +31,22 @@ export default function CompraRealizada() {
   }, [anuncioId, anuncio]);
 
   // Confirma o status do pagamento direto no Mercado Pago
+  // [Marketplace] Precisa do anuncio_id (external_reference) porque a
+  // consulta usa o access_token do VENDEDOR dono daquele anúncio, não
+  // o da plataforma — cada preference foi criada com a conta dele.
   useEffect(() => {
-    if (!paymentId) { setCarregando(false); return; }
+    if (!paymentId || !anuncioId) { setCarregando(false); return; }
 
-    fetch(`${API_URL}/api/pagamentos/${paymentId}`)
+    fetch(`${API_URL}/api/pagamentos/${paymentId}?anuncio_id=${anuncioId}`)
       .then((r) => r.json())
       .then((dados) => { if (dados.pagamento) setPagamento(dados.pagamento); })
       .catch((e) => console.error('[compra] pagamento', e))
       .finally(() => setCarregando(false));
-  }, [paymentId]);
+  }, [paymentId, anuncioId]);
 
   // Grava a compra no banco assim que o pagamento é confirmado como aprovado
   useEffect(() => {
-    if (!paymentId || pagamento?.status !== 'approved') return;
+    if (!paymentId || !anuncioId || pagamento?.status !== 'approved') return;
 
     const token = localStorage.getItem('sd_token');
     if (!token) return;
@@ -54,9 +57,9 @@ export default function CompraRealizada() {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ payment_id: paymentId }),
+      body: JSON.stringify({ payment_id: paymentId, anuncio_id: anuncioId }),
     }).catch((e) => console.error('[compra] confirmar', e));
-  }, [paymentId, pagamento]);
+  }, [paymentId, anuncioId, pagamento]);
 
   const status = pagamento?.status || statusUrl || 'approved';
   const aprovado = status === 'approved';
