@@ -59,6 +59,19 @@ const IMPACT_CARDS = [
   },
 ];
 
+const CATEGORIAS = [
+  { id: 1, nome: 'Móveis & Casa', Icon: IconSofa },
+  { id: 2, nome: 'Eletrônicos', Icon: IconLaptop },
+  { id: 3, nome: 'Moda', Icon: IconShirt },
+  { id: 4, nome: 'Infantil & Bebê', Icon: IconBaby },
+  { id: 5, nome: 'Livros', Icon: IconBook },
+  { id: 6, nome: 'Esporte & Lazer', Icon: IconBike },
+  { id: 7, nome: 'Arte & Decoração', Icon: IconPalette },
+  { id: 8, nome: 'Ferramentas', Icon: IconWrench },
+  { id: 9, nome: 'Brechó vintage', Icon: IconHanger },
+  { id: 10, nome: 'Outros', Icon: IconMore },
+];
+
 const HOODS = [
   'Santo Amaro Centro', 'Jardim Marajoara', 'Campo Belo',
   'Brooklin', 'Granja Julieta', 'Vila Cruzeiro',
@@ -110,6 +123,21 @@ const Home = () => {
   // ── Estado do usuário logado (lê do localStorage)
   const [usuario, setUsuario] = useState(null);
 
+  // ── Menu mobile (hambúrguer + gaveta)
+  const [menuAberto, setMenuAberto] = useState(false);
+  const fecharMenu = () => setMenuAberto(false);
+
+  useEffect(() => {
+    document.body.style.overflow = menuAberto ? 'hidden' : '';
+    if (!menuAberto) return;
+    const onKeyDown = (e) => { if (e.key === 'Escape') setMenuAberto(false); };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [menuAberto]);
+
   // ── Modal de Termos de Uso / Privacidade (aberto pelos links do rodapé)
   const [legalAberto, setLegalAberto] = useState(null); // null | 'termos' | 'privacidade'
   const abrirLegal = (aba) => (e) => {
@@ -124,6 +152,11 @@ const Home = () => {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [legalAberto]);
+
+  // Colunas do rodapé (<details>) ficam sempre abertas
+  useEffect(() => {
+    document.querySelectorAll('.home-footer details').forEach((d) => { d.open = true; });
+  }, []);
 
   useEffect(() => {
     const usuarioSalvo = localStorage.getItem('sd_usuario');
@@ -210,7 +243,7 @@ const Home = () => {
             <IconSearch />
             <input
               type="text"
-              placeholder="Buscar sofá, bicicleta, livro, notebook..."
+              placeholder="Buscar sofá, bicicleta, livro..."
               value={termoBusca}
               onChange={(e) => setTermoBusca(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleBuscar(e)}
@@ -218,7 +251,10 @@ const Home = () => {
               onFocus={() => sugestoes.length > 0 && setMostrarSugestoes(true)}
             />
             <SeletorBairro value={bairroBusca} onChange={handleBairro} />
-            <button className="search-btn" onClick={handleBuscar}>Buscar</button>
+            <button className="search-btn" onClick={handleBuscar} aria-label="Buscar">
+              <span className="search-btn-label">Buscar</span>
+              <span className="search-btn-icon"><IconSearch /></span>
+            </button>
 
             {mostrarSugestoes && sugestoes.length > 0 && (
               <div className="search-suggestions">
@@ -281,6 +317,16 @@ const Home = () => {
               </>
             )}
           </nav>
+
+          <button
+            type="button"
+            className="nav-burger"
+            aria-label={menuAberto ? 'Fechar menu' : 'Abrir menu'}
+            aria-expanded={menuAberto}
+            onClick={() => setMenuAberto((v) => !v)}
+          >
+            <span /><span /><span />
+          </button>
         </div>
 
         {/* ── Nav de categorias — linha única com scroll horizontal ── */}
@@ -299,6 +345,37 @@ const Home = () => {
           <Link to="/explorar?categoria_id=10"><IconMore /><span>Outros</span></Link>
         </nav>
       </header>
+
+      {/* ── Gaveta do menu (mobile) ── */}
+      <div className={`mobile-drawer${menuAberto ? ' open' : ''}`} aria-hidden={!menuAberto}>
+        <div className="mobile-drawer-backdrop" onClick={fecharMenu} />
+        <nav className="mobile-drawer-panel" aria-label="Menu principal">
+          {usuario && (
+            <Link to="/perfil" className="drawer-user" onClick={fecharMenu}>
+              <span className="drawer-avatar">
+                {usuario.foto_perfil
+                  ? <img src={usuario.foto_perfil} alt="" />
+                  : usuario.nome[0].toUpperCase()}
+              </span>
+              <span>Olá, {usuario.nome}!<small>Ver meu perfil</small></span>
+            </Link>
+          )}
+          <Link to="/explorar" onClick={fecharMenu}>Explorar desapegos</Link>
+          <a href="#como-funciona" onClick={fecharMenu}>Como funciona</a>
+          <Link to="/sobre" onClick={fecharMenu}>Sobre nós</Link>
+          <Link to="/central-ajuda" onClick={fecharMenu}>Central de ajuda</Link>
+          {usuario ? (
+            <button type="button" className="drawer-logout" onClick={() => { fecharMenu(); handleLogout(); }}>
+              <IconLogout /> Sair
+            </button>
+          ) : (
+            <Link to="/login" onClick={fecharMenu}>Entrar</Link>
+          )}
+          <Link to={linkAnunciar} className="btn-home-primary drawer-cta" onClick={fecharMenu}>
+            + Anunciar grátis
+          </Link>
+        </nav>
+      </div>
 
       {/* ══════════════════════════════════
           HERO
@@ -325,6 +402,9 @@ const Home = () => {
           </p>
 
           <div className="hero-cta-row">
+            <Link to={linkAnunciar} className="btn-home-primary hero-cta-sell">
+              {usuario ? 'Criar anúncio' : 'Anunciar grátis'} <IconArrowRight />
+            </Link>
             <Link to="/explorar" className="btn-home-primary">
               Explorar desapegos <IconArrowRight />
             </Link>
@@ -359,6 +439,22 @@ const Home = () => {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* ══════════════════════════════════
+          CATEGORIAS (só mobile — no desktop ficam na faixa do header)
+          ══════════════════════════════════ */}
+      <section className="mobile-cats" aria-label="Categorias">
+        <h2>Explore por <em>categoria</em></h2>
+        <div className="mobile-cats-grid">
+          {CATEGORIAS.map(({ id, nome, Icon }) => (
+            <Link key={id} to={`/explorar?categoria_id=${id}`} className="mobile-cat">
+              <span className="mobile-cat-icon"><Icon /></span>
+              <span className="mobile-cat-name">{nome}</span>
+            </Link>
+          ))}
+        </div>
+        <Link to="/explorar" className="mobile-cats-all">Ver todos os anúncios <IconArrowRight /></Link>
       </section>
 
       {/* ══════════════════════════════════
@@ -481,16 +577,18 @@ const Home = () => {
           </div>
 
           {FOOTER_LINKS.map((col) => (
-            <div key={col.title} className="footer-col">
-              <h4>{col.title}</h4>
-              {col.links.map((l) => {
-                if (l === 'Nosso impacto') return <Link key={l} to="/sobre">Sobre nós</Link>;
-                if (l === 'Central de ajuda') return <Link key={l} to="/central-ajuda">Central de ajuda</Link>;
-                if (l === 'Termos de uso') return <a key={l} href="#termos" onClick={abrirLegal('termos')}>{l}</a>;
-                if (l === 'Privacidade (LGPD)') return <a key={l} href="#termos" onClick={abrirLegal('privacidade')}>{l}</a>;
-                return <a key={l} href="#">{l}</a>;
-              })}
-            </div>
+            <details key={col.title} className="footer-col">
+              <summary><h4>{col.title}</h4></summary>
+              <div className="footer-col-links">
+                {col.links.map((l) => {
+                  if (l === 'Nosso impacto') return <Link key={l} to="/sobre">Sobre nós</Link>;
+                  if (l === 'Central de ajuda') return <Link key={l} to="/central-ajuda">Central de ajuda</Link>;
+                  if (l === 'Termos de uso') return <a key={l} href="#termos" onClick={abrirLegal('termos')}>{l}</a>;
+                  if (l === 'Privacidade (LGPD)') return <a key={l} href="#termos" onClick={abrirLegal('privacidade')}>{l}</a>;
+                  return <a key={l} href="#">{l}</a>;
+                })}
+              </div>
+            </details>
           ))}
         </div>
 
