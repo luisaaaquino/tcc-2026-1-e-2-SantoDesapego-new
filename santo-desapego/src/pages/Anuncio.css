@@ -126,6 +126,7 @@
   color: var(--ink);
   line-height: 1.15;
   margin-bottom: 0.6rem;
+  overflow-wrap: break-word;
 }
 
 .anuncio-preco {
@@ -280,7 +281,7 @@
   font-weight: 700;
   font-family: var(--font-display);
 }
-.anuncio-vendedor strong { display: block; font-size: 0.95rem; color: var(--ink); }
+.anuncio-vendedor strong { display: block; font-size: 0.95rem; color: var(--ink); overflow-wrap: break-word; }
 .anuncio-vendedor p { font-size: 0.8rem; color: var(--ink-muted); margin: 0.1rem 0 0; }
 
 /* ── Denunciar ──────────────────────────────────────────── */
@@ -348,6 +349,7 @@
   color: var(--ink-soft);
   margin-bottom: 1.75rem;
   white-space: pre-line;
+  overflow-wrap: break-word;
 }
 
 .anuncio-ficha { display: grid; gap: 0; margin: 0; }
@@ -365,7 +367,7 @@
   font-weight: 600;
   color: var(--ink-muted);
 }
-.anuncio-ficha dd { margin: 0; font-size: 0.9rem; color: var(--ink); text-align: right; }
+.anuncio-ficha dd { margin: 0; font-size: 0.9rem; color: var(--ink); text-align: right; overflow-wrap: break-word; }
 
 /* ── Estados (carregando / erro) ────────────────────────── */
 .anuncio-estado {

@@ -1,0 +1,218 @@
+/* ============================================================
+   INDIQUE.CSS — Página "Indique um vizinho"
+   Reaproveita os tokens e classes globais (Home.css): --cream,
+   --terracotta, --forest, --mustard, .hero-kicker, .badge-ods,
+   .impact-card, .btn-home-primary, .btn-ghost, .cta-section,
+   .home-footer — e o header/gaveta/rodapé no mesmo padrão da
+   página Sobre (.sobre-nav, .nav-burger, .mobile-drawer).
+   ============================================================ */
+
+.indique-page { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ── Aviso "em construção" — só nesta página ── */
+.indique-aviso-obras {
+  background: var(--mustard-soft);
+  color: var(--ink);
+  text-align: center;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  padding: 0.8rem 1.5rem;
+  border-bottom: 1px solid var(--mustard);
+}
+.indique-aviso-obras strong { font-weight: 700; }
+
+@media (max-width: 600px) {
+  .indique-aviso-obras { font-size: 0.82rem; padding: 0.7rem 1rem; }
+}
+
+/* ==========================================================
+   HERO
+   ========================================================== */
+.indique-hero {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 5rem 2rem 4rem;
+  text-align: center;
+  position: relative;
+  overflow: visible;
+}
+/* palavra gigante vazada atrás do título — mesma assinatura da Sobre,
+   sem ela a página ficava "chapada" perto do resto do site */
+.indique-hero::before {
+  content: "VIZINHOS";
+  position: absolute;
+  top: -0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(4.5rem, 12vw, 9rem);
+  letter-spacing: -0.03em;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--terracotta);
+  opacity: 0.1;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+.indique-hero > * { position: relative; }
+.indique-hero .hero-kicker { margin-bottom: 1.5rem; }
+.indique-hero h1 {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(2.4rem, 5.5vw, 4rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  margin-bottom: 1.5rem;
+  overflow-wrap: break-word;
+}
+.indique-hero h1 em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--terracotta);
+}
+.indique-lede {
+  font-size: 1.15rem;
+  color: var(--ink-soft);
+  max-width: 560px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+/* ==========================================================
+   CONVITE — faixa colorida + card central de compartilhamento
+   ========================================================== */
+/* Faixa própria (como .impact-section no Home.css) — sem ela, o
+   card flutuava sobre o mesmo bege do hero e a página ficava
+   "chapada", sem nenhuma variação de cor até o rodapé preto. */
+.indique-convite-section {
+  background: var(--cream-soft);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 4.5rem 2rem;
+}
+.indique-convite-card {
+  max-width: 640px;
+  margin: 0 auto;
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: 28px;
+  padding: 3rem 3rem 2.75rem;
+  text-align: center;
+  box-shadow: 6px 6px 0 var(--ink);
+}
+.indique-convite-card .badge-ods { margin-bottom: 1.25rem; }
+.indique-convite-card h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--ink);
+  margin-bottom: 1rem;
+}
+.indique-convite-card h2 em { font-style: italic; color: var(--terracotta); font-weight: 400; }
+.indique-convite-card > p {
+  color: var(--ink-soft);
+  font-size: 1rem;
+  line-height: 1.65;
+  max-width: 480px;
+  margin: 0 auto 2rem;
+}
+
+.indique-link-box {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  background: var(--cream);
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-pill);
+  padding: 0.9rem 1.3rem;
+  margin-bottom: 1.5rem;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  font-weight: 600;
+  overflow: hidden;
+}
+.indique-link-box svg { flex-shrink: 0; color: var(--terracotta); }
+.indique-link-box span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.indique-acoes {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+/* Verde da marca do WhatsApp (#25D366) destoava da paleta do site
+   (terracota/floresta/mostarda) — usa o --forest próprio daqui,
+   que já é a cor usada pra "positivo"/"aceita troca" no resto do
+   site, mantendo o ícone do WhatsApp pra reconhecimento. */
+.indique-btn-whatsapp {
+  background: var(--forest);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.indique-btn-whatsapp:hover { background: var(--forest-soft); }
+.indique-acoes .btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.indique-copia-aviso {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--forest);
+  background: rgba(31, 79, 63, 0.08);
+  border: 1px solid rgba(31, 79, 63, 0.25);
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+}
+
+/* ==========================================================
+   MOTIVOS — grade de cards (reaproveita .impact-card do Home.css)
+   ========================================================== */
+.indique-motivos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+/* ==========================================================
+   RESPONSIVIDADE
+   ========================================================== */
+
+/* Header/gaveta mobile: mesma lógica de escopo da página Sobre —
+   .nav-actions é compartilhada por várias páginas, então a regra
+   que esconde Entrar/Sair/Anunciar (movidos pra gaveta) precisa
+   ficar restrita a .indique-page, senão vaza pra outras páginas
+   que usam a mesma classe .nav-actions. */
+@media (max-width: 768px) {
+  .sobre-nav-links { display: none; }
+  .sobre-nav { display: flex !important; flex-wrap: wrap; align-items: center; gap: 0.6rem !important; padding: 0.75rem 1rem !important; }
+  .sobre-nav .logo { order: 1; font-size: 1.25rem; gap: 0.4rem; }
+  .sobre-nav .logo-mark { width: 32px; height: 32px; font-size: 0.95rem; }
+  .sobre-nav .nav-actions { order: 2; margin-left: auto; gap: 0.25rem; }
+  .nav-burger { order: 3; }
+
+  .indique-page .nav-actions a:not(.nav-profile-chip):not(.sobre-user-chip),
+  .indique-page .nav-actions button.nav-btn,
+  .indique-page .nav-actions .btn-sell { display: none !important; }
+  .indique-page .sobre-user-chip { font-size: 0 !important; gap: 0 !important; }
+}
+
+@media (max-width: 600px) {
+  .indique-hero { padding: 3.5rem 1.25rem 2.5rem; }
+  .indique-hero::before { font-size: clamp(3rem, 16vw, 6rem); }
+  .indique-convite-section { padding: 3rem 1.25rem; }
+  .indique-convite-card { padding: 2.25rem 1.5rem 2rem; border-radius: 22px; }
+  .indique-link-box { padding: 0.8rem 1rem; font-size: 0.85rem; }
+  .indique-acoes { flex-direction: column; }
+  .indique-acoes .btn-home-primary,
+  .indique-acoes .btn-ghost { width: 100%; justify-content: center; }
+  .indique-motivos-grid { grid-template-columns: 1fr; }
+}

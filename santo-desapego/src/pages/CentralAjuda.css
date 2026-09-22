@@ -266,8 +266,11 @@
   /* "Explorar" + "Sobre nós" lado a lado no header estouram a
      largura em telas pequenas — mantém só o sino de notificações.
      .nav-btn é usado em outras páginas (ex.: Home/Sobre) pro link
-     "Entrar" também — exclui .nav-login-btn pra não escondê-lo lá. */
-  .nav-actions a.nav-btn:not(.nav-login-btn) { display: none !important; }
+     "Entrar" também — exclui .nav-login-btn pra não escondê-lo lá.
+     Escopado em .ajuda-wrapper: .nav-actions é compartilhada por
+     outras páginas com header simples (Anúncio, Checkout, Perfil...)
+     — sem esse escopo, essa regra apagava o botão "Voltar" delas. */
+  .ajuda-wrapper .nav-actions a.nav-btn:not(.nav-login-btn) { display: none !important; }
 }
 
 /* ── Acessibilidade ─────────────────────────────────────── */

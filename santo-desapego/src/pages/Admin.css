@@ -368,9 +368,59 @@
 .admin-negado .emoji { font-size: 3rem; }
 
 /* ── Responsivo ──────────────────────────────────────────── */
+/* Botão que abre/fecha a lista de abas — só existe no mobile */
+.admin-abas-toggle { display: none; }
+
 @media (max-width: 900px) {
   .admin-layout { grid-template-columns: 1fr; }
   .admin-sidebar { position: static; }
+
+  /* 7 abas empilhadas empurravam o conteúdo (Visão geral, Usuários
+     etc.) pra longe do topo em toda visita — viram um menu que
+     abre/fecha mostrando só a aba atual, mesmo padrão do Perfil. */
+  .admin-abas-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--cream);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-pill);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--ink);
+  }
+  .admin-abas-toggle svg { transition: transform 0.2s; flex-shrink: 0; }
+  .admin-abas-toggle.aberto { border-color: var(--terracotta); color: var(--terracotta); }
+  .admin-abas-toggle.aberto svg { transform: rotate(180deg); }
+
+  .admin-tabs { display: none; margin-top: 0.6rem; }
+  .admin-tabs.mobile-aberto {
+    display: flex;
+    animation: admin-abas-abrir 0.2s ease;
+  }
+  @keyframes admin-abas-abrir {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: none; }
+  }
+
   .admin-stats { grid-template-columns: repeat(2, 1fr); }
   .admin-content { padding: 1.5rem; }
+}
+
+@media (max-width: 560px) {
+  /* 1 coluna resolvia o aperto, mas os 4 cards empilhados viravam
+     muita rolagem antes de chegar nos gráficos. Mantém 2 colunas
+     (2x2) e encolhe o conteúdo do card em vez da grade — padding,
+     ícone e número menores cabem numa coluna de ~150px sem espremer
+     o valor em R$ do "Volume transacionado". */
+  .admin-stat { padding: 0.9rem 1rem; }
+  .admin-stat-icon { width: 26px; height: 26px; margin-bottom: 0.45rem; }
+  .admin-stat-icon svg { width: 14px; height: 14px; }
+  .admin-stat-label { font-size: 0.7rem; }
+  .admin-stat-num { font-size: 1.3rem; }
+  .admin-stat-sub { font-size: 0.68rem; }
 }

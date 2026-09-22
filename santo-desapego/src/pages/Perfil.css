@@ -992,6 +992,9 @@
 /* ============================================================
    RESPONSIVO
    ============================================================ */
+/* Botão que abre/fecha a lista de abas — só existe no mobile */
+.perfil-abas-toggle { display: none; }
+
 @media (max-width: 900px) {
   .perfil-layout {
     grid-template-columns: 1fr;
@@ -999,8 +1002,60 @@
     padding: 0 1rem;
   }
   .perfil-sidebar { position: static; }
-  .perfil-tabs { flex-direction: row; flex-wrap: wrap; }
-  .perfil-tab { flex: 1 1 calc(50% - 0.25rem); justify-content: center; }
+
+  /* 11 abas empilhadas empurravam o conteúdo (Visão geral, Dados
+     pessoais etc.) pra bem longe do topo em toda visita — viram um
+     menu que abre/fecha mostrando só a aba atual, mesmo padrão do
+     botão "Filtros" do Explorar. */
+  .perfil-abas-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    width: 100%;
+    padding: 0.85rem 1.1rem;
+    background: var(--cream);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-pill);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--ink);
+  }
+  .perfil-abas-toggle svg { transition: transform 0.2s; flex-shrink: 0; }
+  .perfil-abas-toggle.aberto { border-color: var(--terracotta); color: var(--terracotta); }
+  .perfil-abas-toggle.aberto svg { transform: rotate(180deg); }
+
+  .perfil-tabs {
+    display: none;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-top: 0.6rem;
+  }
+  .perfil-tabs.mobile-aberto {
+    display: flex;
+    animation: perfil-abas-abrir 0.2s ease;
+  }
+  @keyframes perfil-abas-abrir {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: none; }
+  }
+  /* Ícone ao lado do texto (linha) faz sentido pra rótulo de 1 linha
+     só, mas em rótulos que quebram em 2 ("Compras realizadas",
+     "Privacidade (LGPD)") o ícone fica centralizado na ALTURA do
+     botão inteiro — "flutuando" entre as duas linhas, sem ficar
+     colado em nenhuma delas. Ao lado de rótulos de 1 linha só (onde
+     ícone e texto dividem a mesma linha), essa diferença é o que
+     dá a impressão de torto. Ícone sempre em cima do texto resolve
+     pros dois casos — mesmo padrão da grade de categorias da Home. */
+  .perfil-tab {
+    flex: 1 1 calc(50% - 0.25rem);
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.4rem;
+    text-align: center;
+    min-height: 4.6rem;
+  }
   .perfil-content { padding: 1.5rem 1.25rem; }
   .painel-stats { grid-template-columns: repeat(2, 1fr); }
   .painel-cta-grid { grid-template-columns: 1fr; }

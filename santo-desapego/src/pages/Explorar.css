@@ -631,45 +631,76 @@
   }
 }
 
+/* ── Botão "Filtros" — só aparece no mobile ── */
+.filtros-toggle { display: none; }
+
 @media (max-width: 768px) {
   .explorar-container { padding: 1.5rem 1rem 3rem; }
-  
+
   .explorar-header-top {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
   }
-  
+
   .explorar-main {
     grid-template-columns: 1fr;
+    margin-top: 1rem;
   }
-  
+
+  /* Sidebar de filtros fica fechada por padrão — sem isso ela
+     empurra a grade de anúncios pra bem longe do topo, já que
+     reúne faixa de preço + bairro + condição num bloco só. */
+  .filtros-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    width: 100%;
+    margin-top: 1.2rem;
+    padding: 0.9rem 1.2rem;
+    background: var(--paper);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-pill);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--ink);
+  }
+  .filtros-toggle svg { transition: transform 0.2s; flex-shrink: 0; }
+  .filtros-toggle.aberto { border-color: var(--terracotta); color: var(--terracotta); }
+  .filtros-toggle.aberto svg { transform: rotate(180deg); }
+
   .explorar-sidebar {
+    display: none;
     position: static;
   }
-  
+  .explorar-sidebar.mobile-aberta {
+    display: block;
+    margin-top: 0.9rem;
+    animation: filtros-abrir 0.2s ease;
+  }
+  @keyframes filtros-abrir {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: none; }
+  }
+
   .explorar-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.8rem;
   }
 }
+
+/* A seção "Categoria" do painel de filtros só existe pro mobile —
+   no desktop a filtragem já acontece pelos chips do cabeçalho, ter
+   os dois ao mesmo tempo seria redundante. */
+.filter-section--categoria { display: none; }
 
 @media (max-width: 768px) {
-  /* No mobile, categorias quebrando em várias linhas empurra muito
-     conteúdo pra baixo e fica com linhas desiguais — troca pra
-     rolagem horizontal numa linha só, igual a Home. */
-  .explorar-wrapper .nav-categories {
-    flex-wrap: nowrap !important;
-    justify-content: flex-start !important;
-    overflow-x: auto !important;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-  .explorar-wrapper .nav-categories::-webkit-scrollbar { display: none; }
-  .explorar-wrapper .nav-categories a { flex-shrink: 0; }
-}
-
-@media (max-width: 600px) {
-  .explorar-wrapper .nav-categories { padding: 0.5rem 1rem 0.75rem !important; }
-  .nav-sep { display: none; }
+  /* A barra de categorias do cabeçalho rolava de lado e escondia
+     metade das opções — sai da tela e vira filtro dentro do painel
+     "Filtros" (junto com Bairro e Condição), em chips que quebram
+     linha em vez de rolar. */
+  .explorar-wrapper .nav-categories { display: none !important; }
+  .filter-section--categoria { display: block; }
 }

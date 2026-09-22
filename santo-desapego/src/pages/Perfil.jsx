@@ -26,6 +26,22 @@ const I = {
 
 const BAIRROS = ['Santo Amaro Centro','Campo Belo','Brooklin','Granja Julieta','Jardim Marajoara','Vila Cruzeiro','Vila Mascote','Vila Sofia','Outro bairro'];
 
+// Rótulo de cada aba — usado no botão que abre/fecha o menu no mobile
+const ABA_LABEL = {
+  painel: 'Visão geral',
+  anuncios: 'Meus anúncios',
+  favoritos: 'Favoritos',
+  compras: 'Compras realizadas',
+  vendas: 'Vendas realizadas',
+  pagamentos: 'Recebimentos',
+  avaliacoes: 'Avaliações',
+  denuncias: 'Minhas denúncias',
+  dados: 'Dados pessoais',
+  endereco: 'Endereço',
+  seguranca: 'Segurança',
+  lgpd: 'Privacidade (LGPD)',
+};
+
 const STATUS_ANUNCIO = {
   ativo:    { label: 'Ativo',    cls: 'ativo' },
   vendido:  { label: 'Vendido',  cls: 'vendido' },
@@ -76,6 +92,11 @@ const Perfil = () => {
   const [estatisticas, setEstatisticas] = useState(null);
   const [aba, setAba] = useState(searchParams.get('mp') ? 'pagamentos' : 'painel');
   const [carregando, setCarregando] = useState(true);
+
+  // No mobile, as 11 abas empilhadas empurram o conteúdo pra bem
+  // longe do topo — viram um menu que abre/fecha, igual ao painel
+  // de filtros do Explorar.
+  const [abaMenuAberto, setAbaMenuAberto] = useState(false);
 
   // Carrega dados ao montar
   useEffect(() => {
@@ -139,7 +160,22 @@ const Perfil = () => {
             </span>
           </div>
 
-          <nav className="perfil-tabs" role="tablist">
+          {/* Botão só-mobile: mostra a aba atual e abre/fecha a lista */}
+          <button
+            type="button"
+            className={`perfil-abas-toggle${abaMenuAberto ? ' aberto' : ''}`}
+            onClick={() => setAbaMenuAberto((v) => !v)}
+            aria-expanded={abaMenuAberto}
+          >
+            <span>{ABA_LABEL[aba] || 'Menu'}</span>
+            <IconChevron />
+          </button>
+
+          <nav
+            className={`perfil-tabs${abaMenuAberto ? ' mobile-aberto' : ''}`}
+            role="tablist"
+            onClick={(e) => { if (e.target.closest('.perfil-tab')) setAbaMenuAberto(false); }}
+          >
             <button className={`perfil-tab${aba === 'painel' ? ' active' : ''}`}
               onClick={() => setAba('painel')} role="tab">
               <I.layout /> Visão geral

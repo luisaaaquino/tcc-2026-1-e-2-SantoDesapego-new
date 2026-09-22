@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Admin.css';
 import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
-import { IconUser, IconShield, IconTag, IconFlag, IconPlus, IconAlert } from '../componentes/Icones';
+import { IconUser, IconShield, IconTag, IconFlag, IconPlus, IconAlert, IconChevron } from '../componentes/Icones';
 
 import { API_URL } from '../config';
 
@@ -13,6 +13,17 @@ const I = {
   layers:    () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>,
   clock:     () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
   help:      () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
+};
+
+// Rótulo de cada aba — usado no botão que abre/fecha o menu no mobile
+const ABA_LABEL_ADMIN = {
+  dashboard: 'Visão geral',
+  usuarios: 'Usuários',
+  anuncios: 'Anúncios',
+  categorias: 'Categorias',
+  denuncias: 'Denúncias',
+  suporte: 'Central de ajuda',
+  logs: 'Logs de auditoria',
 };
 
 const dataBR = (v) => v ? new Date(v).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
@@ -221,6 +232,10 @@ const Admin = () => {
   const [negado, setNegado] = useState(false);
   const [aba, setAba] = useState('dashboard');
 
+  // No mobile, as 7 abas empilhadas empurram o conteúdo pra longe do
+  // topo — viram um menu que abre/fecha, mesmo padrão do Perfil.
+  const [abaMenuAberto, setAbaMenuAberto] = useState(false);
+
   useEffect(() => {
     const token = localStorage.getItem('sd_token');
     const armazenado = localStorage.getItem('sd_usuario');
@@ -272,7 +287,21 @@ const Admin = () => {
             </div>
           </div>
 
-          <nav className="admin-tabs">
+          {/* Botão só-mobile: mostra a aba atual e abre/fecha a lista */}
+          <button
+            type="button"
+            className={`admin-abas-toggle${abaMenuAberto ? ' aberto' : ''}`}
+            onClick={() => setAbaMenuAberto((v) => !v)}
+            aria-expanded={abaMenuAberto}
+          >
+            <span>{ABA_LABEL_ADMIN[aba] || 'Menu'}</span>
+            <IconChevron />
+          </button>
+
+          <nav
+            className={`admin-tabs${abaMenuAberto ? ' mobile-aberto' : ''}`}
+            onClick={(e) => { if (e.target.closest('.admin-tab')) setAbaMenuAberto(false); }}
+          >
             <button className={`admin-tab${aba === 'dashboard' ? ' active' : ''}`} onClick={() => setAba('dashboard')}>
               <I.dashboard /> Visão geral
             </button>

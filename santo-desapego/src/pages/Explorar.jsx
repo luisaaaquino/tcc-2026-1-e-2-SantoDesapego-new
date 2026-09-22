@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import './Explorar.css';
 import SeletorBairro, { BAIRROS } from '../componentes/SeletorBairro';
 import NotificacoesSino from '../componentes/NotificacoesSino';
+import LegalModal from '../componentes/LegalModal';
 import {
   IconSearch, IconLogout, IconGrid, IconSofa, IconLaptop, IconShirt,
   IconBaby, IconBook, IconBike, IconPalette, IconWrench, IconHanger, IconMore,
@@ -64,6 +65,37 @@ const Explorar = () => {
   const [bairroFiltro, setBairroFiltro] = useState('');
   const [limite, setLimite] = useState(12);
   const [totalItens, setTotalItens] = useState(0);
+
+  // ── Menu mobile (hambúrguer + gaveta) — mesmo padrão da Home
+  const [menuAberto, setMenuAberto] = useState(false);
+  const fecharMenu = () => setMenuAberto(false);
+
+  // ── Painel de filtros no mobile: começa fechado pra não empurrar
+  // a grade de anúncios pra muito longe do topo
+  const [filtrosAbertos, setFiltrosAbertos] = useState(false);
+
+  // ── Modal de Termos de Uso / Privacidade (aberto pelos links do rodapé)
+  const [legalAberto, setLegalAberto] = useState(null); // null | 'termos' | 'privacidade'
+  const abrirLegal = (aba) => (e) => {
+    e.preventDefault();
+    setLegalAberto(aba);
+  };
+
+  useEffect(() => {
+    document.body.style.overflow = menuAberto ? 'hidden' : '';
+    if (!menuAberto) return;
+    const onKeyDown = (e) => { if (e.key === 'Escape') setMenuAberto(false); };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [menuAberto]);
+
+  // Colunas do rodapé (<details>) ficam sempre abertas
+  useEffect(() => {
+    document.querySelectorAll('.home-footer details').forEach((d) => { d.open = true; });
+  }, []);
 
   // Evita condição de corrida: se duas buscas estiverem "no ar" (ex.: o
   // filtro de categoria muda logo após a busca sem filtro ter disparado),
@@ -279,13 +311,16 @@ const Explorar = () => {
             <IconSearch />
             <input
               type="text"
-              placeholder="Buscar sofá, bicicleta, livro, notebook..."
+              placeholder="Buscar sofá, bicicleta, livro..."
               value={termoBusca}
               onChange={(e) => setTermoBusca(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleBuscar(e)}
             />
             <SeletorBairro value={bairroFiltro} onChange={setBairroFiltro} />
-            <button className="search-btn" onClick={handleBuscar}>Buscar</button>
+            <button className="search-btn" onClick={handleBuscar} aria-label="Buscar">
+              <span className="search-btn-label">Buscar</span>
+              <span className="search-btn-icon"><IconSearch /></span>
+            </button>
           </div>
 
           <nav className="nav-actions">
@@ -321,6 +356,16 @@ const Explorar = () => {
               </>
             )}
           </nav>
+
+          <button
+            type="button"
+            className="nav-burger"
+            aria-label={menuAberto ? 'Fechar menu' : 'Abrir menu'}
+            aria-expanded={menuAberto}
+            onClick={() => setMenuAberto((v) => !v)}
+          >
+            <span /><span /><span />
+          </button>
         </div>
 
         {/* ── Nav de categorias — versão editorial com line icons ── */}
@@ -343,6 +388,36 @@ const Explorar = () => {
           {categoriasExtras.map(renderCategoria)}
         </nav>
       </header>
+
+      {/* ── Gaveta do menu (mobile) ── */}
+      <div className={`mobile-drawer${menuAberto ? ' open' : ''}`} aria-hidden={!menuAberto}>
+        <div className="mobile-drawer-backdrop" onClick={fecharMenu} />
+        <nav className="mobile-drawer-panel" aria-label="Menu principal">
+          {usuario && (
+            <Link to="/perfil" className="drawer-user" onClick={fecharMenu}>
+              <span className="drawer-avatar">
+                {usuario.foto_perfil
+                  ? <img src={usuario.foto_perfil} alt="" />
+                  : usuario.nome[0].toUpperCase()}
+              </span>
+              <span>Olá, {usuario.nome}!<small>Ver meu perfil</small></span>
+            </Link>
+          )}
+          <Link to="/" onClick={fecharMenu}>Início</Link>
+          <Link to="/sobre" onClick={fecharMenu}>Sobre nós</Link>
+          <Link to="/central-ajuda" onClick={fecharMenu}>Central de ajuda</Link>
+          {usuario ? (
+            <button type="button" className="drawer-logout" onClick={() => { fecharMenu(); handleLogout(); }}>
+              <IconLogout /> Sair
+            </button>
+          ) : (
+            <Link to="/login" onClick={fecharMenu}>Entrar</Link>
+          )}
+          <Link to={usuario ? '/anunciar' : '/cadastro'} className="btn-home-primary drawer-cta" onClick={fecharMenu}>
+            + Anunciar grátis
+          </Link>
+        </nav>
+      </div>
 
       {/* ── Main Content ── */}
       <div className="explorar-container">
@@ -395,11 +470,51 @@ const Explorar = () => {
           </div>
         </div>
 
+        {/* Botão de filtros — só mobile: abre/fecha a sidebar sem
+            empurrar a grade de anúncios pra longe do topo */}
+        <button
+          type="button"
+          className={`filtros-toggle${filtrosAbertos ? ' aberto' : ''}`}
+          onClick={() => setFiltrosAbertos((v) => !v)}
+          aria-expanded={filtrosAbertos}
+        >
+          <span>Filtros</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+
         {/* Layout principal: Sidebar + Grid */}
         <div className="explorar-main">
 
           {/* ── Sidebar de filtros ── */}
-          <aside className="explorar-sidebar">
+          <aside className={`explorar-sidebar${filtrosAbertos ? ' mobile-aberta' : ''}`}>
+
+            {/* Categoria — só aparece no mobile; no desktop a filtragem
+                por categoria já acontece pelos chips do cabeçalho */}
+            <div className="filter-section filter-section--categoria">
+              <div className="filter-section-title">
+                <h3>Categoria</h3>
+                <button className="filter-clear" onClick={() => setCategoriaAtiva(null)}>Limpar</button>
+              </div>
+              <div className="filter-options">
+                <button
+                  className={`filter-option ${!categoriaAtiva ? 'active' : ''}`}
+                  onClick={() => setCategoriaAtiva(null)}
+                >
+                  Todos
+                </button>
+                {categorias.map((cat) => (
+                  <button
+                    key={cat.id}
+                    className={`filter-option ${categoriaAtiva === cat.id ? 'active' : ''}`}
+                    onClick={() => setCategoriaAtiva(cat.id)}
+                  >
+                    {cat.nome}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {/* Faixa de preço */}
             <div className="filter-section">
@@ -573,32 +688,39 @@ const Explorar = () => {
             <p>Marketplace C2C hiperlocal para Santo Amaro, São Paulo. Economia compartilhada e consumo consciente.</p>
           </div>
 
-          <div className="footer-col">
-            <h4>Plataforma</h4>
-            <a href="#">Como funciona</a>
-            <a href="#">Anunciar</a>
-            <a href="#">Categorias</a>
-          </div>
+          <details className="footer-col">
+            <summary><h4>Plataforma</h4></summary>
+            <div className="footer-col-links">
+              <Link to="/#como-funciona">Como funciona</Link>
+              <Link to={usuario ? '/anunciar' : '/cadastro'}>Anunciar</Link>
+              <Link to="/explorar">Categorias</Link>
+            </div>
+          </details>
 
-          <div className="footer-col">
-            <h4>Comunidade</h4>
-            <a href="#">Nosso impacto</a>
-            <a href="#">Bairros atendidos</a>
-            <a href="#">Indique um vizinho</a>
-          </div>
+          <details className="footer-col">
+            <summary><h4>Comunidade</h4></summary>
+            <div className="footer-col-links">
+              <Link to="/sobre">Sobre nós</Link>
+              <Link to="/indique">Indique um vizinho</Link>
+            </div>
+          </details>
 
-          <div className="footer-col">
-            <h4>Suporte</h4>
-            <Link to="/central-ajuda">Central de ajuda</Link>
-            <a href="#">Termos de uso</a>
-            <a href="#">Privacidade (LGPD)</a>
-          </div>
+          <details className="footer-col">
+            <summary><h4>Suporte</h4></summary>
+            <div className="footer-col-links">
+              <Link to="/central-ajuda">Central de ajuda</Link>
+              <a href="#termos" onClick={abrirLegal('termos')}>Termos de uso</a>
+              <a href="#termos" onClick={abrirLegal('privacidade')}>Privacidade (LGPD)</a>
+            </div>
+          </details>
         </div>
 
         <div className="footer-tcc">
           <div>Luisa Aquino • Maria Erica Cruz • Paulo Santana</div>
         </div>
       </footer>
+
+      <LegalModal aba={legalAberto} onSelectAba={setLegalAberto} onClose={() => setLegalAberto(null)} />
     </div>
   );
 };

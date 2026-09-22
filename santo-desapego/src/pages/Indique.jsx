@@ -1,66 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import './Sobre.css';
+import './Indique.css';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import LegalModal from '../componentes/LegalModal';
-import { IconArrowRight, IconLogout } from '../componentes/Icones';
+import { IconArrowRight, IconLogout, IconCheck } from '../componentes/Icones';
 
 /* ── Dados — altere aqui sem tocar no JSX ──────────────────── */
-
-// Ajuste os papéis de cada integrante como preferirem!
-const TEAM = [
-  {
-    nome: 'Luisa Aquino',
-    papel: 'Desenvolvimento & Banco de Dados',
-    bio: 'Responsável pela integração entre a API Node.js e o PostgreSQL, além da configuração do ambiente da aplicação.',
-    accent: 'terracotta',
-  },
-  {
-    nome: 'Maria Erica Cruz',
-    papel: 'Frontend & Experiência do Usuário',
-    bio: 'Cuida das interfaces em React e da jornada de quem compra, vende e troca dentro da plataforma.',
-    accent: 'forest',
-  },
-  {
-    nome: 'Paulo Santana',
-    papel: 'Backend & Arquitetura',
-    bio: 'Estrutura as rotas da API, a autenticação com JWT e as regras de negócio do marketplace.',
-    accent: 'mustard',
-  },
-];
-
-const VALORES = [
+const MOTIVOS = [
   {
     num: '01',
-    title: 'Vizinhança em primeiro lugar',
-    desc: 'Acreditamos que a melhor transação é a que acontece a pé. Validamos CEPs para garantir que tudo fique dentro do distrito de Santo Amaro.',
+    title: 'Mais opções pertinho de casa',
+    desc: 'Cada vizinho que entra é mais um sofá, uma bicicleta ou um livro que pode aparecer a poucos quarteirões de você.',
     accent: 'terracotta',
   },
   {
     num: '02',
-    title: 'Nada vira lixo antes da hora',
-    desc: 'Cada sofá, livro ou bicicleta anunciada é um item a menos no aterro — e uma história a mais na casa de alguém.',
+    title: 'Menos coisa parada, menos lixo',
+    desc: 'Quanto mais gente do bairro desapegando, mais itens ganham uma segunda vida em vez de ir pro aterro.',
     accent: 'forest',
   },
   {
     num: '03',
-    title: 'Confiança se constrói',
-    desc: 'Avaliações mútuas após cada transação criam uma reputação real, de vizinho para vizinho.',
+    title: 'Uma comunidade mais forte',
+    desc: 'Negócio fechado com quem mora perto cria confiança de verdade — e reputação que vale pra próxima troca.',
     accent: 'mustard',
   },
-  {
-    num: '04',
-    title: 'Tecnologia com propósito',
-    desc: 'Um projeto acadêmico que usa código para responder a uma pergunta concreta: como o bairro pode consumir melhor?',
-    accent: 'ink',
-  },
-];
-
-const MARCOS = [
-  { data: '2025', titulo: 'A pergunta', desc: 'Nasce a inquietação: por que é tão difícil desapegar de algo bom para alguém que mora a duas quadras?' },
-  { data: '2026.1', titulo: 'O projeto', desc: 'O Santo Desapego sai do papel: pesquisa, prototipação e as primeiras linhas de código.' },
-  { data: '2026.2', titulo: 'A plataforma', desc: 'React, Node.js e PostgreSQL dão forma ao marketplace hiperlocal, com cadastro, anúncios e busca por bairro.' },
-  { data: 'Futuro', titulo: 'O bairro inteiro', desc: 'Chat entre vizinhos, entregas de bike e a meta de cobrir os mais de 20 bairros do distrito.' },
 ];
 
 const FOOTER_LINKS = [
@@ -78,17 +42,29 @@ const FOOTER_LINKS = [
   },
 ];
 
+/* ── Ícones locais desta página ─────────────────────────────── */
+const IconWhatsapp = () => (
+  <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2.05 22l5.25-1.38a9.87 9.87 0 0 0 4.74 1.2h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2Zm5.8 14.02c-.24.68-1.4 1.3-1.93 1.35-.5.05-.96.24-3.24-.68-2.74-1.1-4.5-3.9-4.64-4.08-.14-.19-1.1-1.47-1.1-2.8 0-1.34.7-1.99.96-2.26.24-.27.53-.34.7-.34h.5c.17 0 .38-.03.6.46.24.55.78 1.9.85 2.04.07.14.11.3.02.48-.09.18-.14.3-.27.45-.14.16-.29.36-.41.48-.14.14-.28.28-.12.56.16.28.71 1.17 1.52 1.89 1.05.93 1.93 1.22 2.21 1.36.28.14.44.12.6-.07.17-.2.7-.82.88-1.1.19-.28.37-.23.62-.14.26.09 1.6.75 1.87.89.28.14.46.2.53.32.07.13.07.7-.17 1.19Z" />
+  </svg>
+);
+const IconLink = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+  </svg>
+);
 
 /* ════════════════════════════════════════════════════════════
    COMPONENTE
    ════════════════════════════════════════════════════════════ */
-const Sobre = () => {
+const Indique = () => {
   const navigate = useNavigate();
   const [usuario, setUsuario] = useState(null);
+  const [copiado, setCopiado] = useState(false);
+  const [erroCopia, setErroCopia] = useState(false);
 
-  // ── Menu mobile (hambúrguer + gaveta) — mesmo padrão da Home/Explorar.
-  // Abaixo de 768px o .sobre-nav-links (Início/Explorar/Sobre nós) some
-  // e precisa de um jeito alternativo de navegar.
+  // ── Menu mobile (hambúrguer + gaveta) — mesmo padrão das outras páginas
   const [menuAberto, setMenuAberto] = useState(false);
   const fecharMenu = () => setMenuAberto(false);
 
@@ -136,8 +112,39 @@ const Sobre = () => {
     setLegalAberto(aba);
   };
 
+  // ── Convite: mesmo link pra todo mundo (sem código de indicação) ──
+  const linkConvite = typeof window !== 'undefined' ? window.location.origin : 'https://santodesapego.com.br';
+  const mensagemConvite = `Vem ver o Santo Desapego! A gente compra, vende e troca com os vizinhos aqui de Santo Amaro, sem frete e sem complicação: ${linkConvite}`;
+  const linkWhatsapp = `https://wa.me/?text=${encodeURIComponent(mensagemConvite)}`;
+
+  const linkTextoRef = useRef(null);
+
+  const copiarLink = async () => {
+    try {
+      await navigator.clipboard.writeText(linkConvite);
+      setCopiado(true);
+      setErroCopia(false);
+      setTimeout(() => setCopiado(false), 2000);
+    } catch {
+      // Sem permissão de clipboard (comum fora de HTTPS/contextos restritos) —
+      // nunca usar window.prompt/alert aqui: são diálogos bloqueantes que
+      // travam a página. Em vez disso, seleciona o texto do link na tela
+      // pro usuário copiar manualmente (Ctrl+C) e mostra um aviso simples.
+      const el = linkTextoRef.current;
+      if (el && window.getSelection) {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+      setErroCopia(true);
+      setTimeout(() => setErroCopia(false), 4000);
+    }
+  };
+
   return (
-    <div className="sobre-page">
+    <div className="indique-page">
 
       {/* ── Announcement ── */}
       <div className="announcement">
@@ -145,7 +152,7 @@ const Sobre = () => {
         <strong>menos descarte, mais comunidade</strong> entre vizinhos.
       </div>
 
-      {/* ── Header (mesmo padrão da home, sem search) ── */}
+      {/* ── Header (mesmo padrão da Sobre) ── */}
       <header className="site-header">
         <div className="nav-top sobre-nav">
           <Link to="/" className="logo">
@@ -156,7 +163,7 @@ const Sobre = () => {
           <nav className="sobre-nav-links">
             <Link to="/">Início</Link>
             <Link to="/explorar">Explorar</Link>
-            <Link to="/sobre" className="active">Sobre nós</Link>
+            <Link to="/sobre">Sobre nós</Link>
           </nav>
 
           <nav className="nav-actions">
@@ -228,119 +235,82 @@ const Sobre = () => {
         </nav>
       </div>
 
+      {/* ── Aviso: página em construção — remover quando o programa
+          de indicação (código rastreável, recompensas etc.) estiver
+          pronto ── */}
+      <div className="indique-aviso-obras">
+        🚧 <strong>Em breve, novidades por aqui:</strong> essa página ainda vai ganhar mais funcionalidades. Por enquanto, é só compartilhar o link mesmo!
+      </div>
+
       {/* ══════════════════════════════════
           HERO
           ══════════════════════════════════ */}
-      <section className="sobre-hero">
-        <span className="hero-kicker">Sobre nós • Santo Amaro, São Paulo</span>
+      <section className="indique-hero">
+        <span className="hero-kicker">Indique um vizinho • Santo Amaro</span>
         <h1>
-          Somos vizinhos criando um jeito<br />
-          mais <em>circular</em> de consumir.
+          Quanto mais vizinhos aqui,<br />
+          mais <em>desapego</em> pra todo mundo.
         </h1>
-        <p className="sobre-lede">
-          O Santo Desapego é um marketplace hiperlocal nascido dentro da faculdade
-          e feito para as ruas de Santo Amaro: uma plataforma onde o que sobra na
-          sua casa encontra quem precisa — a poucos quarteirões de distância.
+        <p className="indique-lede">
+          O Santo Desapego funciona melhor quanto mais gente do bairro participa.
+          Chama aquele vizinho, o grupo da rua ou a família — quanto mais perto,
+          melhor o negócio pros dois lados.
         </p>
       </section>
 
       {/* ══════════════════════════════════
-          MANIFESTO / HISTÓRIA
+          CONVITE — compartilhar
           ══════════════════════════════════ */}
-      <section className="sobre-manifesto">
-        <div className="sobre-manifesto-wrap">
-          <div className="sobre-manifesto-title">
-            <span className="badge-ods">Por que existimos</span>
-            <h2>Todo objeto parado é uma <em>história interrompida</em>.</h2>
+      <section className="indique-convite-section">
+        <div className="indique-convite-card">
+          <span className="badge-ods">Convide agora</span>
+          <h2>Manda o link pra quem <em>merece saber</em>.</h2>
+          <p>
+            Sem código, sem enrolação: é só compartilhar o Santo Desapego com quem
+            mora perto de você. Quanto mais vizinhos, mais opções de compra, venda
+            e troca aqui do lado de casa.
+          </p>
+
+          <div className="indique-link-box">
+            <IconLink />
+            <span ref={linkTextoRef}>{linkConvite}</span>
           </div>
-          <div className="sobre-manifesto-text">
-            <p>
-              A ideia nasceu de uma cena comum: móveis bons na calçada esperando o
-              caminhão de lixo, enquanto a poucos metros dali alguém procurava
-              exatamente aquilo em um marketplace gigante — e pagava frete de outro
-              estado.
-            </p>
-            <p>
-              Os grandes marketplaces conectam o Brasil inteiro, mas desconectam o
-              quarteirão. O Santo Desapego faz o caminho contrário: valida o CEP de
-              cada morador, mostra a distância real entre comprador e vendedor e
-              transforma a transação em um encontro de vizinhos.
-            </p>
-            <p>
-              Somos um projeto acadêmico com ambição de bairro — e acreditamos que
-              é exatamente nessa escala, a da vizinhança, que a economia circular
-              deixa de ser conceito e vira hábito.
-            </p>
+
+          <div className="indique-acoes">
+            <a href={linkWhatsapp} target="_blank" rel="noopener noreferrer" className="btn-home-primary indique-btn-whatsapp">
+              <IconWhatsapp /> Chamar no WhatsApp
+            </a>
+            <button type="button" className="btn-ghost" onClick={copiarLink}>
+              {copiado ? <><IconCheck /> Link copiado!</> : <><IconLink /> Copiar link</>}
+            </button>
           </div>
+
+          {erroCopia && (
+            <p className="indique-copia-aviso">
+              Não consegui copiar automaticamente — selecionei o link acima, é só apertar Ctrl+C (ou Cmd+C).
+            </p>
+          )}
         </div>
       </section>
 
       {/* ══════════════════════════════════
-          LINHA DO TEMPO
+          POR QUE INDICAR
           ══════════════════════════════════ */}
-      <section className="sobre-timeline-section">
+      <section className="indique-motivos-section">
         <div className="section">
           <div className="section-head">
             <div>
-              <h2>Do rascunho ao <em>bairro</em></h2>
-              <p>A trajetória do projeto, semestre a semestre.</p>
+              <h2>Por que chamar <em>o vizinho</em></h2>
+              <p>Cada pessoa nova no Santo Desapego fortalece o bairro inteiro.</p>
             </div>
           </div>
-          <div className="sobre-timeline">
-            {MARCOS.map((m) => (
-              <div key={m.data} className="sobre-marco">
-                <span className="sobre-marco-data">{m.data}</span>
-                <h3>{m.titulo}</h3>
-                <p>{m.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* ══════════════════════════════════
-          VALORES
-          ══════════════════════════════════ */}
-      <section className="sobre-valores-section">
-        <div className="section">
-          <div className="section-head">
-            <div>
-              <h2>No que a gente <em>acredita</em></h2>
-              <p>Os princípios que guiam cada decisão da plataforma.</p>
-            </div>
-          </div>
-          <div className="sobre-valores-grid">
-            {VALORES.map((v) => (
-              <article key={v.num} className={`impact-card impact-card--${v.accent}`}>
-                <span className="impact-card-num">{v.num}</span>
-                <h3 className="impact-card-title">{v.title}</h3>
-                <p className="impact-card-desc">{v.desc}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════
-          EQUIPE
-          ══════════════════════════════════ */}
-      <section className="sobre-team-section">
-        <div className="section">
-          <div className="section-head">
-            <div>
-              <h2>Quem faz o <em>Santo Desapego</em></h2>
-              <p>Três estudantes, um bairro e muitas linhas de código.</p>
-            </div>
-          </div>
-          <div className="sobre-team-grid">
-            {TEAM.map((pessoa) => (
-              <article key={pessoa.nome} className={`sobre-team-card sobre-team-card--${pessoa.accent}`}>
-                <span className="sobre-team-avatar">
-                  {pessoa.nome.split(' ').map((n) => n[0]).slice(0, 2).join('')}
-                </span>
-                <h3>{pessoa.nome}</h3>
-                <span className="sobre-team-role">{pessoa.papel}</span>
-                <p>{pessoa.bio}</p>
+          <div className="indique-motivos-grid">
+            {MOTIVOS.map((m) => (
+              <article key={m.num} className={`impact-card impact-card--${m.accent}`}>
+                <span className="impact-card-num">{m.num}</span>
+                <h3 className="impact-card-title">{m.title}</h3>
+                <p className="impact-card-desc">{m.desc}</p>
               </article>
             ))}
           </div>
@@ -352,16 +322,16 @@ const Sobre = () => {
           ══════════════════════════════════ */}
       <section className="cta-section">
         <div className="cta-wrap">
-          <h2>Quer fazer parte<br />dessa <em>história</em>?</h2>
-          <p>Anuncie o que está parado, encontre o que procura e conheça seus vizinhos no caminho.</p>
+          <h2>Ainda não tem uma<br />conta <em>no Santo Desapego</em>?</h2>
+          <p>Comece você também — é grátis, leva menos de 2 minutos e o primeiro anúncio pode ser hoje.</p>
           <Link to={linkAnunciar} className="btn-home-primary cta-btn">
-            Começar a desapegar <IconArrowRight />
+            {usuario ? 'Criar novo anúncio' : 'Criar minha conta'} <IconArrowRight />
           </Link>
         </div>
       </section>
 
       {/* ══════════════════════════════════
-          FOOTER (mesmo da home)
+          FOOTER (mesmo das outras páginas)
           ══════════════════════════════════ */}
       <footer className="home-footer">
         <div className="footer-wrap">
@@ -382,7 +352,7 @@ const Sobre = () => {
                   if (l === 'Anunciar') return <Link key={l} to={linkAnunciar}>{l}</Link>;
                   if (l === 'Categorias') return <Link key={l} to="/explorar">{l}</Link>;
                   if (l === 'Nosso impacto') return <Link key={l} to="/sobre">Sobre nós</Link>;
-                  if (l === 'Indique um vizinho') return <Link key={l} to="/indique">Indique um vizinho</Link>;
+                  if (l === 'Indique um vizinho') return <Link key={l} to="/indique" className="active">Indique um vizinho</Link>;
                   if (l === 'Central de ajuda') return <Link key={l} to="/central-ajuda">Central de ajuda</Link>;
                   if (l === 'Termos de uso') return <a key={l} href="#termos" onClick={abrirLegal('termos')}>{l}</a>;
                   if (l === 'Privacidade (LGPD)') return <a key={l} href="#termos" onClick={abrirLegal('privacidade')}>{l}</a>;
@@ -423,4 +393,4 @@ const Sobre = () => {
   );
 };
 
-export default Sobre;
+export default Indique;

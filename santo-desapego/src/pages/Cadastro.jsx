@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import './Cadastro.css';
 import { BAIRROS } from '../componentes/SeletorBairro';
 import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
+import LegalModal from '../componentes/LegalModal';
 import {
   IconUser, IconMail, IconLock, IconPin, IconPhone, IconHome, IconID,
   IconChevron, IconEye, IconCheck, IconAlert, IconArrowRight,
@@ -63,6 +64,14 @@ const Cadastro = () => {
   const [cepErro, setCepErro]               = useState('');
   const [cepForaArea, setCepForaArea]       = useState(false);
   const [termsChecked, setTermsChecked]     = useState(false);
+  // ── Modal de Termos de Uso / Privacidade — aberto pelos links abaixo
+  // do checkbox de aceite e pelo rodapé mínimo desta página.
+  const [legalAberto, setLegalAberto] = useState(null); // null | 'termos' | 'privacidade'
+  const abrirLegal = (aba) => (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setLegalAberto(aba);
+  };
   const [newsChecked, setNewsChecked]       = useState(false);
   const [submitted, setSubmitted]           = useState(false);
   const [loading, setLoading]               = useState(false);
@@ -552,8 +561,8 @@ const Cadastro = () => {
                   <div className="checkbox-group">
                     <div className={`checkbox-custom${termsChecked ? ' checked' : ''}`} onClick={() => setTermsChecked(!termsChecked)} />
                     <label className="checkbox-label" onClick={() => setTermsChecked(!termsChecked)}>
-                      Li e aceito os <a href="#" onClick={e => e.stopPropagation()}>Termos de Uso</a> e a{' '}
-                      <a href="#" onClick={e => e.stopPropagation()}>Política de Privacidade (LGPD)</a>.{' '}
+                      Li e aceito os <a href="#termos" onClick={abrirLegal('termos')}>Termos de Uso</a> e a{' '}
+                      <a href="#termos" onClick={abrirLegal('privacidade')}>Política de Privacidade (LGPD)</a>.{' '}
                       <span className="required" style={{ color: 'var(--terracotta)' }}>*</span>
                     </label>
                   </div>
@@ -580,8 +589,11 @@ const Cadastro = () => {
 
       <footer className="site-footer">
         <span>© 2025 Santo Desapego · </span>
-        <a href="#">Privacidade</a> · <a href="#">Termos</a>
+        <a href="#termos" onClick={abrirLegal('privacidade')}>Privacidade</a> ·{' '}
+        <a href="#termos" onClick={abrirLegal('termos')}>Termos</a>
       </footer>
+
+      <LegalModal aba={legalAberto} onSelectAba={setLegalAberto} onClose={() => setLegalAberto(null)} />
     </div>
   );
 };
