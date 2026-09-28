@@ -3,6 +3,7 @@ const pool = require('../db');
 const { autenticar, autenticarOpcional } = require('../middleware/auth');
 const { validarCEPSantoAmaro, conteudoTemPalavrasProibidas } = require('../utils/validacao');
 const { distanciaEntreBairros } = require('../utils/geolocalizacao');
+const { validarDadosAnuncio, inserirAnuncio } = require('../services/anuncioService');
 
 const router = express.Router();
 
@@ -10,111 +11,21 @@ const router = express.Router();
 //  POST ANÚNCIO — cria com validações
 // ============================================================
 router.post('/api/anuncios', autenticar, async (req, res) => {
-  const client = await pool.connect();
-
   try {
-    const {
-      titulo, descricao, preco, aceita_troca,
-      estado_conservacao, categoria_id,
-      cep, bairro,
-      imagens
-    } = req.body;
+    const erro = await validarDadosAnuncio(req.body);
+    if (erro) return res.status(400).json({ erro });
 
-    // Validações básicas
-    if (!titulo || titulo.trim().length < 5)
-      return res.status(400).json({ erro: 'Título precisa ter pelo menos 5 caracteres.' });
-    if (titulo.length > 120)
-      return res.status(400).json({ erro: 'Título muito longo (máximo 120 caracteres).' });
-    if (!descricao || descricao.trim().length < 20)
-      return res.status(400).json({ erro: 'Descrição precisa ter pelo menos 20 caracteres.' });
-    if (!preco || preco < 0)
-      return res.status(400).json({ erro: 'Informe um preço válido.' });
-    if (!['novo', 'seminovo', 'usado', 'para-reparo'].includes(estado_conservacao))
-      return res.status(400).json({ erro: 'Estado de conservação inválido.' });
-    if (!categoria_id)
-      return res.status(400).json({ erro: 'Selecione uma categoria.' });
-
-    // RN01 — Restrição Geográfica
-    if (!validarCEPSantoAmaro(cep)) {
-      return res.status(400).json({
-        erro: 'Anúncios só podem ser publicados em CEPs de Santo Amaro e regiões limítrofes (zona sul de SP). [RN01]'
-      });
-    }
-
-    // RN09 — Moderação de Conteúdo
-    const palavraProibida = conteudoTemPalavrasProibidas(`${titulo} ${descricao}`);
-    if (palavraProibida) {
-      return res.status(400).json({
-        erro: `Seu anúncio contém conteúdo não permitido pelos Termos de Uso. Revise o título e a descrição. [RN09]`
-      });
-    }
-
-    // RFN19 — Limites de Upload
-    if (!imagens || !Array.isArray(imagens) || imagens.length === 0)
-      return res.status(400).json({ erro: 'Envie pelo menos 1 imagem do produto.' });
-    if (imagens.length > 6)
-      return res.status(400).json({ erro: 'Máximo de 6 imagens por anúncio.' });
-
-    const tamanhoTotal = imagens.reduce((acc, img) => acc + (img?.length || 0), 0);
-    if (tamanhoTotal > 5 * 1024 * 1024) {
-      return res.status(400).json({ erro: 'Imagens muito grandes no total. Tente reduzir a quantidade ou qualidade.' });
-    }
-
-    for (const img of imagens) {
-      if (typeof img !== 'string' || !img.startsWith('data:image/')) {
-        return res.status(400).json({ erro: 'Uma das imagens está em formato inválido.' });
-      }
-    }
-
-    // Verifica se categoria existe
-    const cat = await client.query('SELECT id FROM categorias WHERE id = $1', [categoria_id]);
-    if (cat.rows.length === 0) {
-      return res.status(400).json({ erro: 'Categoria inválida.' });
-    }
-
-    // Inicia transação (ACID)
-    await client.query('BEGIN');
-
-    const cepLimpo = cep.replace(/\D/g, '');
-
-    const novoAnuncio = await client.query(
-      `INSERT INTO anuncios
-        (vendedor_id, categoria_id, titulo, descricao, preco,
-         aceita_troca, estado_conservacao, cep, bairro, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'ativo')
-       RETURNING id, titulo, preco, status, data_criacao`,
-      [
-        req.userId, categoria_id, titulo.trim(), descricao.trim(), preco,
-        aceita_troca === true, estado_conservacao, cepLimpo, bairro || null
-      ]
-    );
-
-    const anuncioId = novoAnuncio.rows[0].id;
-
-    // Insere imagens (a primeira é a principal)
-    for (let i = 0; i < imagens.length; i++) {
-      await client.query(
-        `INSERT INTO anuncio_imagens (anuncio_id, imagem, ordem, is_principal)
-         VALUES ($1, $2, $3, $4)`,
-        [anuncioId, imagens[i], i, i === 0]
-      );
-    }
-
-    await client.query('COMMIT');
-
-    console.log(`📦 Anúncio #${anuncioId} criado por usuário #${req.userId}`);
+    const anuncio = await inserirAnuncio({ vendedorId: req.userId, ...req.body });
+    console.log(`📦 Anúncio #${anuncio.id} criado por usuário #${req.userId}`);
 
     return res.status(201).json({
       mensagem: 'Anúncio publicado com sucesso!',
-      anuncio: novoAnuncio.rows[0]
+      anuncio
     });
 
   } catch (erro) {
-    await client.query('ROLLBACK');
     console.error('Erro ao criar anúncio:', erro);
     return res.status(500).json({ erro: 'Erro ao publicar anúncio.' });
-  } finally {
-    client.release();
   }
 });
 

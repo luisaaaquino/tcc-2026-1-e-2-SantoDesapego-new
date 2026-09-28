@@ -4,6 +4,8 @@ import './Anunciar.css';
 import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
 
 import { API_URL } from '../config';
+import { redimensionarImagem } from '../utils/imagem';
+import AgenteAnuncioChat from '../componentes/AgenteAnuncioChat';
 
 // ── Limites do TCC [RNF19] ────────────────────────────────
 const MAX_IMAGENS  = 6;
@@ -31,6 +33,7 @@ const Anunciar = () => {
   const [carregando, setCarregando] = useState(true);
   const [categorias, setCategorias] = useState([]);
   const [submitted, setSubmitted] = useState(null); // anúncio criado
+  const [modo, setModo] = useState('manual'); // 'manual' | 'ia' — só relevante quando !editando
 
   const [form, setForm] = useState({
     titulo: '',
@@ -150,35 +153,8 @@ const Anunciar = () => {
 
   /* ════════════════════════════════════════════════════════
      UPLOAD DE IMAGENS — redimensiona pra 800x800 max,
-     JPEG q=0.82 (~150KB cada)
+     JPEG q=0.82 (~150KB cada) — função em ../utils/imagem
      ════════════════════════════════════════════════════════ */
-  const redimensionarImagem = (file) => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const MAX = 800;
-        let { width, height } = img;
-        // Mantém proporção
-        if (width > height) {
-          if (width > MAX) { height = (height * MAX) / width; width = MAX; }
-        } else {
-          if (height > MAX) { width = (width * MAX) / height; height = MAX; }
-        }
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', 0.82));
-      };
-      img.onerror = reject;
-      img.src = e.target.result;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-
   const handleFiles = async (e) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
@@ -392,6 +368,24 @@ const Anunciar = () => {
           )}
         </div>
 
+        {/* Toggle "Preencher manualmente" / "Anunciar com IA" — só na
+            criação (editar um anúncio existente continua só manual) */}
+        {!editando && (
+          <div className="anunciar-modo-toggle">
+            <button type="button" className={modo === 'manual' ? 'active' : ''} onClick={() => setModo('manual')}>
+              Preencher manualmente
+            </button>
+            <button type="button" className={modo === 'ia' ? 'active' : ''} onClick={() => setModo('ia')}>
+              Anunciar com IA ✨
+            </button>
+          </div>
+        )}
+
+        {modo === 'ia' && !editando ? (
+          <div className="anunciar-card">
+            <AgenteAnuncioChat onPublicado={setSubmitted} />
+          </div>
+        ) : (
         <div className="anunciar-card">
 
           {/* Erro global */}
@@ -638,6 +632,7 @@ const Anunciar = () => {
             </div>
           </form>
         </div>
+        )}
       </div>
     </div>
   );

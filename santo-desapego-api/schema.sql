@@ -187,6 +187,33 @@ CREATE TABLE favoritos (
   UNIQUE (usuario_id, anuncio_id)
 );
 
+-- Agente de Anúncio (IA) — "Agente B" do case acadêmico agents-llm-senac-2026.
+-- Ver migrations/002_indicios_moderacao.sql e 003_conversas_ia_anuncio.sql.
+CREATE TABLE indicios_moderacao (
+  id             SERIAL PRIMARY KEY,
+  vendedor_id    INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  rascunho       JSONB NOT NULL,
+  indicio        TEXT NOT NULL,
+  status         VARCHAR(20) NOT NULL DEFAULT 'pendente'
+                   CHECK (status IN ('pendente','aprovado','rejeitado')),
+  anuncio_id     INTEGER REFERENCES anuncios(id) ON DELETE SET NULL,
+  resolvido_por  INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+  resolucao      TEXT,
+  data_criacao   TIMESTAMP NOT NULL DEFAULT NOW(),
+  resolvido_em   TIMESTAMP
+);
+
+CREATE TABLE conversas_ia_anuncio (
+  id            SERIAL PRIMARY KEY,
+  vendedor_id   INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  estado        JSONB NOT NULL,
+  finalizado    BOOLEAN NOT NULL DEFAULT FALSE,
+  status_final  VARCHAR(30),
+  anuncio_id    INTEGER REFERENCES anuncios(id) ON DELETE SET NULL,
+  criada_em     TIMESTAMP NOT NULL DEFAULT NOW(),
+  atualizada_em TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
 CREATE INDEX idx_usuarios_papel       ON usuarios(papel);
 CREATE INDEX idx_anuncios_status      ON anuncios(status);
 CREATE INDEX idx_anuncios_categoria   ON anuncios(categoria_id);
@@ -212,6 +239,9 @@ CREATE INDEX idx_notificacoes_usuario ON notificacoes(usuario_id, criada_em DESC
 CREATE INDEX idx_notificacoes_nao_lidas ON notificacoes(usuario_id) WHERE lida = FALSE;
 CREATE INDEX idx_favoritos_usuario    ON favoritos(usuario_id, criado_em DESC);
 CREATE INDEX idx_favoritos_anuncio    ON favoritos(anuncio_id);
+CREATE INDEX idx_indicios_status      ON indicios_moderacao(status, data_criacao DESC);
+CREATE INDEX idx_indicios_vendedor    ON indicios_moderacao(vendedor_id);
+CREATE INDEX idx_conversas_ia_vendedor ON conversas_ia_anuncio(vendedor_id, atualizada_em DESC);
 
 -- ============================================================
 -- Categorias iniciais (necessárias para publicar anúncios)
