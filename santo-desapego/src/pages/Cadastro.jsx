@@ -75,7 +75,6 @@ const Cadastro = () => {
   const [newsChecked, setNewsChecked]       = useState(false);
   const [submitted, setSubmitted]           = useState(false);
   const [loading, setLoading]               = useState(false);
-  const [dots, setDots] = useState({ d1: 'active', d2: '', d3: '' });
   const [globalError, setGlobalError] = useState('');
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -224,7 +223,6 @@ const Cadastro = () => {
       return;
     }
 
-    setDots({ d1: 'done', d2: 'done', d3: 'active' });
     setLoading(true);
 
     // Removemos a máscara antes de enviar — guardamos só os números no banco.
@@ -257,24 +255,19 @@ const Cadastro = () => {
       if (!resposta.ok) {
         setGlobalError(dados.erro || 'Não foi possível concluir o cadastro.');
         setLoading(false);
-        setDots({ d1: 'done', d2: 'done', d3: '' });
         window.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
 
       console.log('✅ Usuário criado:', dados.usuario);
-      setDots({ d1: 'done', d2: 'done', d3: 'done' });
       setSubmitted(true);
 
     } catch (erro) {
       console.error('Erro ao conectar com o servidor:', erro);
       setGlobalError('Não foi possível conectar ao servidor. Verifique se o back-end está rodando.');
       setLoading(false);
-      setDots({ d1: 'done', d2: 'done', d3: '' });
     }
   };
-
-  const dotClass = (key) => `step-dot${dots[key] ? ' ' + dots[key] : ''}`;
   const segClass = (i) => `strength-seg${i < passwordStrength.score ? ' ' + passwordStrength.cls : ''}`;
 
   /* ── Ícones reutilizáveis ── */
@@ -340,11 +333,6 @@ const Cadastro = () => {
           ) : (
             <>
               <div className="form-header">
-                <div className="step-indicator">
-                  <div className={dotClass('d1')} />
-                  <div className={dotClass('d2')} />
-                  <div className={dotClass('d3')} />
-                </div>
                 <h1>Criar sua <em>conta</em></h1>
                 <p>É gratuito e leva menos de 2 minutos. Preencha todos os campos abaixo.</p>
               </div>

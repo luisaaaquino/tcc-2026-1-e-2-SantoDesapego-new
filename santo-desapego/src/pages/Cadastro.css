@@ -141,18 +141,7 @@
   overflow-y: auto;
 }
 
-/* ── Indicador de etapas ────────────────────────────────── */
 .form-header { margin-bottom: 2rem; }
-
-.step-indicator { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.2rem; }
-.step-dot {
-  width: 28px; height: 6px;
-  border-radius: 3px;
-  background: var(--border);
-  transition: background 0.3s;
-}
-.step-dot.active { background: var(--terracotta); }
-.step-dot.done   { background: var(--forest); }
 
 .form-header h1 {
   font-family: var(--font-display);
@@ -407,6 +396,32 @@
   .left-panel { padding: 2.5rem 1.5rem; }
   .left-testimonial { display: none; }
   .right-panel { padding: 2rem 1.5rem; }
+}
+
+@media (max-width: 768px) {
+  /* Painel verde continua vindo primeiro (mesma ordem do Login) —
+     em vez de reordenar, encolhe o conteúdo: título menor, e os 4
+     itens de vantagem viram uma grade 2x2 compacta (só ícone +
+     título, sem a descrição) em vez de uma lista vertical longa.
+     Assim o formulário continua aparecendo logo em seguida, sem
+     precisar mexer na ordem visual do painel. */
+  .left-panel { padding: 1.75rem 1.5rem; }
+  .left-panel h2 { font-size: 1.5rem; margin-bottom: 0.6rem; }
+  .left-panel > p { font-size: 0.9rem; margin-bottom: 1.25rem; }
+
+  .benefits-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.7rem 0.8rem;
+  }
+  .benefits-list li { align-items: center; }
+  .benefit-icon { width: 26px; height: 26px; font-size: 0.8rem; }
+  .benefit-text strong { font-size: 0.8rem; line-height: 1.25; }
+  /* Descrição de cada item some no celular — fica só ícone + título,
+     compacto o bastante pra caber 2 por linha */
+  .benefit-text span { display: none; }
+
+  .right-panel { padding: 1.75rem 1.5rem; }
 }
 
 @media (max-width: 540px) {
