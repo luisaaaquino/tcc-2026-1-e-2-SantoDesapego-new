@@ -1,8 +1,19 @@
 import { useState, useRef, useEffect } from 'react';
 import './SeletorBairro.css';
 
-/* Bairros filtráveis (mesma lista usada no cadastro/perfil) */
-export const BAIRROS = ['Santo Amaro Centro', 'Campo Belo', 'Brooklin', 'Granja Julieta', 'Jardim Marajoara', 'Vila Cruzeiro', 'Vila Mascote', 'Vila Sofia'];
+/* Bairros filtráveis (mesma lista usada no cadastro/perfil) — todos os
+   bairros reais da Subprefeitura de Santo Amaro (distritos Santo Amaro,
+   Campo Belo e Campo Grande) dentro da faixa de CEP 04600-04799 já usada
+   em RN01 (validarCEPSantoAmaro). Coordenadas de cada um em
+   ../../../santo-desapego-api/utils/geolocalizacao.js (backend) e
+   ./Mapa.jsx (mapa) — mantenha as três listas em sincronia ao editar. */
+export const BAIRROS = [
+  'Santo Amaro Centro', 'Campo Belo', 'Brooklin', 'Granja Julieta',
+  'Jardim Marajoara', 'Vila Cruzeiro', 'Vila Mascote', 'Vila Sofia',
+  'Alto da Boa Vista', 'Campo Grande', 'Chácara Flora', 'Chácara Monte Alegre',
+  'Chácara Santo Antônio', 'Interlagos', 'Jardim Cordeiro', 'Jardim Petrópolis',
+  'Jardim Santo Amaro', 'Socorro',
+];
 
 const IconPin = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">

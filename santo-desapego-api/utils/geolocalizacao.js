@@ -15,6 +15,19 @@ const BAIRRO_COORDS = {
   'Vila Cruzeiro':           { lat: -23.6480, lng: -46.7010 },
   'Vila Mascote':             { lat: -23.6472, lng: -46.6669 },
   'Vila Sofia':                { lat: -23.6580, lng: -46.6920 },
+  // Adicionados depois (validados via OpenStreetMap Nominatim) — mesmo
+  // conjunto usado no front em santo-desapego/src/componentes/Mapa.jsx e
+  // SeletorBairro.jsx; mantenha as três listas em sincronia ao editar.
+  'Alto da Boa Vista':     { lat: -23.6413, lng: -46.6992 },
+  'Campo Grande':          { lat: -23.6620, lng: -46.6870 },
+  'Chácara Flora':         { lat: -23.6468, lng: -46.6854 },
+  'Chácara Monte Alegre':  { lat: -23.6444, lng: -46.6770 },
+  'Chácara Santo Antônio': { lat: -23.6298, lng: -46.7039 },
+  'Interlagos':            { lat: -23.6532, lng: -46.6799 },
+  'Jardim Cordeiro':       { lat: -23.6366, lng: -46.6776 },
+  'Jardim Petrópolis':     { lat: -23.6317, lng: -46.6839 },
+  'Jardim Santo Amaro':    { lat: -23.6522, lng: -46.6960 },
+  'Socorro':               { lat: -23.6633, lng: -46.7110 },
 };
 
 // Distância em km entre dois pontos (fórmula de Haversine)

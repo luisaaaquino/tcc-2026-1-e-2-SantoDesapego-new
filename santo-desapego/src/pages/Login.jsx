@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 import './Login.css';
@@ -111,31 +111,31 @@ const LoginContent = () => {
     onError: () => setErrorMsg('Login com Google cancelado.'),
   });
 
-  const polaroids = [
-    {
-      src: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80',
-      title: 'Sofá retrô anos 70', price: 'R$ 950', hood: 'Jardim Marajoara',
-    },
-    {
-      src: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400&q=80',
-      title: 'Canon AE-1 analógica', price: 'R$ 380', hood: 'Campo Belo',
-    },
-    {
-      src: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&q=80',
-      title: 'Cafeteira italiana', price: 'R$ 65', hood: 'Brooklin',
-    },
-    {
-      src: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80',
-      title: 'Nike Air Max 90', price: 'R$ 220', hood: 'Vila Mascote',
-    },
-  ];
+  // Anúncios reais recentes (antes eram 4 fotos de banco de imagens com
+  // produtos/preços inventados, que não existiam no site de verdade) e
+  // estatísticas reais da plataforma (antes eram números fixos tipo
+  // "4.800+ itens" e "93% satisfação", sem nenhum dado por trás).
+  const [polaroids, setPolaroids] = useState([]);
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/anuncios?limite=4&ordenacao=recentes`)
+      .then((r) => r.json())
+      .then((dados) => setPolaroids(dados.anuncios || []))
+      .catch(() => {});
+
+    fetch(`${API_URL}/api/estatisticas`)
+      .then((r) => r.json())
+      .then((dados) => { if (!dados.erro) setStats(dados); })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="login-page">
 
       <div className="announcement">
-        🌱 Economia circular em Santo Amaro:{' '}
-        <strong>já evitamos 2,4 toneladas</strong> de descarte neste mês.
+        🌱 Economia circular em Santo Amaro: compre, venda e troque com
+        vizinhos do seu bairro.
       </div>
 
       <SiteHeader variant="auth-nav-top">
@@ -151,32 +151,40 @@ const LoginContent = () => {
             100%<br />grátis<br />pra anunciar
           </div>
 
-          <div className="polaroids" aria-hidden="true">
-            {polaroids.map((p, i) => (
-              <article key={i} className={`polaroid polaroid-${i + 1}`}>
-                <img src={p.src} alt="" />
-                <h4>{p.title}</h4>
-                <div className="polaroid-price">{p.price}</div>
-                <span className="polaroid-hood">{p.hood}</span>
-              </article>
-            ))}
-          </div>
+          {/* Anúncios reais, não fotos de banco de imagens com produto
+              inventado — se ainda não tiver anúncio nenhum, a seção some. */}
+          {polaroids.length > 0 && (
+            <div className="polaroids" aria-hidden="true">
+              {polaroids.map((p, i) => (
+                <article key={p.id} className={`polaroid polaroid-${i + 1}`}>
+                  {p.imagem_principal && <img src={p.imagem_principal} alt="" />}
+                  <h4>{p.titulo}</h4>
+                  <div className="polaroid-price">
+                    {Number(p.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </div>
+                  <span className="polaroid-hood">{p.bairro}</span>
+                </article>
+              ))}
+            </div>
+          )}
 
           <div className="auth-visual-foot">
             <span className="badge">
               <span className="badge-dot" />
-              Comunidade ativa agora
+              Plataforma hiperlocal
             </span>
             <h2>Seu bairro tem <em>mais do que você imagina.</em></h2>
             <p className="auth-lede">
               Desapegos que viram novos começos. Conecte-se com vizinhos,
               encontre raridades e contribua com a economia local.
             </p>
-            <div className="auth-stats">
-              <div className="stat"><span className="num">4.800+</span><span className="lbl">itens disponíveis</span></div>
-              <div className="stat"><span className="num">1.247</span><span className="lbl">vizinhos ativos</span></div>
-              <div className="stat"><span className="num">93%</span><span className="lbl">satisfação</span></div>
-            </div>
+            {stats && (
+              <div className="auth-stats">
+                <div className="stat"><span className="num">{stats.itens_ativos}</span><span className="lbl">itens disponíveis</span></div>
+                <div className="stat"><span className="num">{stats.vizinhos_cadastrados}</span><span className="lbl">vizinhos cadastrados</span></div>
+                <div className="stat"><span className="num">{stats.bairros_atendidos}</span><span className="lbl">bairros atendidos</span></div>
+              </div>
+            )}
           </div>
         </aside>
 

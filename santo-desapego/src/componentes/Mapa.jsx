@@ -18,14 +18,27 @@ const ZOOM_INICIAL = 13;
    é o suficiente pra mostrar "o que tem perto de mim" sem expor
    a localização precisa de quem anuncia. */
 const CENTRO_BAIRRO = {
-  'Santo Amaro Centro': { lat: -23.6562, lng: -46.7191 },
-  'Campo Belo':         { lat: -23.6299, lng: -46.6704 },
-  'Brooklin':           { lat: -23.6268, lng: -46.6881 },
-  'Granja Julieta':     { lat: -23.6275, lng: -46.7120 },
-  'Jardim Marajoara':   { lat: -23.6554, lng: -46.6849 },
-  'Vila Cruzeiro':      { lat: -23.6352, lng: -46.7117 },
-  'Vila Mascote':       { lat: -23.6459, lng: -46.6676 },
-  'Vila Sofia':         { lat: -23.6630, lng: -46.6850 },
+  'Santo Amaro Centro':    { lat: -23.6562, lng: -46.7191 },
+  'Campo Belo':            { lat: -23.6299, lng: -46.6704 },
+  'Brooklin':              { lat: -23.6268, lng: -46.6881 },
+  'Granja Julieta':        { lat: -23.6275, lng: -46.7120 },
+  'Jardim Marajoara':      { lat: -23.6554, lng: -46.6849 },
+  'Vila Cruzeiro':         { lat: -23.6352, lng: -46.7117 },
+  'Vila Mascote':          { lat: -23.6459, lng: -46.6676 },
+  'Vila Sofia':            { lat: -23.6630, lng: -46.6850 },
+  // Adicionados depois (validados via OpenStreetMap Nominatim, igual aos
+  // de cima — ver santo-desapego-api/utils/geolocalizacao.js pro mesmo
+  // conjunto no backend, que precisa continuar sincronizado com esta lista)
+  'Alto da Boa Vista':     { lat: -23.6413, lng: -46.6992 },
+  'Campo Grande':          { lat: -23.6620, lng: -46.6870 },
+  'Chácara Flora':         { lat: -23.6468, lng: -46.6854 },
+  'Chácara Monte Alegre':  { lat: -23.6444, lng: -46.6770 },
+  'Chácara Santo Antônio': { lat: -23.6298, lng: -46.7039 },
+  'Interlagos':            { lat: -23.6532, lng: -46.6799 },
+  'Jardim Cordeiro':       { lat: -23.6366, lng: -46.6776 },
+  'Jardim Petrópolis':     { lat: -23.6317, lng: -46.6839 },
+  'Jardim Santo Amaro':    { lat: -23.6522, lng: -46.6960 },
+  'Socorro':               { lat: -23.6633, lng: -46.7110 },
 };
 
 /* ── Pin terracota customizado ───────────────────────────── */

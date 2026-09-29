@@ -41,6 +41,7 @@ app.use(require('./routes/pagamentos'));
 app.use(require('./routes/mercadoPago'));
 app.use(require('./routes/admin'));
 app.use(require('./routes/ia'));
+app.use(require('./routes/estatisticas'));
 
 // ============================================================
 //  NOTIFICAÇÃO — anúncio prestes a expirar [RF18]

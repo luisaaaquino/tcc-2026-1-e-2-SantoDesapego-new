@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Home.css';
 import Mapa from '../componentes/Mapa';
-import SeletorBairro from '../componentes/SeletorBairro';
+import SeletorBairro, { BAIRROS } from '../componentes/SeletorBairro';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import LegalModal from '../componentes/LegalModal';
 import {
@@ -72,11 +72,7 @@ const CATEGORIAS = [
   { id: 10, nome: 'Outros', Icon: IconMore },
 ];
 
-const HOODS = [
-  'Santo Amaro Centro', 'Jardim Marajoara', 'Campo Belo',
-  'Brooklin', 'Granja Julieta', 'Vila Cruzeiro',
-  'Vila Sofia', 'Vila Mascote',
-];
+const HOODS = BAIRROS;
 
 const FOOTER_LINKS = [
   {

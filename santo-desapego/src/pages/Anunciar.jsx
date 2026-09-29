@@ -7,6 +7,7 @@ import { API_URL } from '../config';
 import { redimensionarImagem } from '../utils/imagem';
 import AgenteAnuncioChat from '../componentes/AgenteAnuncioChat';
 import AnuncioRapidoIA from '../componentes/AnuncioRapidoIA';
+import { BAIRROS } from '../componentes/SeletorBairro';
 
 // ── Limites do TCC [RNF19] ────────────────────────────────
 const MAX_IMAGENS  = 6;
@@ -632,7 +633,7 @@ const Anunciar = () => {
                       onChange={(e) => setForm({ ...form, bairro: e.target.value })}
                       required>
                       <option value="">Selecione...</option>
-                      {['Santo Amaro Centro','Campo Belo','Brooklin','Granja Julieta','Jardim Marajoara','Vila Cruzeiro','Vila Mascote','Vila Sofia','Outro bairro'].map((b) => (
+                      {[...BAIRROS, 'Outro bairro'].map((b) => (
                         <option key={b}>{b}</option>
                       ))}
                     </select>
