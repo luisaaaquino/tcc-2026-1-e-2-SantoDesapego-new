@@ -1,0 +1,166 @@
+/* ============================================================
+   ASSISTENTECOMPRAFLUTUANTE.CSS — Botão flutuante do Consultor de
+   Compra (IA, Agente A). Fica fixo no canto inferior direito, em
+   toda navegação do site (montado em App.jsx).
+   ============================================================ */
+
+/* O site já tem o widget de acessibilidade VLibras (governo, ver
+   index.html) fixo no canto inferior direito — o nosso botão fica um
+   pouco mais alto pra não sobrepor o botão de acessibilidade dele. */
+.compra-ia-flutuante-wrap {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 6.5rem;
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.compra-ia-botao {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: var(--forest);
+  color: var(--cream);
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+  transition: transform 0.18s, background 0.18s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.compra-ia-botao:hover {
+  background: var(--terracotta);
+  transform: scale(1.06);
+}
+
+.compra-ia-painel {
+  width: min(20rem, calc(100vw - 2.5rem));
+  max-height: min(28rem, calc(100vh - 8rem));
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.compra-ia-painel-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  background: var(--forest);
+  color: var(--cream);
+}
+.compra-ia-painel-topo strong {
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+.compra-ia-fechar {
+  background: none;
+  border: none;
+  color: var(--cream);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.1rem 0.3rem;
+  opacity: 0.85;
+}
+.compra-ia-fechar:hover { opacity: 1; }
+
+.compra-ia-painel-corpo {
+  padding: 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.compra-ia-msg {
+  font-size: 0.86rem;
+  color: var(--ink-muted);
+  line-height: 1.5;
+}
+.compra-ia-msg.erro { color: var(--terracotta); }
+
+.compra-ia-justificativa {
+  font-size: 0.88rem;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.compra-ia-itens {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.compra-ia-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--cream-soft);
+  text-decoration: none;
+  transition: border-color 0.18s, background 0.18s;
+}
+.compra-ia-item:hover {
+  border-color: var(--terracotta);
+  background: var(--paper);
+}
+.compra-ia-item img,
+.compra-ia-item-sem-foto {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.compra-ia-item-sem-foto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--border);
+  font-size: 1.2rem;
+}
+.compra-ia-item-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.compra-ia-item-titulo {
+  font-size: 0.84rem;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.compra-ia-item-preco {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--forest);
+}
+
+.compra-ia-ver-mais {
+  align-self: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--terracotta);
+  text-decoration: none;
+  margin-top: 0.2rem;
+}
+.compra-ia-ver-mais:hover { text-decoration: underline; }
+
+@media (max-width: 480px) {
+  .compra-ia-flutuante-wrap { right: 1rem; bottom: 5.5rem; }
+  .compra-ia-botao { width: 50px; height: 50px; font-size: 1.3rem; }
+}

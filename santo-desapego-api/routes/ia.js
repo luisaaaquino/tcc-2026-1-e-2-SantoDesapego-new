@@ -1,7 +1,8 @@
 const express = require('express');
 const pool = require('../db');
 const { autenticar } = require('../middleware/auth');
-const { rodarAgente, estadoInicial } = require('../services/agenteAnuncioService');
+const { rodarAgente, estadoInicial, gerarRascunhoRapido } = require('../services/agenteAnuncioService');
+const { registrarClique, gerarSugestaoCompra } = require('../services/agenteCompraService');
 
 const router = express.Router();
 
@@ -83,6 +84,10 @@ router.post('/api/ia/agente-anuncio', autenticar, async (req, res) => {
       conversa: resultado.estado.conversa,
       anuncio: resultado.anuncio || null,
       indicio: resultado.indicio || null,
+      // Anúncios comparáveis da última consulta de preço (se já rolou
+      // alguma) — o chat mostra como cards clicáveis, pra pessoa ver a
+      // concorrência de verdade, não só um resumo de faixa de preço.
+      observacao_preco: resultado.estado.observacoes.ultima_consulta_preco,
     });
   } catch (erro) {
     await client.query('ROLLBACK');
@@ -95,6 +100,82 @@ router.post('/api/ia/agente-anuncio', autenticar, async (req, res) => {
     return res.status(500).json({ erro: 'Erro ao processar a conversa com o assistente.' });
   } finally {
     client.release();
+  }
+});
+
+// ============================================================
+//  POST /api/ia/anuncio-rapido — "Anúncio rápido" (IA)
+//  Modo de tiro único: uma mensagem descrevendo o produto vira um
+//  rascunho pra revisão — sem ida-e-volta de perguntas, sem
+//  persistir estado no banco (nada aqui publica nada). Quem publica
+//  é a própria pessoa, no formulário manual já preenchido com esse
+//  rascunho (reaproveita POST /api/anuncios e toda a validação de
+//  sempre) — por isso não precisa de transação nem de tabela nova.
+// ============================================================
+router.post('/api/ia/anuncio-rapido', autenticar, async (req, res) => {
+  try {
+    const { mensagem } = req.body;
+    if (!mensagem || !mensagem.trim()) {
+      return res.status(400).json({ erro: 'Descreva o que você quer anunciar.' });
+    }
+
+    const perfil = await pool.query('SELECT cep, bairro FROM usuarios WHERE id = $1', [req.userId]);
+    const { cep, bairro } = perfil.rows[0] || {};
+    if (!cep) {
+      return res.status(400).json({
+        erro: 'Complete seu CEP no perfil antes de anunciar com IA. Vá em Perfil → Endereço.',
+      });
+    }
+
+    const resultado = await gerarRascunhoRapido({ mensagem: mensagem.trim(), cep, bairro });
+    return res.json(resultado);
+  } catch (erro) {
+    console.error('Erro no anúncio rápido (IA):', erro);
+    if (erro.codigo === 'LLM_INDISPONIVEL' || erro.codigo === 'LLM_RESPOSTA_INVALIDA') {
+      return res.status(503).json({
+        erro: 'O assistente de IA está indisponível no momento. Tente novamente em instantes ou preencha manualmente.',
+      });
+    }
+    return res.status(500).json({ erro: 'Erro ao gerar o rascunho do anúncio.' });
+  }
+});
+
+// ============================================================
+//  POST /api/ia/registrar-clique — Consultor de Compra (Agente A)
+//  Registra que o comprador logado visualizou um anúncio — é o
+//  sinal de intenção que o Agente A usa depois pra sugerir. Falha
+//  silenciosa (não atrapalha a navegação se der erro).
+// ============================================================
+router.post('/api/ia/registrar-clique', autenticar, async (req, res) => {
+  try {
+    const { anuncio_id } = req.body;
+    if (!anuncio_id) return res.status(400).json({ erro: 'anuncio_id é obrigatório.' });
+
+    await registrarClique({ usuarioId: req.userId, anuncioId: anuncio_id });
+    return res.status(204).end();
+  } catch (erro) {
+    console.error('Erro ao registrar clique (Agente A):', erro);
+    return res.status(500).json({ erro: 'Erro ao registrar clique.' });
+  }
+});
+
+// ============================================================
+//  GET /api/ia/sugestao-compra — Consultor de Compra (Agente A)
+//  Sugestão de produtos baseada nos cliques recentes do comprador
+//  logado. Nunca falha visivelmente pro usuário — qualquer problema
+//  (LLM indisponível, sinal insuficiente) cai numa descoberta
+//  genérica em vez de mostrar erro no botão flutuante.
+// ============================================================
+router.get('/api/ia/sugestao-compra', autenticar, async (req, res) => {
+  try {
+    const perfil = await pool.query('SELECT bairro FROM usuarios WHERE id = $1', [req.userId]);
+    const bairro = perfil.rows[0]?.bairro || null;
+
+    const resultado = await gerarSugestaoCompra({ usuarioId: req.userId, bairro });
+    return res.json(resultado);
+  } catch (erro) {
+    console.error('Erro ao gerar sugestão de compra (Agente A):', erro);
+    return res.status(500).json({ erro: 'Erro ao gerar sugestão.' });
   }
 });
 

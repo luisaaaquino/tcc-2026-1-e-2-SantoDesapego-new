@@ -3,6 +3,8 @@ import './AgenteAnuncioChat.css';
 import { API_URL } from '../config';
 import { redimensionarImagem } from '../utils/imagem';
 
+const formatPreco = (v) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 /* ── Chat do Agente de Anúncio (IA) ──────────────────────────────
    O vendedor descreve o produto conversando; o agente pergunta o
    que falta, consulta preço de comparáveis e monta o rascunho.
@@ -18,6 +20,7 @@ const AgenteAnuncioChat = ({ onPublicado }) => {
   const [enviando, setEnviando] = useState(false);
   const [statusFinal, setStatusFinal] = useState(null);
   const [erro, setErro] = useState('');
+  const [observacaoPreco, setObservacaoPreco] = useState(null);
   const fimRef = useRef(null);
   const fileRef = useRef(null);
   const token = localStorage.getItem('sd_token');
@@ -51,6 +54,9 @@ const AgenteAnuncioChat = ({ onPublicado }) => {
 
       setConversaId(dados.conversa_id);
       setConversa(dados.conversa);
+      if (dados.observacao_preco && !dados.observacao_preco.erro) {
+        setObservacaoPreco(dados.observacao_preco);
+      }
 
       if (dados.status === 'publicado') {
         onPublicado(dados.anuncio);
@@ -89,6 +95,28 @@ const AgenteAnuncioChat = ({ onPublicado }) => {
         ))}
         <div ref={fimRef} />
       </div>
+
+      {observacaoPreco?.comparaveis?.length > 0 && (
+        <div className="ia-chat-comparaveis">
+          <p className="ia-chat-comparaveis-titulo">
+            Anúncios parecidos já publicados (faixa: R$ {formatPreco(observacaoPreco.faixa_min)} – R$ {formatPreco(observacaoPreco.faixa_max)}):
+          </p>
+          <div className="ia-chat-comparaveis-lista">
+            {observacaoPreco.comparaveis.map((c) => (
+              <a
+                key={c.id}
+                href={`/anuncio/${c.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ia-chat-comparavel-card"
+              >
+                <span className="ia-chat-comparavel-titulo">{c.titulo}</span>
+                <span className="ia-chat-comparavel-preco">R$ {formatPreco(c.preco)}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="ia-chat-imagens">
         {imagens.map((img, i) => (

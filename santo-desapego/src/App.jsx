@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import ScrollToTop      from './componentes/ScrollToTop';
+import AssistenteCompraFlutuante from './componentes/AssistenteCompraFlutuante';
 import Home             from './pages/Home';
 import Login            from './pages/Login';
 import Cadastro         from './pages/Cadastro';
@@ -42,6 +43,7 @@ function App() {
         <Route path="/esqueci-senha"     element={<EsqueciSenha />}     />
         <Route path="/redefinir-senha"   element={<RedefinirSenha />}   />
       </Routes>
+      <AssistenteCompraFlutuante />
     </BrowserRouter>
   );
 }

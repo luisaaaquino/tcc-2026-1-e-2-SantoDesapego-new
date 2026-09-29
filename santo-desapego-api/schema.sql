@@ -214,6 +214,18 @@ CREATE TABLE conversas_ia_anuncio (
   atualizada_em TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+-- Agente de Compra (IA) — "Agente A" do case acadêmico agents-llm-senac-2026.
+-- Ver migrations/004_cliques_comprador.sql.
+CREATE TABLE cliques_comprador (
+  id            SERIAL PRIMARY KEY,
+  usuario_id    INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  anuncio_id    INTEGER REFERENCES anuncios(id) ON DELETE SET NULL,
+  categoria_id  INTEGER,
+  preco         NUMERIC(10,2),
+  bairro        VARCHAR(100),
+  data_clique   TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
 CREATE INDEX idx_usuarios_papel       ON usuarios(papel);
 CREATE INDEX idx_anuncios_status      ON anuncios(status);
 CREATE INDEX idx_anuncios_categoria   ON anuncios(categoria_id);
@@ -242,6 +254,7 @@ CREATE INDEX idx_favoritos_anuncio    ON favoritos(anuncio_id);
 CREATE INDEX idx_indicios_status      ON indicios_moderacao(status, data_criacao DESC);
 CREATE INDEX idx_indicios_vendedor    ON indicios_moderacao(vendedor_id);
 CREATE INDEX idx_conversas_ia_vendedor ON conversas_ia_anuncio(vendedor_id, atualizada_em DESC);
+CREATE INDEX idx_cliques_comprador_usuario ON cliques_comprador(usuario_id, data_clique DESC);
 
 -- ============================================================
 -- Categorias iniciais (necessárias para publicar anúncios)

@@ -74,9 +74,17 @@
 .anunciar-modo-toggle button:hover:not(.active) {
   color: var(--ink);
 }
-@media (max-width: 500px) {
-  .anunciar-modo-toggle { width: 100%; }
-  .anunciar-modo-toggle button { flex: 1; padding: 0.6rem 0.6rem; font-size: 0.82rem; }
+@media (max-width: 560px) {
+  .anunciar-modo-toggle { width: 100%; flex-wrap: wrap; }
+  .anunciar-modo-toggle button {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0.6rem 0.5rem;
+    font-size: 0.78rem;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+  }
 }
 
 /* ── Card principal ─────────────────────────────────────── */

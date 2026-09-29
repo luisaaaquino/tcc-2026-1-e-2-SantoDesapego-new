@@ -130,8 +130,21 @@ const Anuncio = () => {
       })
       .then((dados) => {
         const item = dados.anuncio || (dados.id ? dados : null);
-        if (item) setAnuncio(item);
-        else setErro(dados.erro || 'Anúncio não encontrado.');
+        if (item) {
+          setAnuncio(item);
+          // Sinal pro Consultor de Compra (IA, Agente A) — cada visualização
+          // vira um "clique" que ajuda a inferir intenção depois. Falha
+          // silenciosa: não atrapalha a navegação se a IA estiver fora.
+          if (token) {
+            fetch(`${API_URL}/api/ia/registrar-clique`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ anuncio_id: item.id }),
+            }).catch(() => {});
+          }
+        } else {
+          setErro(dados.erro || 'Anúncio não encontrado.');
+        }
       })
       .catch((e) => {
         console.error('[Anuncio]', e);

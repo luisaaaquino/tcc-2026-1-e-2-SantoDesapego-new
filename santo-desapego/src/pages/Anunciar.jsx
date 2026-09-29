@@ -6,6 +6,7 @@ import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
 import { API_URL } from '../config';
 import { redimensionarImagem } from '../utils/imagem';
 import AgenteAnuncioChat from '../componentes/AgenteAnuncioChat';
+import AnuncioRapidoIA from '../componentes/AnuncioRapidoIA';
 
 // ── Limites do TCC [RNF19] ────────────────────────────────
 const MAX_IMAGENS  = 6;
@@ -33,7 +34,8 @@ const Anunciar = () => {
   const [carregando, setCarregando] = useState(true);
   const [categorias, setCategorias] = useState([]);
   const [submitted, setSubmitted] = useState(null); // anúncio criado
-  const [modo, setModo] = useState('manual'); // 'manual' | 'ia' — só relevante quando !editando
+  const [modo, setModo] = useState('manual'); // 'manual' | 'ia' | 'rapido' — só relevante quando !editando
+  const [avisoIA, setAvisoIA] = useState(null); // avaliação do "Anúncio rápido", exibida no form manual
 
   const [form, setForm] = useState({
     titulo: '',
@@ -149,6 +151,33 @@ const Anunciar = () => {
   /* ── Quando muda a categoria principal, reseta subcategoria ── */
   const handleCategoriaPrincipal = (id) => {
     setForm({ ...form, categoria_principal: id, categoria_id: '' });
+  };
+
+  /* ── "Anúncio rápido" (IA) devolveu um rascunho — preenche o form
+     manual com ele (mesmo mapeamento categoria_id → categoria_principal/
+     categoria_id usado ao carregar um anúncio pra edição) e troca pro
+     modo manual, onde a pessoa revisa e publica com o botão de sempre. ── */
+  const handleRascunhoGerado = (dados) => {
+    const { rascunho, avaliacao, observacao_preco } = dados;
+
+    const principal = categorias.find((c) =>
+      c.id === rascunho.categoria_id || c.subcategorias?.some((s) => s.id === rascunho.categoria_id)
+    );
+    const ehSubcategoria = principal?.subcategorias?.some((s) => s.id === rascunho.categoria_id);
+
+    setForm((f) => ({
+      ...f,
+      titulo: rascunho.titulo || f.titulo,
+      descricao: rascunho.descricao || f.descricao,
+      preco: rascunho.preco != null ? String(rascunho.preco).replace('.', ',') : f.preco,
+      estado_conservacao: rascunho.estado_conservacao || f.estado_conservacao,
+      categoria_principal: principal ? String(principal.id) : f.categoria_principal,
+      categoria_id: ehSubcategoria ? String(rascunho.categoria_id) : f.categoria_id,
+    }));
+
+    setAvisoIA({ avaliacao, observacao_preco });
+    setModo('manual');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   /* ════════════════════════════════════════════════════════
@@ -368,15 +397,18 @@ const Anunciar = () => {
           )}
         </div>
 
-        {/* Toggle "Preencher manualmente" / "Anunciar com IA" — só na
-            criação (editar um anúncio existente continua só manual) */}
+        {/* Toggle "Preencher manualmente" / "Conversar com IA" / "Anúncio
+            rápido" — só na criação (editar um anúncio continua só manual) */}
         {!editando && (
           <div className="anunciar-modo-toggle">
-            <button type="button" className={modo === 'manual' ? 'active' : ''} onClick={() => setModo('manual')}>
+            <button type="button" className={modo === 'manual' ? 'active' : ''} onClick={() => { setModo('manual'); setAvisoIA(null); }}>
               Preencher manualmente
             </button>
             <button type="button" className={modo === 'ia' ? 'active' : ''} onClick={() => setModo('ia')}>
-              Anunciar com IA ✨
+              Conversar com IA ✨
+            </button>
+            <button type="button" className={modo === 'rapido' ? 'active' : ''} onClick={() => setModo('rapido')}>
+              Anúncio rápido ⚡
             </button>
           </div>
         )}
@@ -385,6 +417,17 @@ const Anunciar = () => {
           <div className="anunciar-card">
             <AgenteAnuncioChat onPublicado={setSubmitted} />
           </div>
+        ) : modo === 'rapido' && !editando ? (
+          <div className="anunciar-card">
+            <AnuncioRapidoIA
+              imagens={imagens}
+              handleFiles={handleFiles}
+              removerImagem={removerImagem}
+              fileInputRef={fileInputRef}
+              maxImagens={MAX_IMAGENS}
+              onRascunhoGerado={handleRascunhoGerado}
+            />
+          </div>
         ) : (
         <div className="anunciar-card">
 
@@ -392,6 +435,20 @@ const Anunciar = () => {
           {erroGlobal && (
             <div className="anunciar-alert error">
               ⚠️ <strong>{erroGlobal}</strong>
+            </div>
+          )}
+
+          {/* Aviso do "Anúncio rápido" (IA) — some ao editar o form ou publicar */}
+          {avisoIA && (
+            <div className={`anunciar-alert ${avisoIA.avaliacao?.aprovado ? 'success' : 'info'}`}>
+              {avisoIA.avaliacao?.aprovado ? '✅' : '✨'}{' '}
+              <span>
+                Rascunho gerado pela IA — revise os campos abaixo antes de publicar.
+                {avisoIA.observacao_preco && !avisoIA.observacao_preco.erro && (
+                  <> Preço de mercado observado: R$ {avisoIA.observacao_preco.faixa_min} – R$ {avisoIA.observacao_preco.faixa_max}.</>
+                )}
+                {avisoIA.avaliacao?.correcao && <> {avisoIA.avaliacao.correcao}</>}
+              </span>
             </div>
           )}
 
