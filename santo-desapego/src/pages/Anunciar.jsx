@@ -534,7 +534,7 @@ const Anunciar = () => {
                       required>
                       <option value="">Selecione...</option>
                       {categorias.map((c) => (
-                        <option key={c.id} value={c.id}>{c.icone} {c.nome}</option>
+                        <option key={c.id} value={c.id}>{c.nome}</option>
                       ))}
                     </select>
                   </div>
