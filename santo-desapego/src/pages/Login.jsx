@@ -134,7 +134,7 @@ const LoginContent = () => {
     <div className="login-page">
 
       <div className="announcement">
-        🌱 Economia circular em Santo Amaro: compre, venda e troque com
+        🌱 Economia circular em Santo Amaro: compre e venda com
         vizinhos do seu bairro.
       </div>
 

@@ -10,6 +10,12 @@ const { TERMOS_VERSAO_ATUAL } = require('../utils/termos');
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
+// Mesmo Client ID do front (santo-desapego/src/pages/Login.jsx). Não é
+// segredo — é público por natureza; serve pra conferir que o token do
+// Google foi emitido pro Santo Desapego e não pra outro site/app.
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
+  || '113184048014-ramhhojnofdd511oh1nl3h2ibono7581.apps.googleusercontent.com';
+
 const router = express.Router();
 
 // ──────────────────────────────────────────────────────────
@@ -179,6 +185,28 @@ router.post('/api/auth/recuperar-senha', async (req, res) => {
 });
 
 // ──────────────────────────────────────────────────────────
+// RECUPERAÇÃO DE SENHA — valida o link antes de mostrar o formulário
+// Só diz se o token ainda vale (sem expor de quem é); a troca em si
+// continua validando de novo no POST abaixo.
+// ──────────────────────────────────────────────────────────
+router.get('/api/auth/redefinir-senha/validar', async (req, res) => {
+  try {
+    const { token } = req.query;
+    if (!token) return res.json({ valido: false });
+
+    const tokenHash = crypto.createHash('sha256').update(String(token)).digest('hex');
+    const resultado = await pool.query(
+      `SELECT 1 FROM usuarios WHERE reset_senha_token = $1 AND reset_senha_expira > NOW()`,
+      [tokenHash]
+    );
+    return res.json({ valido: resultado.rows.length > 0 });
+  } catch (erro) {
+    console.error('Erro ao validar link de recuperação:', erro);
+    return res.status(500).json({ erro: 'Erro ao validar o link.' });
+  }
+});
+
+// ──────────────────────────────────────────────────────────
 // RECUPERAÇÃO DE SENHA — redefinir com token [RF02]
 // ──────────────────────────────────────────────────────────
 router.post('/api/auth/redefinir-senha', async (req, res) => {
@@ -227,6 +255,21 @@ router.post('/api/auth/google', async (req, res) => {
       return res.status(400).json({ erro: 'Token do Google não enviado.' });
     }
 
+    // 1) O token precisa ter sido emitido PRO NOSSO app. Sem isso, um token
+    //    obtido por qualquer outro site em que a pessoa logou com Google
+    //    serviria pra entrar na conta dela aqui.
+    const respostaTokenInfo = await fetch(
+      `https://oauth2.googleapis.com/tokeninfo?access_token=${encodeURIComponent(credential)}`
+    );
+    if (!respostaTokenInfo.ok) {
+      return res.status(401).json({ erro: 'Token do Google inválido ou expirado.' });
+    }
+    const tokenInfo = await respostaTokenInfo.json();
+    if (tokenInfo.aud !== GOOGLE_CLIENT_ID) {
+      return res.status(401).json({ erro: 'Token do Google não pertence a este site.' });
+    }
+
+    // 2) Dados da conta Google — e o e-mail tem que ser verificado pelo Google
     const respostaGoogle = await fetch(
       'https://www.googleapis.com/oauth2/v3/userinfo',
       { headers: { Authorization: `Bearer ${credential}` } }
@@ -236,6 +279,9 @@ router.post('/api/auth/google', async (req, res) => {
     }
 
     const userInfo = await respostaGoogle.json();
+    if (!userInfo.email || userInfo.email_verified !== true) {
+      return res.status(401).json({ erro: 'Sua conta Google não tem um e-mail verificado.' });
+    }
     const emailGoogle = userInfo.email;
 
     const resultado = await pool.query(

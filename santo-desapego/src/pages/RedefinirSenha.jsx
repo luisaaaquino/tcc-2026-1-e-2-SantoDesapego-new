@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import './Login.css';
 import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
@@ -22,6 +22,19 @@ const RedefinirSenha = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [sucesso, setSucesso] = useState(false);
   const [strength, setStrength] = useState({ score: 0, label: '', cls: '' });
+
+  // O link vale uma vez só e expira em 1 hora: confere ao abrir a página,
+  // pra não mostrar um formulário que o servidor vai recusar.
+  const [linkStatus, setLinkStatus] = useState(token ? 'verificando' : 'invalido');
+
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${API_URL}/api/auth/redefinir-senha/validar?token=${encodeURIComponent(token)}`)
+      .then((r) => r.json())
+      .then((dados) => setLinkStatus(dados.valido ? 'valido' : 'invalido'))
+      // Sem conexão: mostra o formulário mesmo assim — o envio valida de novo
+      .catch(() => setLinkStatus('valido'));
+  }, [token]);
 
   const checkStrength = (val) => {
     if (!val) { setStrength({ score: 0, label: '', cls: '' }); return; }
@@ -114,17 +127,23 @@ const RedefinirSenha = () => {
               </p>
             </div>
 
-            {!token && !sucesso && (
+            {linkStatus === 'invalido' && !sucesso && (
               <div style={{
                 background: '#FFF5F3', border: '1.5px solid var(--terracotta)',
                 color: 'var(--terracotta)', padding: '0.75rem 1rem',
-                borderRadius: '10px', fontSize: '0.85rem', marginBottom: '1rem',
+                borderRadius: '10px', fontSize: '0.85rem', lineHeight: 1.5, marginBottom: '1rem',
               }}>
-                Este link está incompleto ou inválido.{' '}
+                {token
+                  ? 'Este link já foi usado ou expirou. Por segurança, cada link vale uma vez só, por até 1 hora.'
+                  : 'Este link está incompleto ou inválido.'}{' '}
                 <Link to="/esqueci-senha" style={{ color: 'inherit', textDecoration: 'underline' }}>
                   Solicite um novo link.
                 </Link>
               </div>
+            )}
+
+            {linkStatus === 'verificando' && (
+              <p className="form-sub" style={{ marginBottom: '1rem' }}>Verificando o link...</p>
             )}
 
             {sucesso ? (
@@ -135,7 +154,7 @@ const RedefinirSenha = () => {
               }}>
                 Senha redefinida com sucesso! Redirecionando para o login...
               </div>
-            ) : (
+            ) : linkStatus === 'valido' && (
               <form onSubmit={handleSubmit} noValidate>
                 <div className="input-group">
                   <label htmlFor="novaSenha">Nova senha</label>
