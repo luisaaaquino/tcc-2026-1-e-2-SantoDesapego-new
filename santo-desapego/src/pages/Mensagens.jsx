@@ -272,7 +272,7 @@ const Mensagens = () => {
                 ) : mensagens.length === 0 ? (
                   <div className="msg-vazio">
                     <p><strong>Comece a conversa</strong></p>
-                    <p>Pergunte sobre estado da peça, medidas ou combine a retirada.</p>
+                    <p>Pergunte sobre estado da peça, medidas ou combine a entrega.</p>
                   </div>
                 ) : (
                   mensagens.map((m) => (
@@ -304,7 +304,7 @@ const Mensagens = () => {
               </form>
 
               <p className="msg-aviso">
-                Combine sempre a retirada em local público. Não compartilhe senhas nem dados bancários.
+                Se forem se encontrar, prefira um local público. Não compartilhe senhas nem dados bancários.
               </p>
             </>
           )}

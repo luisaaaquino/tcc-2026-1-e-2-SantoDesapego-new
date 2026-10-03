@@ -74,13 +74,13 @@ export default function CompraRealizada() {
     },
     {
       n: '02',
-      titulo: 'Separação',
-      texto: 'O vendedor confirma o horário de retirada em até 1 dia útil.',
+      titulo: 'Combinar a entrega',
+      texto: 'Fale com o vendedor pelas mensagens para combinar como e quando você recebe a peça.',
     },
     {
       n: '03',
-      titulo: 'Retirada',
-      texto: 'Você recebe um aviso quando a peça estiver pronta no ponto combinado.',
+      titulo: 'Entrega',
+      texto: 'O vendedor entrega a peça a você do jeito que vocês combinaram.',
     },
     {
       n: '04',
@@ -116,7 +116,7 @@ export default function CompraRealizada() {
 
         <p className="compra-hero__texto">
           {aprovado
-            ? 'Guarde o número do pagamento: é ele que identifica você na hora da retirada.'
+            ? 'Guarde o número do pagamento: é ele que identifica a sua compra se precisar falar com o vendedor ou com o suporte.'
             : 'Alguns cartões levam alguns minutos para aprovar. Você recebe um e-mail assim que sair o resultado.'}
         </p>
 
@@ -142,7 +142,6 @@ export default function CompraRealizada() {
 
           <dl className="resumo-conta">
             <div><dt>Subtotal</dt><dd>{brl(anuncio.preco)}</dd></div>
-            <div><dt>Frete</dt><dd>Retirada gratuita</dd></div>
             <div className="resumo-conta__total">
               <dt>Total</dt>
               <dd>{brl(pagamento?.valor ?? anuncio.preco)}</dd>
@@ -156,7 +155,7 @@ export default function CompraRealizada() {
                 ? `${pagamento.metodo} · ${pagamento.parcelas}x · ${aprovado ? 'aprovado' : status}`
                 : 'Cartão via Mercado Pago'}
             </p>
-            <p><span>Retirada</span>{anuncio.bairro}</p>
+            <p><span>Bairro</span>{anuncio.bairro}</p>
           </div>
         </section>
       )}
@@ -177,10 +176,13 @@ export default function CompraRealizada() {
       <section className="compra-ajuda">
         <h2>Precisa mudar alguma coisa?</h2>
         <p>
-          Dá para alterar o ponto de retirada enquanto o pedido estiver na etapa de separação.
-          Depois disso, fale direto com o vendedor.
+          Fale direto com o vendedor pelas mensagens para ajustar a entrega.
+          Se não resolver, nosso suporte ajuda.
         </p>
-        <Link className="btn btn--creme" to="/sobre">Falar com o suporte</Link>
+        <div className="compra-ajuda__acoes">
+          <Link className="btn btn--creme" to="/mensagens">Ir para mensagens</Link>
+          <Link className="btn btn--creme" to="/sobre">Falar com o suporte</Link>
+        </div>
       </section>
     </main>
   );

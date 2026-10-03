@@ -363,7 +363,7 @@ const Anuncio = () => {
 
             <p className="anuncio-nota">
               Pagamento com cartão em até 12x, processado pelo Mercado Pago.
-              Combine a retirada pelo chat e nunca pague fora da plataforma.
+              Combine a entrega com o vendedor pelo chat e nunca pague fora da plataforma.
             </p>
 
             <Link to={`/usuario/${anuncio.vendedor_id}`} className="anuncio-vendedor">
@@ -389,7 +389,7 @@ const Anuncio = () => {
             <div><dt>Estado</dt><dd>{estado.name}</dd></div>
             <div><dt>Categoria</dt><dd>{categoria || '—'}</dd></div>
             <div><dt>Troca</dt><dd>{anuncio.aceita_troca ? 'Aceita' : 'Não aceita'}</dd></div>
-            <div><dt>Retirada</dt><dd>{anuncio.bairro}</dd></div>
+            <div><dt>Bairro</dt><dd>{anuncio.bairro}</dd></div>
           </dl>
         </section>
       </div>

@@ -184,22 +184,13 @@ const Checkout = () => {
               </div>
             </section>
 
-            {/* Retirada */}
+            {/* Entrega */}
             <section className="checkout-bloco">
-              <h2>Como você recebe</h2>
-
-              <div className="checkout-linha">
-                <span className="checkout-rotulo">Retirada combinada</span>
-                <span>{anuncio.bairro}</span>
-              </div>
-              <div className="checkout-linha">
-                <span className="checkout-rotulo">Frete</span>
-                <span className="checkout-gratis">Grátis</span>
-              </div>
+              <h2>Entrega</h2>
 
               <p className="checkout-nota">
-                O Santo Desapego é hiperlocal: você combina o ponto de encontro com o
-                anunciante pelo chat, dentro de Santo Amaro.
+                A entrega é combinada diretamente entre você e o vendedor pelo chat.
+                O Santo Desapego não realiza nem se responsabiliza pela entrega.
               </p>
             </section>
 
@@ -246,10 +237,6 @@ const Checkout = () => {
             <div className="checkout-linha">
               <span>Subtotal</span>
               <span>{brl(anuncio.preco)}</span>
-            </div>
-            <div className="checkout-linha">
-              <span>Frete</span>
-              <span className="checkout-gratis">Grátis</span>
             </div>
 
             <div className="checkout-total">

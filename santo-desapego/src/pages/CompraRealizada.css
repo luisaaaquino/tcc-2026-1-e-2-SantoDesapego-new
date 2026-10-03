@@ -277,6 +277,13 @@
   color: color-mix(in srgb, var(--cream) 88%, transparent);
 }
 
+.compra-ajuda__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
 /* --------------------------------------------------------- Responsivo */
 
 @media (max-width: 640px) {

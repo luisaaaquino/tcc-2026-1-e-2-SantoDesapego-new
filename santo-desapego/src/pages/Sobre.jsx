@@ -257,8 +257,7 @@ const Sobre = () => {
             <p>
               A ideia nasceu de uma cena comum: móveis bons na calçada esperando o
               caminhão de lixo, enquanto a poucos metros dali alguém procurava
-              exatamente aquilo em um marketplace gigante — e pagava frete de outro
-              estado.
+              exatamente aquilo em um marketplace gigante, vindo de outro estado.
             </p>
             <p>
               Os grandes marketplaces conectam o Brasil inteiro, mas desconectam o

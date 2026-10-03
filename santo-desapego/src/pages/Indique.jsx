@@ -114,7 +114,7 @@ const Indique = () => {
 
   // ── Convite: mesmo link pra todo mundo (sem código de indicação) ──
   const linkConvite = typeof window !== 'undefined' ? window.location.origin : 'https://santodesapego.com.br';
-  const mensagemConvite = `Vem ver o Santo Desapego! A gente compra, vende e troca com os vizinhos aqui de Santo Amaro, sem frete e sem complicação: ${linkConvite}`;
+  const mensagemConvite = `Vem ver o Santo Desapego! A gente compra, vende e troca com os vizinhos aqui de Santo Amaro, sem complicação: ${linkConvite}`;
   const linkWhatsapp = `https://wa.me/?text=${encodeURIComponent(mensagemConvite)}`;
 
   const linkTextoRef = useRef(null);
