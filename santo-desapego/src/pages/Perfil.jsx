@@ -735,6 +735,82 @@ const FormAvaliar = ({ compra, aoEnviar, aoCancelar }) => {
 };
 
 /* ════════════════════════════════════════════════════════════
+   TOKEN DE ENTREGA (seção 2.3 / RN05 do TCC)
+   O comprador vê o código; o vendedor digita o código que
+   recebeu no encontro — isso confirma a entrega.
+   ════════════════════════════════════════════════════════════ */
+const formatarCodigo = (c) => (c || '').replace(/^(\d{3})(\d{3})$/, '$1 $2');
+
+const ConfirmarEntrega = ({ venda, aoConfirmar }) => {
+  const [codigo, setCodigo] = useState('');
+  const [erro, setErro] = useState('');
+  const [bloqueada, setBloqueada] = useState(venda.entrega_bloqueada);
+  const [enviando, setEnviando] = useState(false);
+
+  const enviar = async (e) => {
+    e.preventDefault();
+    if (codigo.length !== 6) { setErro('O código tem 6 dígitos.'); return; }
+    setEnviando(true);
+    setErro('');
+    try {
+      const resposta = await fetch(`${API_URL}/api/compras/${venda.id}/confirmar-entrega`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('sd_token')}`,
+        },
+        body: JSON.stringify({ codigo }),
+      });
+      const dados = await resposta.json();
+      if (!resposta.ok) {
+        setErro(dados.erro || 'Não foi possível confirmar a entrega.');
+        if (dados.bloqueada) setBloqueada(true);
+        setCodigo('');
+        return;
+      }
+      aoConfirmar();
+    } catch {
+      setErro('Erro ao conectar com o servidor.');
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  if (bloqueada) {
+    return (
+      <span className="avaliar-erro">
+        <IconAlert /> Confirmação bloqueada por excesso de tentativas.{' '}
+        <Link to="/central-ajuda">Fale com o suporte</Link>.
+      </span>
+    );
+  }
+
+  return (
+    <form className="avaliar-form entrega-form" onSubmit={enviar}>
+      <label className="avaliar-form-label" htmlFor={`codigo-${venda.id}`}>
+        Entregou a peça? Peça o código de entrega a {venda.comprador_nome} e digite aqui.
+      </label>
+      <div className="entrega-form-linha">
+        <input
+          id={`codigo-${venda.id}`}
+          className="perfil-input entrega-input"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          placeholder="000000"
+          maxLength={6}
+          value={codigo}
+          onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}
+        />
+        <button type="submit" className="btn-perfil-primary" disabled={enviando || codigo.length !== 6}>
+          {enviando ? 'Confirmando...' : 'Confirmar entrega'}
+        </button>
+      </div>
+      {erro && <span className="avaliar-erro"><IconAlert /> {erro}</span>}
+    </form>
+  );
+};
+
+/* ════════════════════════════════════════════════════════════
    SEÇÃO COMPRAS REALIZADAS
    ════════════════════════════════════════════════════════════ */
 // [RF17] Baixa o comprovante em PDF de uma transação (compra ou venda)
@@ -847,11 +923,24 @@ const SecaoCompras = () => {
                 <p>Vendido por {c.vendedor_nome} {c.vendedor_sobrenome} · {dataBR(c.criada_em)} · {c.status}</p>
                 <strong>{brl(c.preco)}</strong>
 
+                {!c.entrega_confirmada_em && c.codigo_entrega && (
+                  <div className="entrega-codigo">
+                    <span className="entrega-codigo-label">Código de entrega</span>
+                    <strong className="entrega-codigo-valor">{formatarCodigo(c.codigo_entrega)}</strong>
+                    <p>
+                      Passe este código ao vendedor <b>só quando estiver com a peça em mãos</b>.
+                      É ele que confirma a entrega e libera a avaliação.
+                    </p>
+                  </div>
+                )}
+
                 <div className="compra-card-perfil-acoes">
                   <button type="button" className="btn-perfil-secondary avaliar-btn" onClick={() => baixarComprovante(c.id)}>
                     <I.download /> Comprovante (PDF)
                   </button>
-                  {c.ja_avaliei ? (
+                  {!c.entrega_confirmada_em ? (
+                    <span className="entrega-pendente-badge">Avaliação liberada após a entrega</span>
+                  ) : c.ja_avaliei ? (
                     <span className="avaliei-badge"><IconCheck /> Você avaliou esta compra</span>
                   ) : abrirAvaliar === c.id ? null : (
                     <button type="button" className="btn-perfil-secondary avaliar-btn"
@@ -861,7 +950,7 @@ const SecaoCompras = () => {
                   )}
                 </div>
 
-                {!c.ja_avaliei && abrirAvaliar === c.id && (
+                {c.entrega_confirmada_em && !c.ja_avaliei && abrirAvaliar === c.id && (
                   <FormAvaliar
                     compra={c}
                     aoEnviar={() => { setAbrirAvaliar(null); carregar(); }}
@@ -887,7 +976,7 @@ const SecaoVendas = () => {
   const [dataInicio, setDataInicio] = useState('');
   const [dataFim, setDataFim] = useState('');
 
-  useEffect(() => {
+  const carregar = () => {
     setCarregando(true);
     const params = new URLSearchParams();
     if (status) params.append('status', status);
@@ -901,7 +990,9 @@ const SecaoVendas = () => {
       .then((data) => setVendas(data.vendas || []))
       .catch(() => setVendas([]))
       .finally(() => setCarregando(false));
-  }, [status, dataInicio, dataFim]);
+  };
+
+  useEffect(() => { carregar(); }, [status, dataInicio, dataFim]);
 
   return (
     <>
@@ -939,7 +1030,16 @@ const SecaoVendas = () => {
                   <button type="button" className="btn-perfil-secondary avaliar-btn" onClick={() => baixarComprovante(v.id)}>
                     <I.download /> Comprovante (PDF)
                   </button>
+                  {v.entrega_confirmada_em && (
+                    <span className="avaliei-badge">
+                      <IconCheck /> Entrega confirmada em {dataBR(v.entrega_confirmada_em)}
+                    </span>
+                  )}
                 </div>
+
+                {!v.entrega_confirmada_em && (
+                  <ConfirmarEntrega venda={v} aoConfirmar={carregar} />
+                )}
               </div>
             </div>
           ))}

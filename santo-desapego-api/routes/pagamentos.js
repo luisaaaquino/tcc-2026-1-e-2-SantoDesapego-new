@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const express = require('express');
 const PDFDocument = require('pdfkit');
 const { MercadoPagoConfig, Payment } = require('mercadopago');
@@ -7,6 +8,12 @@ const { criarNotificacao } = require('../utils/notificacoes');
 const { garantirTokenVendedorValido, createSplitPreference } = require('../services/mercadoPagoService');
 
 const router = express.Router();
+
+// Token de confirmação de entrega (seção 2.3 / RN05): 6 dígitos que só o
+// comprador vê. Ele passa o código ao vendedor no encontro, depois de
+// receber a peça; o vendedor digita e a entrega fica registrada.
+const MAX_TENTATIVAS_CODIGO = 5;
+const gerarCodigoEntrega = () => String(crypto.randomInt(0, 1000000)).padStart(6, '0');
 
 // Busca o anúncio + as credenciais Mercado Pago do vendedor dono dele.
 // Usado tanto pra criar a preference quanto pra consultar/confirmar o pagamento
@@ -211,13 +218,16 @@ router.post('/api/compras/confirmar', autenticar, async (req, res) => {
 
     const compra = await pool.query(
       `INSERT INTO compras
-        (anuncio_id, comprador_id, vendedor_id, preco, payment_id, status, metodo_pagamento, parcelas)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        (anuncio_id, comprador_id, vendedor_id, preco, payment_id, status, metodo_pagamento, parcelas,
+         codigo_entrega)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        ON CONFLICT (payment_id) DO UPDATE SET status = EXCLUDED.status
-       RETURNING id, anuncio_id, preco, status, criada_em, (xmax = 0) AS inserida`,
+       RETURNING id, anuncio_id, preco, status, criada_em, codigo_entrega, entrega_confirmada_em,
+                 (xmax = 0) AS inserida`,
       [
         anuncio_id, req.userId, vendedor_id, preco,
         String(payment_id), dados.status, dados.payment_method_id, dados.installments,
+        gerarCodigoEntrega(),
       ]
     );
 
@@ -235,23 +245,122 @@ router.post('/api/compras/confirmar', autenticar, async (req, res) => {
         vendedor_id,
         'pagamento_confirmado',
         'Sua peça foi vendida! 🎉',
-        `O pagamento de "${titulo}" foi aprovado. ${nomeComprador} já pode combinar a entrega com você pelo chat.`,
+        `O pagamento de "${titulo}" foi aprovado. ${nomeComprador} já pode combinar a entrega com você pelo chat. No encontro, peça o código de entrega e digite em "Vendas realizadas" para confirmar.`,
         '/mensagens'
       );
 
+      // A solicitação de avaliação (RF18) só sai quando a entrega é
+      // confirmada — ver POST /api/compras/:id/confirmar-entrega
       criarNotificacao(
         req.userId,
-        'avaliacao_pendente',
-        'Combine a entrega e avalie o vendedor',
-        `Seu pagamento de "${titulo}" foi confirmado! Depois de receber o produto, não esqueça de avaliar o vendedor no seu perfil.`,
+        'pagamento_confirmado',
+        'Pagamento confirmado — guarde seu código de entrega',
+        `Seu pagamento de "${titulo}" foi aprovado. Seu código de entrega é ${compra.rows[0].codigo_entrega}. Passe esse código ao vendedor só quando estiver com a peça em mãos.`,
         '/perfil?aba=compras'
       );
     }
 
-    return res.status(201).json({ registrada: true, compra: compra.rows[0] });
+    const { inserida, ...compraRegistrada } = compra.rows[0];
+    return res.status(201).json({ registrada: true, compra: compraRegistrada });
   } catch (erro) {
     console.error('Erro ao confirmar compra:', erro);
     return res.status(500).json({ erro: 'Erro ao confirmar a compra.' });
+  }
+});
+
+// ============================================================
+//  ENTREGA — vendedor confirma com o código do comprador
+//  (seção 2.3 / RN05). Registra a entrega e libera a avaliação.
+//  Limite de tentativas pra o código não ser descoberto no chute.
+// ============================================================
+router.post('/api/compras/:id/confirmar-entrega', autenticar, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { id } = req.params;
+    const codigo = String(req.body.codigo || '').replace(/\D/g, '');
+
+    if (isNaN(parseInt(id))) {
+      return res.status(400).json({ erro: 'Compra inválida.' });
+    }
+    if (codigo.length !== 6) {
+      return res.status(400).json({ erro: 'O código de entrega tem 6 dígitos.' });
+    }
+
+    await client.query('BEGIN');
+
+    // FOR UPDATE: duas tentativas ao mesmo tempo não burlam o limite
+    const resultado = await client.query(
+      `SELECT co.vendedor_id, co.comprador_id, co.codigo_entrega, co.entrega_confirmada_em,
+              co.tentativas_codigo, a.titulo
+         FROM compras co
+         JOIN anuncios a ON a.id = co.anuncio_id
+        WHERE co.id = $1
+        FOR UPDATE OF co`,
+      [id]
+    );
+    const compra = resultado.rows[0];
+
+    if (!compra) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ erro: 'Compra não encontrada.' });
+    }
+    if (compra.vendedor_id !== req.userId) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({ erro: 'Só o vendedor pode confirmar a entrega.' });
+    }
+    if (compra.entrega_confirmada_em) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ erro: 'Esta entrega já foi confirmada.' });
+    }
+    if (compra.tentativas_codigo >= MAX_TENTATIVAS_CODIGO) {
+      await client.query('ROLLBACK');
+      return res.status(423).json({
+        erro: 'Confirmação bloqueada por excesso de tentativas. Fale com o suporte.',
+        bloqueada: true,
+      });
+    }
+
+    if (codigo !== compra.codigo_entrega) {
+      const tentativas = compra.tentativas_codigo + 1;
+      await client.query(
+        'UPDATE compras SET tentativas_codigo = $1, atualizada_em = NOW() WHERE id = $2',
+        [tentativas, id]
+      );
+      await client.query('COMMIT');
+      const restantes = MAX_TENTATIVAS_CODIGO - tentativas;
+      return res.status(400).json({
+        erro: restantes > 0
+          ? `Código incorreto. Você tem mais ${restantes} tentativa(s).`
+          : 'Código incorreto. A confirmação foi bloqueada — fale com o suporte.',
+        tentativas_restantes: restantes,
+        bloqueada: restantes === 0,
+      });
+    }
+
+    const confirmada = await client.query(
+      `UPDATE compras SET entrega_confirmada_em = NOW(), atualizada_em = NOW()
+        WHERE id = $1
+        RETURNING id, entrega_confirmada_em`,
+      [id]
+    );
+    await client.query('COMMIT');
+
+    // [RF18] Solicitação de avaliação — agora que a peça foi entregue
+    criarNotificacao(
+      compra.comprador_id,
+      'avaliacao_pendente',
+      'Entrega confirmada — avalie o vendedor',
+      `A entrega de "${compra.titulo}" foi confirmada. Conte como foi a negociação: sua avaliação ajuda os vizinhos a comprar com confiança.`,
+      '/perfil?aba=compras'
+    );
+
+    return res.json({ mensagem: 'Entrega confirmada!', compra: confirmada.rows[0] });
+  } catch (erro) {
+    await client.query('ROLLBACK').catch(() => {});
+    console.error('Erro ao confirmar entrega:', erro);
+    return res.status(500).json({ erro: 'Erro ao confirmar a entrega.' });
+  } finally {
+    client.release();
   }
 });
 

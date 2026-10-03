@@ -632,6 +632,43 @@
 .avaliar-form-acoes .btn-perfil-primary,
 .avaliar-form-acoes .btn-perfil-secondary { padding: 0.55rem 1.1rem; font-size: 0.85rem; }
 
+/* ── Token de entrega ── */
+.entrega-codigo {
+  margin: 0.2rem 0 0.8rem;
+  padding: 0.9rem 1rem;
+  background: var(--cream);
+  border: 1.5px dashed var(--forest);
+  border-radius: var(--radius-md);
+}
+.entrega-codigo-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--forest);
+}
+.entrega-codigo-valor {
+  display: block;
+  margin: 0.15rem 0 0.35rem;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  letter-spacing: 0.12em;
+  color: var(--ink);
+}
+.entrega-codigo p { font-size: 0.8rem; line-height: 1.5; color: var(--ink-soft); margin: 0; }
+.entrega-pendente-badge { font-size: 0.8rem; font-weight: 600; color: var(--ink-muted); }
+
+.entrega-form-linha { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 0.4rem; }
+.entrega-form .entrega-input {
+  width: 9rem;
+  font-size: 1.1rem;
+  letter-spacing: 0.25em;
+  text-align: center;
+}
+.entrega-form .btn-perfil-primary { padding: 0.55rem 1.1rem; font-size: 0.85rem; }
+.entrega-form .avaliar-erro { margin: 0.2rem 0 0; }
+
 /* ============================================================
    AVALIAÇÕES RECEBIDAS
    ============================================================ */

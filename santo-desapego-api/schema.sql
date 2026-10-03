@@ -108,6 +108,10 @@ CREATE TABLE compras (
   metodo_pagamento   VARCHAR(40),
   parcelas           INTEGER,
   avaliado           BOOLEAN NOT NULL DEFAULT FALSE,
+  -- Token de confirmação de entrega (migrations/007_codigo_entrega.sql)
+  codigo_entrega        VARCHAR(6),
+  entrega_confirmada_em TIMESTAMP,
+  tentativas_codigo     SMALLINT NOT NULL DEFAULT 0,
   criada_em          TIMESTAMP NOT NULL DEFAULT NOW(),
   atualizada_em      TIMESTAMP NOT NULL DEFAULT NOW()
 );

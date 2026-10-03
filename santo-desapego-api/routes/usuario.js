@@ -427,7 +427,10 @@ router.get('/api/usuario/compras', autenticar, async (req, res) => {
          u.id AS vendedor_id, u.nome AS vendedor_nome, u.sobrenome AS vendedor_sobrenome,
          (SELECT imagem FROM anuncio_imagens
            WHERE anuncio_id = a.id AND is_principal = TRUE LIMIT 1) AS anuncio_imagem,
-         (av.id IS NOT NULL) AS ja_avaliei
+         (av.id IS NOT NULL) AS ja_avaliei,
+         -- O código só aparece pro comprador (esta rota) e some depois da entrega
+         CASE WHEN co.entrega_confirmada_em IS NULL THEN co.codigo_entrega END AS codigo_entrega,
+         co.entrega_confirmada_em
        FROM compras co
        JOIN anuncios a ON a.id = co.anuncio_id
        JOIN usuarios u ON u.id = co.vendedor_id
@@ -474,7 +477,10 @@ router.get('/api/usuario/vendas', autenticar, async (req, res) => {
          a.id AS anuncio_id, a.titulo AS anuncio_titulo,
          u.id AS comprador_id, u.nome AS comprador_nome, u.sobrenome AS comprador_sobrenome,
          (SELECT imagem FROM anuncio_imagens
-           WHERE anuncio_id = a.id AND is_principal = TRUE LIMIT 1) AS anuncio_imagem
+           WHERE anuncio_id = a.id AND is_principal = TRUE LIMIT 1) AS anuncio_imagem,
+         -- Nunca o código em si: o vendedor só o recebe do comprador, no encontro
+         co.entrega_confirmada_em,
+         (co.tentativas_codigo >= 5) AS entrega_bloqueada
        FROM compras co
        JOIN anuncios a ON a.id = co.anuncio_id
        JOIN usuarios u ON u.id = co.comprador_id

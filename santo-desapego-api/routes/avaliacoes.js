@@ -23,7 +23,7 @@ router.post('/api/avaliacoes', autenticar, async (req, res) => {
     }
 
     const compra = await pool.query(
-      'SELECT comprador_id, vendedor_id FROM compras WHERE id = $1',
+      'SELECT comprador_id, vendedor_id, entrega_confirmada_em FROM compras WHERE id = $1',
       [compra_id]
     );
 
@@ -32,6 +32,12 @@ router.post('/api/avaliacoes', autenticar, async (req, res) => {
     }
     if (compra.rows[0].comprador_id !== req.userId) {
       return res.status(403).json({ erro: 'Você só pode avaliar suas próprias compras.' });
+    }
+    // Avaliação só depois da entrega confirmada com o código (seção 3.1.1 do TCC)
+    if (!compra.rows[0].entrega_confirmada_em) {
+      return res.status(400).json({
+        erro: 'Você poderá avaliar assim que o vendedor confirmar a entrega com o seu código.',
+      });
     }
 
     const jaAvaliada = await pool.query(

@@ -19,6 +19,8 @@ export default function CompraRealizada() {
   const [anuncio, setAnuncio]     = useState(state?.anuncio || null);
   const [pagamento, setPagamento] = useState(null);
   const [carregando, setCarregando] = useState(Boolean(anuncioId || paymentId));
+  // Token de entrega (seção 2.3 / RN05) — devolvido ao registrar a compra
+  const [codigoEntrega, setCodigoEntrega] = useState(null);
 
   // Busca o anúncio comprado
   useEffect(() => {
@@ -58,7 +60,15 @@ export default function CompraRealizada() {
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ payment_id: paymentId, anuncio_id: anuncioId }),
-    }).catch((e) => console.error('[compra] confirmar', e));
+    })
+      .then((r) => r.json())
+      .then((dados) => {
+        const compra = dados.compra;
+        if (compra?.codigo_entrega && !compra.entrega_confirmada_em) {
+          setCodigoEntrega(compra.codigo_entrega);
+        }
+      })
+      .catch((e) => console.error('[compra] confirmar', e));
   }, [paymentId, anuncioId, pagamento]);
 
   const status = pagamento?.status || statusUrl || 'approved';
@@ -80,12 +90,12 @@ export default function CompraRealizada() {
     {
       n: '03',
       titulo: 'Entrega',
-      texto: 'O vendedor entrega a peça a você do jeito que vocês combinaram.',
+      texto: 'Com a peça em mãos, passe seu código de entrega ao vendedor. Ele digita o código e a entrega fica confirmada.',
     },
     {
       n: '04',
-      titulo: 'Nova casa',
-      texto: 'Conte pra gente como ficou. A história da peça continua com você.',
+      titulo: 'Avaliação',
+      texto: 'Com a entrega confirmada, avalie o vendedor no seu perfil. A história da peça continua com você.',
     },
   ];
 
@@ -120,9 +130,22 @@ export default function CompraRealizada() {
             : 'Alguns cartões levam alguns minutos para aprovar. Você recebe um e-mail assim que sair o resultado.'}
         </p>
 
+        {aprovado && codigoEntrega && (
+          <div className="compra-codigo">
+            <span className="compra-codigo__label">Seu código de entrega</span>
+            <strong className="compra-codigo__valor">
+              {codigoEntrega.replace(/^(\d{3})(\d{3})$/, '$1 $2')}
+            </strong>
+            <p>
+              Passe este código ao vendedor <b>só quando estiver com a peça em mãos</b>.
+              Ele também fica salvo em "Compras realizadas", no seu perfil, e foi para o seu e-mail.
+            </p>
+          </div>
+        )}
+
         <div className="compra-hero__acoes">
           <Link className="btn btn--solido" to="/explorar">Continuar garimpando</Link>
-          <Link className="btn btn--vazado" to="/perfil">Ir para meu perfil</Link>
+          <Link className="btn btn--vazado" to="/perfil?aba=compras">Ver minhas compras</Link>
         </div>
       </section>
 
