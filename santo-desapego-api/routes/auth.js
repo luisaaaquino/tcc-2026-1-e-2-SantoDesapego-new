@@ -4,6 +4,7 @@ const jwt     = require('jsonwebtoken');
 const crypto  = require('crypto');
 const pool = require('../db');
 const { enviarEmail } = require('../utils/email');
+const { montarEmail } = require('../utils/emailTemplate');
 const { validarSenhaForte } = require('../utils/validacao');
 const { TERMOS_VERSAO_ATUAL } = require('../utils/termos');
 
@@ -157,16 +158,17 @@ router.post('/api/auth/recuperar-senha', async (req, res) => {
     await enviarEmail(
       email,
       'Recupere sua senha — Santo Desapego',
-      `<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
-        <h2 style="color:#1F4F3F;">Santo Desapego</h2>
-        <p>Olá, ${usuario.nome}!</p>
-        <p>Recebemos uma solicitação para redefinir a senha da sua conta. Clique no botão abaixo para criar uma nova senha:</p>
-        <p style="text-align:center; margin: 24px 0;">
-          <a href="${link}" style="background:#1F4F3F; color:#fff; padding:12px 24px; border-radius:24px; text-decoration:none; font-weight:bold;">Redefinir minha senha</a>
-        </p>
-        <p>Este link expira em 1 hora. Se você não pediu essa alteração, pode ignorar este e-mail.</p>
-        <p style="color:#888; font-size:12px;">Santo Desapego — Projeto acadêmico TCC, Centro Universitário Senac Santo Amaro.</p>
-      </div>`
+      montarEmail({
+        titulo: 'Vamos criar uma nova senha',
+        nome: usuario.nome,
+        paragrafos: [
+          'Recebemos um pedido para redefinir a senha da sua conta. Clique no botão abaixo para escolher uma nova senha.',
+          'Por segurança, este link expira em 1 hora e só pode ser usado uma vez.',
+        ],
+        botao: { texto: 'Redefinir minha senha', url: link },
+        rodapeExtra: 'Não foi você? Pode ignorar este e-mail — sua senha atual continua valendo.',
+        previa: 'Use o link para criar uma nova senha. Ele expira em 1 hora.',
+      })
     );
 
     return res.json(respostaGenerica);

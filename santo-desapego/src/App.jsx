@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import ScrollToTop      from './componentes/ScrollToTop';
+import TransicaoPagina  from './componentes/TransicaoPagina';
 import AssistenteCompraFlutuante from './componentes/AssistenteCompraFlutuante';
 import Home             from './pages/Home';
 import Login            from './pages/Login';
@@ -23,26 +24,28 @@ function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <Routes>
-        <Route path="/"                  element={<Home />}             />
-        <Route path="/login"             element={<Login />}            />
-        <Route path="/cadastro"          element={<Cadastro />}         />
-        <Route path="/perfil"            element={<Perfil />}           />
-        <Route path="/usuario/:id"       element={<PerfilPublico />}    />
-        <Route path="/anunciar"          element={<Anunciar />}         />
-        <Route path="/anunciar/:id"      element={<Anunciar />}         />
-        <Route path="/explorar"          element={<Explorar />}         />
-        <Route path="/sobre"             element={<Sobre />}            />
-        <Route path="/indique"           element={<Indique />}          />
-        <Route path="/anuncio/:id"       element={<Anuncio />}          />
-        <Route path="/mensagens"         element={<Mensagens />}        />
-        <Route path="/checkout/:id"      element={<Checkout />}         />
-        <Route path="/compra-realizada"  element={<CompraRealizada />}  />
-        <Route path="/admin"             element={<Admin />}            />
-        <Route path="/central-ajuda"     element={<CentralAjuda />}     />
-        <Route path="/esqueci-senha"     element={<EsqueciSenha />}     />
-        <Route path="/redefinir-senha"   element={<RedefinirSenha />}   />
-      </Routes>
+      <TransicaoPagina>
+        <Routes>
+          <Route path="/"                  element={<Home />}             />
+          <Route path="/login"             element={<Login />}            />
+          <Route path="/cadastro"          element={<Cadastro />}         />
+          <Route path="/perfil"            element={<Perfil />}           />
+          <Route path="/usuario/:id"       element={<PerfilPublico />}    />
+          <Route path="/anunciar"          element={<Anunciar />}         />
+          <Route path="/anunciar/:id"      element={<Anunciar />}         />
+          <Route path="/explorar"          element={<Explorar />}         />
+          <Route path="/sobre"             element={<Sobre />}            />
+          <Route path="/indique"           element={<Indique />}          />
+          <Route path="/anuncio/:id"       element={<Anuncio />}          />
+          <Route path="/mensagens"         element={<Mensagens />}        />
+          <Route path="/checkout/:id"      element={<Checkout />}         />
+          <Route path="/compra-realizada"  element={<CompraRealizada />}  />
+          <Route path="/admin"             element={<Admin />}            />
+          <Route path="/central-ajuda"     element={<CentralAjuda />}     />
+          <Route path="/esqueci-senha"     element={<EsqueciSenha />}     />
+          <Route path="/redefinir-senha"   element={<RedefinirSenha />}   />
+        </Routes>
+      </TransicaoPagina>
       <AssistenteCompraFlutuante />
     </BrowserRouter>
   );

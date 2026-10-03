@@ -1,0 +1,34 @@
+/* ── Entrada de página: fade + leve subida ──
+   A subida usa `top` (com position: relative) em vez de `transform`
+   de propósito: transform num ancestral faz os elementos
+   position: fixed das páginas (barra de compra do Anúncio no
+   celular, modais, gaveta do menu) se posicionarem em relação a
+   este invólucro em vez da tela — eles "pulariam" durante a
+   animação. `top` e `opacity` não têm esse efeito. */
+.transicao-pagina {
+  position: relative;
+  animation: transicao-pagina-entrada 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes transicao-pagina-entrada {
+  from {
+    opacity: 0;
+    top: 10px;
+  }
+  to {
+    opacity: 1;
+    top: 0;
+  }
+}
+
+/* "Reduzir movimento" (no Windows: Efeitos de animação desligados)
+   tira só o deslocamento — um fade simples não causa desconforto
+   e mantém a troca de tela perceptível. */
+@media (prefers-reduced-motion: reduce) {
+  .transicao-pagina { animation-name: transicao-pagina-fade; }
+}
+
+@keyframes transicao-pagina-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}

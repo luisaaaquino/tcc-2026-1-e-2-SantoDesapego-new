@@ -58,7 +58,8 @@ const verificarAnunciosExpirando = async () => {
          AND NOT EXISTS (
            SELECT 1 FROM notificacoes n
             WHERE n.tipo = 'anuncio_expirando'
-              AND n.link = '/anuncio/' || a.id
+              -- link antigo ('/anuncio/ID') ou atual (aba Meus anúncios do Perfil)
+              AND n.link IN ('/anuncio/' || a.id, '/perfil?aba=anuncios&anuncio=' || a.id)
               AND n.criada_em > NOW() - INTERVAL '3 days'
          )
     `);
@@ -72,7 +73,7 @@ const verificarAnunciosExpirando = async () => {
         'anuncio_expirando',
         'Seu anúncio está prestes a expirar',
         `"${anuncio.titulo}" expira em ${diasRestantes} dia(s). Acesse a plataforma para renovar e continuar recebendo interessados.`,
-        `/anuncio/${anuncio.id}`
+        `/perfil?aba=anuncios&anuncio=${anuncio.id}`
       );
     }
   } catch (erro) {

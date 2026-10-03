@@ -88,7 +88,7 @@ router.post('/api/pagamentos/preferencia', autenticar, async (req, res) => {
       'intencao_compra',
       'Alguém quer comprar seu anúncio!',
       `${comprador.rows[0]?.nome} iniciou o pagamento do anúncio "${anuncio.titulo}". Fique de olho — assim que o pagamento for aprovado, vocês combinam a entrega pelo chat.`,
-      '/perfil'
+      '/perfil?aba=anuncios'
     );
 
     return res.json({
@@ -244,7 +244,7 @@ router.post('/api/compras/confirmar', autenticar, async (req, res) => {
         'avaliacao_pendente',
         'Combine a entrega e avalie o vendedor',
         `Seu pagamento de "${titulo}" foi confirmado! Depois de receber o produto, não esqueça de avaliar o vendedor no seu perfil.`,
-        '/perfil'
+        '/perfil?aba=compras'
       );
     }
 

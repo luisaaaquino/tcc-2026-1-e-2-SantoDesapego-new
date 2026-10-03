@@ -91,8 +91,18 @@ const Perfil = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [usuario, setUsuario] = useState(null);
   const [estatisticas, setEstatisticas] = useState(null);
-  const [aba, setAba] = useState(searchParams.get('mp') ? 'pagamentos' : 'painel');
+  // ?aba=compras (vindo do link de uma notificação) abre direto a aba certa
+  const abaDaUrl = searchParams.get('aba');
+  const [aba, setAba] = useState(
+    searchParams.get('mp') ? 'pagamentos' : (ABA_LABEL[abaDaUrl] ? abaDaUrl : 'painel')
+  );
   const [carregando, setCarregando] = useState(true);
+
+  // Clicar numa notificação estando já no Perfil só muda a query string
+  // (a página não remonta) — então acompanha o ?aba= aqui também.
+  useEffect(() => {
+    if (ABA_LABEL[abaDaUrl]) setAba(abaDaUrl);
+  }, [abaDaUrl]);
 
   // No mobile, as 11 abas empilhadas empurram o conteúdo pra bem
   // longe do topo — viram um menu que abre/fecha, igual ao painel
