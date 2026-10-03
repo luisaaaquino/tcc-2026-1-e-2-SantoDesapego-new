@@ -255,41 +255,6 @@
 }
 .estado-option.selected .estado-option-name { color: var(--terracotta); }
 
-/* ── Aceita troca (toggle) ──────────────────────────────── */
-.troca-toggle {
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  padding: 0.75rem 1rem;
-  background: var(--cream-soft);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  margin-top: 0.5rem;
-}
-.troca-toggle .checkbox-custom {
-  width: 20px; height: 20px;
-  border: 1.5px solid var(--border);
-  border-radius: 6px;
-  background: var(--cream);
-  flex-shrink: 0;
-  transition: background 0.15s, border-color 0.15s;
-  display: grid; place-items: center;
-}
-.troca-toggle .checkbox-custom.checked { background: var(--forest); border-color: var(--forest); }
-.troca-toggle .checkbox-custom.checked::after {
-  content: "";
-  display: block;
-  width: 10px; height: 7px;
-  border-left: 2px solid white;
-  border-bottom: 2px solid white;
-  transform: rotate(-45deg) translateY(-1px);
-}
-.troca-toggle-text {
-  font-size: 0.88rem;
-  color: var(--ink-soft);
-}
-.troca-toggle-text strong { color: var(--ink); }
-
 /* ── Upload de Imagens ──────────────────────────────────── */
 .imagens-grid {
   display: grid;

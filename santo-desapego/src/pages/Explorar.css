@@ -86,7 +86,7 @@
   background-position: right 0.6rem center;
 }
 
-/* ── Tabs de filtro rápido ─────────────────────────────────── */
+/* ── Contador de resultados ─────────────────────────────────── */
 .explorar-tabs {
   display: flex;
   gap: 0.5rem;
@@ -100,13 +100,7 @@
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--ink-soft);
-  cursor: pointer;
-  transition: all 0.18s;
   font-family: inherit;
-}
-.explorar-tab:hover {
-  border-color: var(--terracotta);
-  color: var(--terracotta);
 }
 .explorar-tab.active {
   background: var(--ink);
@@ -365,20 +359,6 @@
   color: var(--ink-muted);
   background: var(--cream-soft);
 }
-.ecard-badge {
-  position: absolute;
-  top: 0.65rem;
-  left: 0.65rem;
-  background: var(--forest);
-  color: var(--cream);
-  font-size: 0.7rem;
-  font-weight: 700;
-  padding: 0.3rem 0.65rem;
-  border-radius: var(--radius-pill);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
-  white-space: nowrap;
-}
-
 .ecard-favorito {
   position: absolute;
   top: 0.6rem;

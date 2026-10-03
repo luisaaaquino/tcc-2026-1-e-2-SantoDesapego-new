@@ -46,8 +46,8 @@ async function semearComparaveis(vendedorId) {
     await pool.query(
       `INSERT INTO anuncios
         (vendedor_id, categoria_id, titulo, descricao, preco,
-         aceita_troca, estado_conservacao, cep, bairro, status)
-       VALUES ($1, $2, $3, $4, $5, false, 'usado', $6, $7, 'ativo')`,
+         estado_conservacao, cep, bairro, status)
+       VALUES ($1, $2, $3, $4, $5, 'usado', $6, $7, 'ativo')`,
       [
         vendedorId, CATEGORIA_ELETRODOMESTICOS,
         `Geladeira Consul Duplex ${preco}`,

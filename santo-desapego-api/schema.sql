@@ -55,7 +55,6 @@ CREATE TABLE anuncios (
   titulo              VARCHAR(120) NOT NULL,
   descricao           TEXT NOT NULL,
   preco               NUMERIC(10,2) NOT NULL CHECK (preco >= 0),
-  aceita_troca        BOOLEAN NOT NULL DEFAULT FALSE,
   estado_conservacao  VARCHAR(20) NOT NULL
                         CHECK (estado_conservacao IN ('novo','seminovo','usado','para-reparo')),
   cep                 VARCHAR(8) NOT NULL,

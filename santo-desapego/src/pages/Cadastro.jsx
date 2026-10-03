@@ -288,7 +288,7 @@ const Cadastro = () => {
         {/* LEFT PANEL */}
         <div className="left-panel">
           <h2>Seu bairro <em>nunca</em><br />foi tão próximo.</h2>
-          <p>Crie sua conta gratuita e comece a comprar, vender e trocar com vizinhos de Santo Amaro em poucos minutos.</p>
+          <p>Crie sua conta gratuita e comece a comprar e vender com vizinhos de Santo Amaro em poucos minutos.</p>
 
           <ul className="benefits-list">
             {[

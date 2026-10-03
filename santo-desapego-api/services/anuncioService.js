@@ -73,7 +73,7 @@ async function validarDadosAnuncio({ titulo, descricao, preco, estado_conservaca
  * Insere o anúncio + imagens numa transação (ACID). Assume que os dados já
  * passaram por `validarDadosAnuncio`.
  */
-async function inserirAnuncio({ vendedorId, titulo, descricao, preco, aceita_troca, estado_conservacao, categoria_id, cep, bairro, imagens }) {
+async function inserirAnuncio({ vendedorId, titulo, descricao, preco, estado_conservacao, categoria_id, cep, bairro, imagens }) {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -83,12 +83,12 @@ async function inserirAnuncio({ vendedorId, titulo, descricao, preco, aceita_tro
     const novoAnuncio = await client.query(
       `INSERT INTO anuncios
         (vendedor_id, categoria_id, titulo, descricao, preco,
-         aceita_troca, estado_conservacao, cep, bairro, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'ativo')
+         estado_conservacao, cep, bairro, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'ativo')
        RETURNING id, titulo, preco, status, data_criacao`,
       [
         vendedorId, categoria_id, titulo.trim(), descricao.trim(), preco,
-        aceita_troca === true, estado_conservacao, cepLimpo, bairro || null
+        estado_conservacao, cepLimpo, bairro || null
       ]
     );
 

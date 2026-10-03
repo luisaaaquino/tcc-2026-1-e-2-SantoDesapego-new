@@ -314,9 +314,8 @@ const Anuncio = () => {
 
             <div className="anuncio-tags">
               <span className="anuncio-tag">{estado.emoji} {estado.name}</span>
-              {anuncio.aceita_troca && <span className="anuncio-tag troca">🔄 Aceita troca</span>}
               {anuncio.vendedor_recebe_pagamentos && (
-                <span className="anuncio-tag troca">✓ Vendedor recebe pagamentos</span>
+                <span className="anuncio-tag positiva">✓ Vendedor recebe pagamentos</span>
               )}
             </div>
 
@@ -388,7 +387,6 @@ const Anuncio = () => {
           <dl className="anuncio-ficha">
             <div><dt>Estado</dt><dd>{estado.name}</dd></div>
             <div><dt>Categoria</dt><dd>{categoria || '—'}</dd></div>
-            <div><dt>Troca</dt><dd>{anuncio.aceita_troca ? 'Aceita' : 'Não aceita'}</dd></div>
             <div><dt>Bairro</dt><dd>{anuncio.bairro}</dd></div>
           </dl>
         </section>

@@ -50,7 +50,7 @@ router.put('/api/anuncios/:id', autenticar, async (req, res) => {
     }
 
     const {
-      titulo, descricao, preco, aceita_troca,
+      titulo, descricao, preco,
       estado_conservacao, categoria_id,
       cep, bairro,
       imagens
@@ -112,13 +112,13 @@ router.put('/api/anuncios/:id', autenticar, async (req, res) => {
 
     const atualizado = await client.query(
       `UPDATE anuncios SET
-         titulo = $1, descricao = $2, preco = $3, aceita_troca = $4,
-         estado_conservacao = $5, categoria_id = $6, cep = $7, bairro = $8,
+         titulo = $1, descricao = $2, preco = $3,
+         estado_conservacao = $4, categoria_id = $5, cep = $6, bairro = $7,
          data_atualizacao = NOW()
-       WHERE id = $9
+       WHERE id = $8
        RETURNING id, titulo, preco, status, data_atualizacao`,
       [
-        titulo.trim(), descricao.trim(), preco, aceita_troca === true,
+        titulo.trim(), descricao.trim(), preco,
         estado_conservacao, categoria_id, cepLimpo, bairro || null, id
       ]
     );
@@ -278,7 +278,6 @@ router.get('/api/anuncios', autenticarOpcional, async (req, res) => {
       preco_min,
       preco_max,
       estado_conservacao,
-      aceita_troca,
       bairro,
       busca,
       ordenacao = 'recentes',
@@ -346,10 +345,6 @@ router.get('/api/anuncios', autenticarOpcional, async (req, res) => {
       paramIndex++;
     }
 
-    if (aceita_troca === 'true') {
-      whereClause += ` AND a.aceita_troca = true`;
-    }
-
     if (bairro) {
       whereClause += ` AND a.bairro = $${paramIndex}`;
       params.push(bairro);
@@ -358,7 +353,7 @@ router.get('/api/anuncios', autenticarOpcional, async (req, res) => {
 
     const selectBase = `
       SELECT
-        a.id, a.titulo, a.descricao, a.preco, a.aceita_troca,
+        a.id, a.titulo, a.descricao, a.preco,
         a.estado_conservacao, a.bairro, a.status, a.data_criacao,
         c.nome AS categoria_nome,
         u.nome AS vendedor_nome,
@@ -467,7 +462,7 @@ router.get('/api/anuncios/:id', autenticarOpcional, async (req, res) => {
 
     const resultado = await pool.query(
       `SELECT
-         a.id, a.titulo, a.descricao, a.preco, a.aceita_troca,
+         a.id, a.titulo, a.descricao, a.preco,
          a.estado_conservacao, a.cep, a.bairro, a.status, a.data_criacao,
          a.categoria_id, a.vendedor_id,
          c.nome AS categoria_nome,

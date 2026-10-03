@@ -42,7 +42,6 @@ const Anunciar = () => {
     titulo: '',
     descricao: '',
     preco: '',
-    aceita_troca: false,
     estado_conservacao: '',
     categoria_principal: '',
     categoria_id: '',     // subcategoria selecionada (ou principal se não tiver subs)
@@ -96,7 +95,6 @@ const Anunciar = () => {
               titulo: anuncio.titulo || '',
               descricao: anuncio.descricao || '',
               preco: String(anuncio.preco ?? '').replace('.', ','),
-              aceita_troca: anuncio.aceita_troca === true,
               estado_conservacao: anuncio.estado_conservacao || '',
               categoria_principal: principal ? String(principal.id) : '',
               categoria_id: ehSubcategoria ? String(anuncio.categoria_id) : '',
@@ -292,7 +290,6 @@ const Anunciar = () => {
           titulo: form.titulo.trim(),
           descricao: form.descricao.trim(),
           preco: precoParaNumero(form.preco),
-          aceita_troca: form.aceita_troca,
           estado_conservacao: form.estado_conservacao,
           categoria_id: parseInt(categoria_id_final),
           cep: form.cep.replace(/\D/g, ''),
@@ -585,17 +582,6 @@ const Anunciar = () => {
                       required />
                   </div>
                   <span className="anunciar-field-hint">Use vírgula para os centavos. Ex: 89,90</span>
-                </div>
-
-                <div className="anunciar-field">
-                  <label className="anunciar-field-label">Aceita troca?</label>
-                  <div className="troca-toggle"
-                    onClick={() => setForm({ ...form, aceita_troca: !form.aceita_troca })}>
-                    <div className={`checkbox-custom${form.aceita_troca ? ' checked' : ''}`} />
-                    <div className="troca-toggle-text">
-                      <strong>Aceito propostas de troca</strong>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>

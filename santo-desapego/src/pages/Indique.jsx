@@ -22,7 +22,7 @@ const MOTIVOS = [
   {
     num: '03',
     title: 'Uma comunidade mais forte',
-    desc: 'Negócio fechado com quem mora perto cria confiança de verdade — e reputação que vale pra próxima troca.',
+    desc: 'Negócio fechado com quem mora perto cria confiança de verdade — e reputação que vale pro próximo negócio.',
     accent: 'mustard',
   },
 ];
@@ -114,7 +114,7 @@ const Indique = () => {
 
   // ── Convite: mesmo link pra todo mundo (sem código de indicação) ──
   const linkConvite = typeof window !== 'undefined' ? window.location.origin : 'https://santodesapego.com.br';
-  const mensagemConvite = `Vem ver o Santo Desapego! A gente compra, vende e troca com os vizinhos aqui de Santo Amaro, sem complicação: ${linkConvite}`;
+  const mensagemConvite = `Vem ver o Santo Desapego! A gente compra e vende com os vizinhos aqui de Santo Amaro, sem complicação: ${linkConvite}`;
   const linkWhatsapp = `https://wa.me/?text=${encodeURIComponent(mensagemConvite)}`;
 
   const linkTextoRef = useRef(null);
@@ -267,8 +267,8 @@ const Indique = () => {
           <h2>Manda o link pra quem <em>merece saber</em>.</h2>
           <p>
             Sem código, sem enrolação: é só compartilhar o Santo Desapego com quem
-            mora perto de você. Quanto mais vizinhos, mais opções de compra, venda
-            e troca aqui do lado de casa.
+            mora perto de você. Quanto mais vizinhos, mais opções de compra e venda
+            aqui do lado de casa.
           </p>
 
           <div className="indique-link-box">

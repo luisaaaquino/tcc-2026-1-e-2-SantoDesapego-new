@@ -58,7 +58,6 @@ const Explorar = () => {
   // Estados de filtros
   const [ordenacao, setOrdenacao] = useState('recentes');
   const [categoriaAtiva, setCategoriaAtiva] = useState(null);
-  const [tabAtiva, setTabAtiva] = useState('todos');
   const [precoMax, setPrecoMax] = useState(5000);           // valor ao vivo do slider (label)
   const [precoMaxAplicado, setPrecoMaxAplicado] = useState(5000); // valor usado no filtro
   const [condicoes, setCondicoes] = useState([]);
@@ -126,15 +125,11 @@ const Explorar = () => {
   // Lê parâmetros da URL quando a página carrega
   useEffect(() => {
     const categoriaUrl = searchParams.get('categoria_id');
-    const aceitaTrocaUrl = searchParams.get('aceita_troca');
     const buscaUrl = searchParams.get('busca');
     const bairroUrl = searchParams.get('bairro');
 
     if (categoriaUrl) {
       setCategoriaAtiva(parseInt(categoriaUrl));
-    }
-    if (aceitaTrocaUrl === 'true') {
-      setTabAtiva('troca');
     }
     // Atualiza o input de busca com o termo da URL
     if (buscaUrl) {
@@ -152,7 +147,7 @@ const Explorar = () => {
   useEffect(() => {
     setLimite(12);
     buscarAnuncios(12);
-  }, [ordenacao, categoriaAtiva, tabAtiva, bairroFiltro, searchParams, condicoes.join(','), precoMaxAplicado]);
+  }, [ordenacao, categoriaAtiva, bairroFiltro, searchParams, condicoes.join(','), precoMaxAplicado]);
 
   const buscarAnuncios = async (limiteParam) => {
     const idDestaBusca = ++buscaIdRef.current;
@@ -163,7 +158,6 @@ const Explorar = () => {
       params.append('limite', limiteParam || limite);
 
       if (categoriaAtiva) params.append('categoria_id', categoriaAtiva);
-      if (tabAtiva === 'troca') params.append('aceita_troca', 'true');
       if (bairroFiltro) params.append('bairro', bairroFiltro);
       if (precoMaxAplicado < 5000) params.append('preco_max', precoMaxAplicado);
       if (condicoes.length > 0) params.append('estado_conservacao', condicoes.join(','));
@@ -455,18 +449,9 @@ const Explorar = () => {
 
           {/* Tabs */}
           <div className="explorar-tabs">
-            <button
-              className={`explorar-tab ${tabAtiva === 'todos' ? 'active' : ''}`}
-              onClick={() => setTabAtiva('todos')}
-            >
+            <span className="explorar-tab active">
               Todos <span className="count">{totalItens}</span>
-            </button>
-            <button
-              className={`explorar-tab ${tabAtiva === 'troca' ? 'active' : ''}`}
-              onClick={() => setTabAtiva('troca')}
-            >
-              Aceita Troca <span className="count">{anuncios.filter(a => a.aceita_troca).length}</span>
-            </button>
+            </span>
           </div>
         </div>
 
@@ -616,9 +601,6 @@ const Explorar = () => {
                           <img src={anuncio.imagem_principal} alt={anuncio.titulo} loading="lazy" />
                         ) : (
                           <div className="ecard-imagem-vazia">📦</div>
-                        )}
-                        {anuncio.aceita_troca && (
-                          <span className="ecard-badge">🔄 Aceita troca</span>
                         )}
                         <button
                           type="button"

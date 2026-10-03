@@ -151,7 +151,7 @@
 }
 /* Verde da marca do WhatsApp (#25D366) destoava da paleta do site
    (terracota/floresta/mostarda) — usa o --forest próprio daqui,
-   que já é a cor usada pra "positivo"/"aceita troca" no resto do
+   que já é a cor usada pra "positivo" no resto do
    site, mantendo o ícone do WhatsApp pra reconhecimento. */
 .indique-btn-whatsapp {
   background: var(--forest);

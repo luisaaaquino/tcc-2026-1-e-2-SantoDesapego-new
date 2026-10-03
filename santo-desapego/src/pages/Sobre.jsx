@@ -18,7 +18,7 @@ const TEAM = [
   {
     nome: 'Maria Erica Cruz',
     papel: 'Frontend & Experiência do Usuário',
-    bio: 'Cuida das interfaces em React e da jornada de quem compra, vende e troca dentro da plataforma.',
+    bio: 'Cuida das interfaces em React e da jornada de quem compra e vende dentro da plataforma.',
     accent: 'forest',
   },
   {

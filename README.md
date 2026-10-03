@@ -3,7 +3,7 @@
 > **Trabalho de Conclusão de Curso** | Bacharelado em Sistemas de Informação - SENAC
 
 ## 📌 Sobre o Projeto
-O **Santo Desapego** é um Sistema de Intermediação voltado para a economia compartilhada e o comércio local. O projeto visa facilitar a troca, venda e doação de itens entre usuários da mesma comunidade ou região, promovendo o consumo consciente e a circulação de bens parados.
+O **Santo Desapego** é um Sistema de Intermediação voltado para a economia compartilhada e o comércio local. O projeto visa facilitar a compra e venda de itens entre usuários da mesma comunidade ou região, promovendo o consumo consciente e a circulação de bens parados.
 
 ## 🎨 Design e Wireframes (Figma)
 O protótipo e os fluxos de usuário podem ser visualizados diretamente no Figma através do link abaixo:

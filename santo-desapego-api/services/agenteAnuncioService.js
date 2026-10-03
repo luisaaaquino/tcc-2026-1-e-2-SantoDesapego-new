@@ -137,7 +137,6 @@ async function publicarAnuncioNoBanco({ vendedorId, rascunho, imagens }) {
     titulo: rascunho.titulo,
     descricao: rascunho.descricao,
     preco: rascunho.preco,
-    aceita_troca: false,
     estado_conservacao: rascunho.estado_conservacao,
     categoria_id: rascunho.categoria_id,
     cep: rascunho.cep,

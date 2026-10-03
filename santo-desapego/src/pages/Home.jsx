@@ -385,7 +385,7 @@ const Home = () => {
             )}
           </h1>
           <p className="lede">
-            Uma plataforma hiperlocal de compra, venda e troca entre vizinhos de Santo Amaro.
+            Uma plataforma hiperlocal de compra e venda entre vizinhos de Santo Amaro.
             Menos descarte, mais comunidade — e produtos com preço justo.
           </p>
 
