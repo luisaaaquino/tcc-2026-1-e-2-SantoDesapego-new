@@ -1,12 +1,27 @@
 const nodemailer = require('nodemailer');
 
-const mailTransporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_APP_PASSWORD,
-  },
-});
+// Com EMAIL_HOST definido usa o SMTP do provedor (Locaweb: email-ssl.com.br:465);
+// sem ele, mantém o Gmail com senha de app.
+const porta = Number(process.env.EMAIL_PORT) || 465;
+const mailTransporter = nodemailer.createTransport(
+  process.env.EMAIL_HOST
+    ? {
+        host: process.env.EMAIL_HOST,
+        port: porta,
+        secure: porta === 465,
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_APP_PASSWORD,
+        },
+      }
+    : {
+        service: 'gmail',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_APP_PASSWORD,
+        },
+      }
+);
 
 const enviarEmail = async (destinatario, assunto, html) => {
   if (!process.env.EMAIL_USER || !process.env.EMAIL_APP_PASSWORD) {
