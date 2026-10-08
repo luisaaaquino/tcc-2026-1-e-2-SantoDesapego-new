@@ -1,0 +1,63 @@
+/* ============================================================
+   LEGAL.CSS — Termos de Uso / Política de Privacidade (/termos, /privacidade)
+   ============================================================ */
+
+.legal-pagina {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--cream);
+}
+
+.legal-pagina-conteudo {
+  max-width: 760px;
+  width: 100%;
+  margin: 2rem auto;
+  padding: 0 1.5rem 4rem;
+  flex: 1;
+}
+
+.legal-pagina-conteudo h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-bottom: 1.5rem;
+}
+
+.legal-pagina-secao + .legal-pagina-secao {
+  margin-top: 1.8rem;
+  padding-top: 1.8rem;
+  border-top: 1px dashed var(--border);
+}
+
+.legal-pagina-secao h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--ink);
+  margin-bottom: 0.7rem;
+}
+
+.legal-pagina-sub { margin-top: 1.1rem; }
+.legal-pagina-sub h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.98rem;
+  color: var(--ink);
+  margin-bottom: 0.5rem;
+}
+
+.legal-pagina-conteudo p,
+.legal-pagina-conteudo li {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.legal-pagina-conteudo p { margin-bottom: 0.8rem; }
+.legal-pagina-conteudo ul { margin: 0 0 0.8rem; padding-left: 1.2rem; }
+.legal-pagina-conteudo li { margin-bottom: 0.5rem; }
+
+.legal-pagina-rodape { font-size: 0.85rem; font-style: italic; color: var(--ink-muted); }

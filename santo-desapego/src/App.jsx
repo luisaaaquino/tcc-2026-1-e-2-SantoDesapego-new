@@ -19,6 +19,7 @@ import Admin            from './pages/Admin';
 import CentralAjuda     from './pages/CentralAjuda';
 import EsqueciSenha     from './pages/EsqueciSenha';
 import RedefinirSenha   from './pages/RedefinirSenha';
+import Legal            from './pages/Legal';
 
 function App() {
   return (
@@ -44,6 +45,8 @@ function App() {
           <Route path="/central-ajuda"     element={<CentralAjuda />}     />
           <Route path="/esqueci-senha"     element={<EsqueciSenha />}     />
           <Route path="/redefinir-senha"   element={<RedefinirSenha />}   />
+          <Route path="/termos"            element={<Legal tipo="termos" />} />
+          <Route path="/privacidade"       element={<Legal tipo="privacidade" />} />
         </Routes>
       </TransicaoPagina>
       <AssistenteCompraFlutuante />
