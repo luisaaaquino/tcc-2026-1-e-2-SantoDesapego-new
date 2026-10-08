@@ -3,6 +3,8 @@
    entrega final do TCC (Termos de Uso e Política de Privacidade).
    ──────────────────────────────────────────────────────────── */
 
+import { EMAILS } from '../config';
+
 export const TERMOS_USO = [
   {
     titulo: '1. Apresentação e Aceitação',
@@ -83,6 +85,17 @@ export const TERMOS_USO = [
     titulo: '8. Foro e Legislação Aplicável',
     paragrafos: [
       'Estes Termos são regidos pelas leis brasileiras, em especial a Lei n.º 13.709/2018 (LGPD), o Código de Defesa do Consumidor (Lei n.º 8.078/1990) e o Marco Civil da Internet (Lei n.º 12.965/2014). Fica eleito o foro da Comarca de São Paulo/SP para dirimir quaisquer controvérsias.',
+    ],
+  },
+  {
+    titulo: '9. Canais de Contato',
+    paragrafos: [
+      'Além da Central de Ajuda, disponível na Plataforma para usuários cadastrados, a equipe pode ser contatada pelos seguintes endereços de e-mail:',
+    ],
+    lista: [
+      `Dúvidas gerais, sugestões e solicitações sobre dados pessoais: ${EMAILS.contato}`,
+      `Pagamentos, cobranças e repasses: ${EMAILS.financeiro}`,
+      `Denúncias de anúncios, usuários ou suspeitas de fraude: ${EMAILS.denuncias}`,
     ],
   },
 ];
@@ -172,7 +185,7 @@ export const POLITICA_PRIVACIDADE = [
   {
     titulo: '10. Contato com o Encarregado (DPO)',
     paragrafos: [
-      'Para exercer os direitos previstos nesta Política ou esclarecer dúvidas sobre o tratamento de dados, o Usuário pode entrar em contato com a equipe de desenvolvimento pelo endereço institucional do Centro Universitário Senac – Santo Amaro. A Plataforma compromete-se a responder as solicitações no prazo máximo de 15 (quinze) dias úteis, conforme previsto no art. 18, § 3.º, da LGPD.',
+      `Para exercer os direitos previstos nesta Política ou esclarecer dúvidas sobre o tratamento de dados, o Usuário pode entrar em contato com a equipe de desenvolvimento pelo e-mail ${EMAILS.contato}. A Plataforma compromete-se a responder as solicitações no prazo máximo de 15 (quinze) dias úteis, conforme previsto no art. 18, § 3.º, da LGPD.`,
     ],
   },
 ];

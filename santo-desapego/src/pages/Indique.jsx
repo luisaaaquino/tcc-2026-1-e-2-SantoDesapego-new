@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import './Indique.css';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import LegalModal from '../componentes/LegalModal';
+import { EMAILS } from '../config';
 import { IconArrowRight, IconLogout, IconCheck } from '../componentes/Icones';
 
 /* ── Dados — altere aqui sem tocar no JSX ──────────────────── */
@@ -38,7 +39,7 @@ const FOOTER_LINKS = [
   },
   {
     title: 'Suporte',
-    links: ['Central de ajuda', 'Termos de uso', 'Privacidade (LGPD)'],
+    links: ['Central de ajuda', 'Fale conosco', 'Termos de uso', 'Privacidade (LGPD)'],
   },
 ];
 
@@ -354,6 +355,7 @@ const Indique = () => {
                   if (l === 'Nosso impacto') return <Link key={l} to="/sobre">Sobre nós</Link>;
                   if (l === 'Indique um vizinho') return <Link key={l} to="/indique" className="active">Indique um vizinho</Link>;
                   if (l === 'Central de ajuda') return <Link key={l} to="/central-ajuda">Central de ajuda</Link>;
+                  if (l === 'Fale conosco') return <a key={l} href={`mailto:${EMAILS.contato}`}>{EMAILS.contato}</a>;
                   if (l === 'Termos de uso') return <a key={l} href="#termos" onClick={abrirLegal('termos')}>{l}</a>;
                   if (l === 'Privacidade (LGPD)') return <a key={l} href="#termos" onClick={abrirLegal('privacidade')}>{l}</a>;
                   return <a key={l} href="#">{l}</a>;

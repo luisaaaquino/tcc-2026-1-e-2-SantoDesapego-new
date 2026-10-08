@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import './CompraRealizada.css';
 
-import { API_URL } from '../config';
+import { API_URL, EMAILS } from '../config';
 
 const brl = (v) =>
   Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -202,9 +202,13 @@ export default function CompraRealizada() {
           Fale direto com o vendedor pelas mensagens para ajustar a entrega.
           Se não resolver, nosso suporte ajuda.
         </p>
+        <p className="compra-ajuda__email">
+          Problema com o pagamento? Escreva para{' '}
+          <a href={`mailto:${EMAILS.financeiro}`}>{EMAILS.financeiro}</a>
+        </p>
         <div className="compra-ajuda__acoes">
           <Link className="btn btn--creme" to="/mensagens">Ir para mensagens</Link>
-          <Link className="btn btn--creme" to="/sobre">Falar com o suporte</Link>
+          <Link className="btn btn--creme" to="/central-ajuda">Falar com o suporte</Link>
         </div>
       </section>
     </main>

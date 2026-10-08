@@ -4,7 +4,7 @@ import './CentralAjuda.css';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import SiteHeader from '../componentes/SiteHeader';
 
-import { API_URL } from '../config';
+import { API_URL, EMAILS } from '../config';
 
 const ASSUNTO_LABEL = {
   duvida_conta: 'Dúvidas sobre minha conta',
@@ -24,11 +24,11 @@ const STATUS_LABEL = {
 const FAQ = [
   {
     pergunta: 'Como funciona o pagamento de uma compra?',
-    resposta: 'Todo pagamento é processado pelo Mercado Pago. Você escolhe a forma de pagamento disponível no ambiente seguro deles — o Santo Desapego nunca vê nem guarda os dados do seu pagamento.',
+    resposta: `Todo pagamento é processado pelo Mercado Pago. Você escolhe a forma de pagamento disponível no ambiente seguro deles — o Santo Desapego nunca vê nem guarda os dados do seu pagamento. Dúvidas sobre cobrança ou repasse: ${EMAILS.financeiro}.`,
   },
   {
     pergunta: 'Como denuncio um anúncio ou usuário?',
-    resposta: 'Na página do anúncio ou do perfil, use a opção de denúncia. Nossa equipe analisa cada denúncia e pode suspender contas ou remover anúncios que violem os Termos de Uso.',
+    resposta: `Na página do anúncio ou do perfil, use a opção de denúncia. Nossa equipe analisa cada denúncia e pode suspender contas ou remover anúncios que violem os Termos de Uso. Em casos urgentes, como suspeita de golpe, escreva também para ${EMAILS.denuncias}.`,
   },
   {
     pergunta: 'Posso excluir minha conta e meus dados?',
@@ -174,6 +174,15 @@ const CentralAjuda = () => {
                 </button>
               </form>
             )}
+
+            <div className="ajuda-emails">
+              <h3>Prefere e-mail?</h3>
+              <ul>
+                <li>Dúvidas gerais: <a href={`mailto:${EMAILS.contato}`}>{EMAILS.contato}</a></li>
+                <li>Pagamentos e repasses: <a href={`mailto:${EMAILS.financeiro}`}>{EMAILS.financeiro}</a></li>
+                <li>Denúncias e segurança: <a href={`mailto:${EMAILS.denuncias}`}>{EMAILS.denuncias}</a></li>
+              </ul>
+            </div>
 
             {usuario && solicitacoes && solicitacoes.length > 0 && (
               <div className="ajuda-historico">

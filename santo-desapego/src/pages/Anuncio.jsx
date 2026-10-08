@@ -5,7 +5,7 @@ import NotificacoesSino from '../componentes/NotificacoesSino';
 import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
 import { IconHeart } from '../componentes/Icones';
 
-import { API_URL } from '../config';
+import { API_URL, EMAILS } from '../config';
 
 const ESTADO_LABEL = {
   'novo':        { emoji: '✨', name: 'Novo / Na caixa' },
@@ -80,6 +80,11 @@ const ModalDenunciar = ({ anuncio, aoFechar }) => {
 
             <label>Descreva o problema (opcional)</label>
             <textarea rows={3} maxLength={1000} value={descricao} onChange={(e) => setDescricao(e.target.value)} />
+
+            <p className="denuncia-email">
+              Caso urgente, como suspeita de golpe? Escreva também para{' '}
+              <a href={`mailto:${EMAILS.denuncias}`}>{EMAILS.denuncias}</a>
+            </p>
 
             <div className="denuncia-modal-actions">
               <button type="button" className="btn-anuncio-proposta" onClick={aoFechar} disabled={enviando}>Cancelar</button>

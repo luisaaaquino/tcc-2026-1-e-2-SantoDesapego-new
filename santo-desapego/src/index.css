@@ -340,3 +340,5 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   .logo { font-size: 1.1rem; }
   .logo-mark { width: 28px; height: 28px; font-size: 0.85rem; }
 }
+/* E-mails longos no rodapé quebram em vez de vazar a coluna no celular */
+.footer-col a { overflow-wrap: anywhere; }

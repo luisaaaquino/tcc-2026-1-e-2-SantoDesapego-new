@@ -310,6 +310,14 @@
   color: color-mix(in srgb, var(--cream) 88%, transparent);
 }
 
+.compra-ajuda p.compra-ajuda__email { margin-top: -1rem; font-size: 0.92rem; }
+.compra-ajuda__email a {
+  color: var(--cream);
+  font-weight: 600;
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+
 .compra-ajuda__acoes {
   display: flex;
   flex-wrap: wrap;

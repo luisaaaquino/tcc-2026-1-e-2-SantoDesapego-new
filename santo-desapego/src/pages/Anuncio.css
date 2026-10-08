@@ -323,6 +323,8 @@
   margin-bottom: 0.9rem;
   resize: vertical;
 }
+.denuncia-modal p.denuncia-email { font-size: 0.78rem; color: var(--ink-muted); margin: 0.6rem 0 1rem; }
+.denuncia-email a { color: var(--terracotta); font-weight: 600; overflow-wrap: anywhere; }
 .denuncia-modal-actions { display: flex; justify-content: flex-end; gap: 0.6rem; }
 .denuncia-sucesso { text-align: center; padding: 1rem 0; }
 .denuncia-sucesso .emoji { font-size: 2.2rem; display: block; margin-bottom: 0.6rem; }
