@@ -834,6 +834,17 @@ const baixarComprovante = async (compraId) => {
   }
 };
 
+// Status do pagamento no Mercado Pago, exibido em português no histórico
+const STATUS_PAGAMENTO_LABEL = {
+  approved: 'Aprovado',
+  pending: 'Pendente',
+  in_process: 'Em análise',
+  rejected: 'Recusado',
+  cancelled: 'Cancelado',
+  refunded: 'Reembolsado',
+  charged_back: 'Estornado',
+};
+
 // [RF17] Filtro de período/status reutilizado em Compras e Vendas
 const FiltroHistorico = ({ status, setStatus, dataInicio, setDataInicio, dataFim, setDataFim }) => (
   <div className="filtro-historico">
@@ -922,7 +933,7 @@ const SecaoCompras = () => {
               </Link>
               <div className="compra-card-perfil-info">
                 <Link to={`/anuncio/${c.anuncio_id}`}><h3>{c.anuncio_titulo}</h3></Link>
-                <p>Vendido por {c.vendedor_nome} {c.vendedor_sobrenome} · {dataBR(c.criada_em)} · {c.status}</p>
+                <p>Vendido por {c.vendedor_nome} {c.vendedor_sobrenome} · {dataBR(c.criada_em)} · {STATUS_PAGAMENTO_LABEL[c.status] || c.status}</p>
                 <strong>{brl(c.preco)}</strong>
 
                 <span className={`repasse-status${c.entrega_confirmada_em ? ' liberado' : ''}`}>
@@ -1025,7 +1036,7 @@ const SecaoVendas = () => {
               </Link>
               <div className="compra-card-perfil-info">
                 <Link to={`/anuncio/${v.anuncio_id}`}><h3>{v.anuncio_titulo}</h3></Link>
-                <p>Comprado por {v.comprador_nome} {v.comprador_sobrenome} · {dataBR(v.criada_em)} · {v.status}</p>
+                <p>Comprado por {v.comprador_nome} {v.comprador_sobrenome} · {dataBR(v.criada_em)} · {STATUS_PAGAMENTO_LABEL[v.status] || v.status}</p>
                 <strong>{brl(v.preco)}</strong>
                 <span className={`repasse-status${v.entrega_confirmada_em ? ' liberado' : ''}`}>
                   {v.entrega_confirmada_em
