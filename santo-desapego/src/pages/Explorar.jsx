@@ -4,11 +4,8 @@ import './Explorar.css';
 import SeletorBairro, { BAIRROS } from '../componentes/SeletorBairro';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import LegalModal from '../componentes/LegalModal';
-import {
-  IconSearch, IconLogout, IconGrid, IconSofa, IconLaptop, IconShirt,
-  IconBaby, IconBook, IconBike, IconPalette, IconWrench, IconHanger, IconMore,
-  IconHeart,
-} from '../componentes/Icones';
+import { IconSearch, IconLogout, IconGrid, IconHeart } from '../componentes/Icones';
+import { iconeDaCategoria } from '../utils/categorias';
 import { API_URL as API_BASE } from '../config';
 
 const API_URL = `${API_BASE}/api`;
@@ -30,20 +27,6 @@ const tempoRelativo = (dataISO) => {
   if (dias < 30) return `há ${Math.floor(dias / 7)} sem.`;
   if (dias < 365) return `há ${Math.floor(dias / 30)} meses`;
   return new Date(dataISO).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
-};
-
-/* ── Mapa id da categoria → componente de ícone ───────────── */
-const CATEGORY_ICONS = {
-  1: IconSofa,     // Móveis & Casa
-  2: IconLaptop,   // Eletrônicos
-  3: IconShirt,    // Moda
-  4: IconBaby,     // Infantil & Bebê
-  5: IconBook,     // Livros
-  6: IconBike,     // Esporte & Lazer
-  7: IconPalette,  // Arte & Decoração
-  8: IconWrench,   // Ferramentas
-  9: IconHanger,   // Brechó vintage
-  10: IconMore,    // Outros
 };
 
 const Explorar = () => {
@@ -268,15 +251,9 @@ const Explorar = () => {
     }).format(valor);
   };
 
-  /* ── Divide categorias em "principais" e "extras" ─────────────
-     IDs 1-8 = principais (Móveis, Eletrônicos, ..., Ferramentas)
-     IDs 9+  = extras (Brechó vintage, Outros) — vêm depois do separador */
-  const categoriasMain   = categorias.filter(c => c.id <= 8);
-  const categoriasExtras = categorias.filter(c => c.id >= 9);
-
   /* Renderiza um link de categoria já com o ícone certo */
   const renderCategoria = (cat) => {
-    const Icon = CATEGORY_ICONS[cat.id] || IconMore;
+    const Icon = iconeDaCategoria(cat.id);
     return (
       <a
         key={cat.id}
@@ -373,9 +350,7 @@ const Explorar = () => {
             <span>Todos</span>
           </a>
 
-          {categoriasMain.map(renderCategoria)}
-
-          {categoriasExtras.map(renderCategoria)}
+          {categorias.map(renderCategoria)}
         </nav>
       </header>
 

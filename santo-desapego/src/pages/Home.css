@@ -287,9 +287,6 @@
 .btn-ghost:hover { background: var(--ink); color: var(--cream); }
 
 /* Trust bar */
-.hero-trust { display: flex; gap: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--border); }
-.trust-item .num { font-family: var(--font-display); font-size: 1.8rem; font-weight: 700; display: block; line-height: 1; }
-.trust-item .lbl { font-size: 0.82rem; color: var(--ink-muted); margin-top: 0.3rem; }
 
 /* Hero visual — collage de cards */
 .hero-visual { position: relative; height: 650px; min-height: 650px; }
@@ -994,7 +991,6 @@
 
   /* 3 itens com flex-wrap "sobram" 1 sozinho numa segunda linha
      desalinhado — em coluna fica limpo e sem quebra estranha. */
-  .hero-trust { flex-direction: column; gap: 1rem; }
   .cat-grid { grid-template-columns: repeat(2, 1fr); }
   .products-grid { grid-template-columns: 1fr; }
   .impact-grid { grid-template-columns: 1fr; }
@@ -1211,10 +1207,6 @@
   .hero-cta-row .btn-ghost { border: 0; padding: 0.5rem; text-decoration: underline; text-underline-offset: 4px; }
 
   /* Trust: 3 colunas compactas em vez de coluna longa */
-  .hero-trust { flex-direction: row; gap: 0.6rem; padding-top: 1.2rem; }
-  .trust-item { flex: 1; text-align: center; }
-  .trust-item .num { font-size: 1.6rem; }
-  .trust-item .lbl { font-size: 0.72rem; line-height: 1.25; }
 
   /* Cards do hero: grade 2x2 fixa (sem rolagem lateral) */
   .hero-visual {

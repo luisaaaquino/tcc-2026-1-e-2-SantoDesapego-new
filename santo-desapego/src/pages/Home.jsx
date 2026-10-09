@@ -5,11 +5,8 @@ import Mapa from '../componentes/Mapa';
 import SeletorBairro, { BAIRROS } from '../componentes/SeletorBairro';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import LegalModal from '../componentes/LegalModal';
-import {
-  IconSearch, IconArrowRight, IconLogout, IconGrid, IconSofa, IconLaptop,
-  IconShirt, IconBaby, IconBook, IconBike, IconPalette, IconWrench,
-  IconHanger, IconMore,
-} from '../componentes/Icones';
+import { IconSearch, IconArrowRight, IconLogout, IconGrid } from '../componentes/Icones';
+import { iconeDaCategoria } from '../utils/categorias';
 import { API_URL, EMAILS } from '../config';
 
 /* ── Dados — altere aqui sem tocar no JSX ──────────────────── */
@@ -57,19 +54,6 @@ const IMPACT_CARDS = [
     desc: 'Preço justo e ciclo de vida prolongado. Um modelo pensado para um consumo mais responsável.',
     accent: 'ink',
   },
-];
-
-const CATEGORIAS = [
-  { id: 1, nome: 'Móveis & Casa', Icon: IconSofa },
-  { id: 2, nome: 'Eletrônicos', Icon: IconLaptop },
-  { id: 3, nome: 'Moda', Icon: IconShirt },
-  { id: 4, nome: 'Infantil & Bebê', Icon: IconBaby },
-  { id: 5, nome: 'Livros', Icon: IconBook },
-  { id: 6, nome: 'Esporte & Lazer', Icon: IconBike },
-  { id: 7, nome: 'Arte & Decoração', Icon: IconPalette },
-  { id: 8, nome: 'Ferramentas', Icon: IconWrench },
-  { id: 9, nome: 'Brechó vintage', Icon: IconHanger },
-  { id: 10, nome: 'Outros', Icon: IconMore },
 ];
 
 const HOODS = BAIRROS;
@@ -140,6 +124,16 @@ const Home = () => {
     e.preventDefault();
     setLegalAberto(aba);
   };
+
+  // Categorias principais do banco — mesma fonte do Explorar e da tela de
+  // anunciar (antes eram nomes fixos que não batiam com os ids do banco)
+  const [categorias, setCategorias] = useState([]);
+  useEffect(() => {
+    fetch(`${API_URL}/api/categorias`)
+      .then((r) => r.json())
+      .then((dados) => setCategorias(dados.categorias || []))
+      .catch((e) => console.error('[home] categorias', e));
+  }, []);
 
   // Colunas do rodapé (<details>) ficam sempre abertas
   useEffect(() => {
@@ -320,16 +314,12 @@ const Home = () => {
         {/* ── Nav de categorias — linha única com scroll horizontal ── */}
         <nav className="nav-categories">
           <Link to="/explorar" className="nav-cat-all"><IconGrid /><span>Todos</span></Link>
-          <Link to="/explorar?categoria_id=1"><IconSofa /><span>Móveis & Casa</span></Link>
-          <Link to="/explorar?categoria_id=2"><IconLaptop /><span>Eletrônicos</span></Link>
-          <Link to="/explorar?categoria_id=3"><IconShirt /><span>Moda</span></Link>
-          <Link to="/explorar?categoria_id=4"><IconBaby /><span>Infantil & Bebê</span></Link>
-          <Link to="/explorar?categoria_id=5"><IconBook /><span>Livros</span></Link>
-          <Link to="/explorar?categoria_id=6"><IconBike /><span>Esporte & Lazer</span></Link>
-          <Link to="/explorar?categoria_id=7"><IconPalette /><span>Arte & Decoração</span></Link>
-          <Link to="/explorar?categoria_id=8"><IconWrench /><span>Ferramentas</span></Link>
-          <Link to="/explorar?categoria_id=9"><IconHanger /><span>Brechó vintage</span></Link>
-          <Link to="/explorar?categoria_id=10"><IconMore /><span>Outros</span></Link>
+          {categorias.map((cat) => {
+            const Icon = iconeDaCategoria(cat.id);
+            return (
+              <Link key={cat.id} to={`/explorar?categoria_id=${cat.id}`}><Icon /><span>{cat.nome}</span></Link>
+            );
+          })}
         </nav>
       </header>
 
@@ -397,19 +387,6 @@ const Home = () => {
             </Link>
             <a href="#como-funciona" className="btn-ghost">Como funciona</a>
           </div>
-
-          <div className="hero-trust">
-            {[
-              { num: '🌱', lbl: 'Economia circular' },
-              { num: '🤝', lbl: 'Comunidade local' },
-              { num: '♻️',  lbl: 'Consumo consciente' },
-            ].map((t) => (
-              <div className="trust-item" key={t.lbl}>
-                <span className="num">{t.num}</span>
-                <span className="lbl">{t.lbl}</span>
-              </div>
-            ))}
-          </div>
         </div>
 
         <div className="hero-visual">
@@ -434,12 +411,15 @@ const Home = () => {
       <section className="mobile-cats" aria-label="Categorias">
         <h2>Explore por <em>categoria</em></h2>
         <div className="mobile-cats-grid">
-          {CATEGORIAS.map(({ id, nome, Icon }) => (
-            <Link key={id} to={`/explorar?categoria_id=${id}`} className="mobile-cat">
-              <span className="mobile-cat-icon"><Icon /></span>
-              <span className="mobile-cat-name">{nome}</span>
-            </Link>
-          ))}
+          {categorias.map((cat) => {
+            const Icon = iconeDaCategoria(cat.id);
+            return (
+              <Link key={cat.id} to={`/explorar?categoria_id=${cat.id}`} className="mobile-cat">
+                <span className="mobile-cat-icon"><Icon /></span>
+                <span className="mobile-cat-name">{cat.nome}</span>
+              </Link>
+            );
+          })}
         </div>
         <Link to="/explorar" className="mobile-cats-all">Ver todos os anúncios <IconArrowRight /></Link>
       </section>
