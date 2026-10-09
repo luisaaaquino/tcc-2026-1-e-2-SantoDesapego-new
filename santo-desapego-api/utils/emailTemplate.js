@@ -39,11 +39,12 @@ const escapeHtml = (texto) =>
  * @param {string}   [opcoes.nome]      Nome do destinatário, pra saudação (texto puro)
  * @param {string[]} opcoes.paragrafos  Parágrafos do corpo (texto puro, um por item)
  * @param {string}   [opcoes.citacao]   Trecho em destaque, ex.: mensagem do chat (texto puro)
+ * @param {string}   [opcoes.codigo]    Código em destaque, ex.: verificação em duas etapas
  * @param {{texto: string, url: string}} [opcoes.botao]  Chamada principal
  * @param {string}   [opcoes.rodapeExtra] Linha extra no rodapé, ex.: aviso de segurança (texto puro)
  * @param {string}   [opcoes.previa]    Texto que aparece ao lado do assunto na caixa de entrada
  */
-const montarEmail = ({ titulo, nome, paragrafos = [], citacao, botao, rodapeExtra, previa }) => {
+const montarEmail = ({ titulo, nome, paragrafos = [], citacao, codigo, botao, rodapeExtra, previa }) => {
   const p = (texto) =>
     `<p style="margin:0 0 16px; font-size:16px; line-height:1.6; color:${COR.tintaSuave};">${escapeHtml(texto)}</p>`;
 
@@ -55,6 +56,14 @@ const montarEmail = ({ titulo, nome, paragrafos = [], citacao, botao, rodapeExtr
     ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
         <tr><td style="border-left:3px solid ${COR.terracota}; background:${COR.creme}; padding:14px 18px; border-radius:0 8px 8px 0; font-size:15px; line-height:1.55; color:${COR.tinta}; font-style:italic;">
           ${escapeHtml(citacao)}
+        </td></tr>
+      </table>`
+    : '';
+
+  const blocoCodigo = codigo
+    ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:4px 0 24px;">
+        <tr><td align="center" style="background:${COR.creme}; border:1.5px dashed ${COR.floresta}; border-radius:12px; padding:18px; font-family:Georgia, 'Times New Roman', serif; font-size:34px; letter-spacing:10px; font-weight:bold; color:${COR.tinta};">
+          ${escapeHtml(codigo)}
         </td></tr>
       </table>`
     : '';
@@ -95,6 +104,7 @@ const montarEmail = ({ titulo, nome, paragrafos = [], citacao, botao, rodapeExtr
           ${saudacao}
           ${paragrafos.map(p).join('\n')}
           ${blocoCitacao}
+          ${blocoCodigo}
           ${blocoBotao}
         </td></tr>
 

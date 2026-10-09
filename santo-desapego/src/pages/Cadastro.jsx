@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './Cadastro.css';
 import { BAIRROS } from '../componentes/SeletorBairro';
 import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
 import LegalModal from '../componentes/LegalModal';
+import VerificacaoCodigo from '../componentes/VerificacaoCodigo';
 import {
   IconUser, IconMail, IconLock, IconPin, IconPhone, IconHome, IconID,
   IconChevron, IconEye, IconCheck, IconAlert, IconArrowRight,
@@ -74,6 +75,9 @@ const Cadastro = () => {
   };
   const [newsChecked, setNewsChecked]       = useState(false);
   const [submitted, setSubmitted]           = useState(false);
+  // Verificação em duas etapas: código enviado para confirmar o e-mail
+  const [verificacao, setVerificacao]       = useState(null);
+  const navigate = useNavigate();
   const [loading, setLoading]               = useState(false);
   const [globalError, setGlobalError] = useState('');
 
@@ -259,8 +263,9 @@ const Cadastro = () => {
         return;
       }
 
-      console.log('✅ Usuário criado:', dados.usuario);
-      setSubmitted(true);
+      // Sem código (falha no envio do e-mail), cai na tela antiga: o código sai no primeiro login
+      if (dados.verificacao) setVerificacao(dados.verificacao);
+      else setSubmitted(true);
 
     } catch (erro) {
       console.error('Erro ao conectar com o servidor:', erro);
@@ -321,7 +326,17 @@ const Cadastro = () => {
 
         {/* RIGHT PANEL */}
         <div className="right-panel">
-          {submitted ? (
+          {verificacao ? (
+            <VerificacaoCodigo
+              verificacao={verificacao}
+              aoVerificar={(dados) => {
+                localStorage.setItem('sd_token',   dados.token);
+                localStorage.setItem('sd_usuario', JSON.stringify(dados.usuario));
+                navigate('/');
+              }}
+              aoVoltar={() => navigate('/login')}
+            />
+          ) : submitted ? (
             <div className="success-state">
               <div className="success-icon"><IconCheck /></div>
               <h2>Bem-vinda ao <em>vizinhado</em>!</h2>

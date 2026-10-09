@@ -1,0 +1,114 @@
+/* ── Verificação em duas etapas (Login e Cadastro) ── */
+.verificacao {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.verificacao-icone {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 1rem;
+  border-radius: 50%;
+  background: var(--cream-deep);
+  color: var(--forest);
+}
+.verificacao-icone svg { width: 28px; height: 28px; }
+
+.verificacao h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: var(--ink);
+  margin-bottom: 0.6rem;
+}
+.verificacao h2 em { font-style: italic; font-weight: 400; color: var(--terracotta); }
+
+.verificacao > p {
+  max-width: 360px;
+  margin-bottom: 1.4rem;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ink-muted);
+  overflow-wrap: anywhere;
+}
+.verificacao > p strong { color: var(--ink); }
+
+.verificacao form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.8rem;
+  width: 100%;
+  max-width: 300px;
+}
+
+.verificacao-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.verificacao-input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  letter-spacing: 0.4em;
+  text-align: center;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.verificacao-input:focus { outline: none; border-color: var(--forest); }
+
+.verificacao-btn {
+  width: 100%;
+  max-width: 300px;
+  padding: 0.9rem 1.5rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--cream);
+  background: var(--terracotta);
+  border: none;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+.verificacao-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.verificacao-erro,
+.verificacao-aviso {
+  max-width: 320px;
+  margin-top: 0.9rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+.verificacao-erro { color: var(--terracotta); }
+.verificacao-aviso { color: var(--forest); }
+
+.verificacao-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem 1.4rem;
+  margin-top: 1.2rem;
+}
+
+.verificacao-link {
+  padding: 0.3rem 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--forest);
+  background: none;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.verificacao-link:disabled { color: var(--ink-muted); text-decoration: none; cursor: default; }

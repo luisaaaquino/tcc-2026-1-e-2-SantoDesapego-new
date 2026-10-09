@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 import './Login.css';
 import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
+import VerificacaoCodigo from '../componentes/VerificacaoCodigo';
 
 import { API_URL } from '../config';
 
@@ -22,6 +23,8 @@ const LoginContent = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg]     = useState('');
+  // Verificação em duas etapas: preenchido quando a senha confere e o código foi enviado
+  const [verificacao, setVerificacao] = useState(null);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -58,9 +61,8 @@ const LoginContent = () => {
         return;
       }
 
-      localStorage.setItem('sd_token',   dados.token);
-      localStorage.setItem('sd_usuario', JSON.stringify(dados.usuario));
-      navigate('/');
+      setVerificacao(dados.verificacao);
+      setSubmitting(false);
 
     } catch (erro) {
       console.error('Erro ao conectar com o servidor:', erro);
@@ -192,6 +194,17 @@ const LoginContent = () => {
         <section className="auth-form-side">
           <div className="login-card">
 
+            {verificacao ? (
+              <VerificacaoCodigo
+                verificacao={verificacao}
+                aoVerificar={(dados) => {
+                  localStorage.setItem('sd_token',   dados.token);
+                  localStorage.setItem('sd_usuario', JSON.stringify(dados.usuario));
+                  navigate('/');
+                }}
+                aoVoltar={() => setVerificacao(null)}
+              />
+            ) : (<>
             <div className="form-header">
               <Link to="/" className="logo auth-logo">
                 <span className="logo-mark">SD</span>
@@ -310,6 +323,7 @@ const LoginContent = () => {
               Ainda não tem conta?{' '}
               <Link to="/cadastro">Criar conta grátis</Link>
             </p>
+            </>)}
 
           </div>
         </section>

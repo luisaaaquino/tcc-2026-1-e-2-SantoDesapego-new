@@ -7,6 +7,7 @@ const { enviarEmail } = require('../utils/email');
 const { montarEmail } = require('../utils/emailTemplate');
 const { validarSenhaForte } = require('../utils/validacao');
 const { TERMOS_VERSAO_ATUAL } = require('../utils/termos');
+const { criarDesafio, verificarCodigo, reenviarCodigo } = require('../utils/verificacao');
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
@@ -17,6 +18,20 @@ const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
   || '113184048014-ramhhojnofdd511oh1nl3h2ibono7581.apps.googleusercontent.com';
 
 const router = express.Router();
+
+// Token de sessão + dados públicos do usuário — mesmo formato no login
+// com senha (depois do código) e no login com Google.
+const montarSessao = (usuario) => ({
+  token: jwt.sign(
+    { id: usuario.id, email: usuario.email, papel: usuario.papel },
+    process.env.JWT_SECRET, { expiresIn: '7d' }
+  ),
+  usuario: {
+    id: usuario.id, nome: usuario.nome, sobrenome: usuario.sobrenome,
+    email: usuario.email, bairro: usuario.bairro,
+    foto_perfil: usuario.foto_perfil, papel: usuario.papel,
+  },
+});
 
 // ──────────────────────────────────────────────────────────
 // CADASTRO
@@ -59,9 +74,20 @@ router.post('/api/auth/cadastro', async (req, res) => {
       ]
     );
 
+    // Verificação em duas etapas: confirma o e-mail com um código antes do
+    // primeiro acesso. Se o envio falhar, a conta já existe — o código sai
+    // de novo no primeiro login.
+    let verificacao = null;
+    try {
+      verificacao = await criarDesafio(novoUsuario.rows[0], 'cadastro');
+    } catch (erroEnvio) {
+      console.error('Erro ao enviar código de cadastro:', erroEnvio);
+    }
+
     return res.status(201).json({
       mensagem: 'Usuário cadastrado com sucesso!',
-      usuario:  novoUsuario.rows[0]
+      usuario:  novoUsuario.rows[0],
+      verificacao,
     });
 
   } catch (erro) {
@@ -108,23 +134,61 @@ router.post('/api/auth/login', async (req, res) => {
       return res.status(403).json({ erro: 'Sua conta está suspensa. Entre em contato com o suporte.' });
     }
 
-    const token = jwt.sign(
-      { id: usuario.id, email: usuario.email, papel: usuario.papel },
-      process.env.JWT_SECRET, { expiresIn: '7d' }
-    );
-
-    return res.json({
-      mensagem: 'Login realizado com sucesso!',
-      token,
-      usuario: {
-        id: usuario.id, nome: usuario.nome, sobrenome: usuario.sobrenome,
-        email: usuario.email, bairro: usuario.bairro,
-        foto_perfil: usuario.foto_perfil, papel: usuario.papel,
-      }
-    });
+    // Senha certa não basta: o token só sai depois do código enviado por
+    // e-mail (POST /api/auth/verificar-codigo).
+    const verificacao = await criarDesafio(usuario, 'login');
+    return res.json({ mensagem: 'Enviamos um código para o seu e-mail.', verificacao });
   } catch (erro) {
     console.error('Erro no login:', erro);
     return res.status(500).json({ erro: 'Erro interno no servidor.' });
+  }
+});
+
+// ──────────────────────────────────────────────────────────
+// VERIFICAÇÃO EM DUAS ETAPAS — confere o código e abre a sessão
+// ──────────────────────────────────────────────────────────
+router.post('/api/auth/verificar-codigo', async (req, res) => {
+  try {
+    const desafio = String(req.body.desafio || '');
+    const codigo = String(req.body.codigo || '').replace(/\D/g, '');
+    if (!desafio || codigo.length !== 6) {
+      return res.status(400).json({ erro: 'Digite o código de 6 dígitos.' });
+    }
+
+    const resultado = await verificarCodigo(desafio, codigo);
+    if (!resultado.ok) {
+      return res.status(resultado.status).json({ erro: resultado.erro, reiniciar: resultado.reiniciar });
+    }
+
+    const { rows } = await pool.query(
+      `SELECT id, nome, sobrenome, email, bairro, foto_perfil, papel, status_conta, anonimizada_em
+       FROM usuarios WHERE id = $1`, [resultado.usuarioId]
+    );
+    const usuario = rows[0];
+    if (!usuario || usuario.anonimizada_em) {
+      return res.status(401).json({ erro: 'Conta não encontrada.', reiniciar: true });
+    }
+    if (usuario.status_conta === 'suspensa') {
+      return res.status(403).json({ erro: 'Sua conta está suspensa. Entre em contato com o suporte.', reiniciar: true });
+    }
+
+    return res.json({ mensagem: 'Login realizado com sucesso!', ...montarSessao(usuario) });
+  } catch (erro) {
+    console.error('Erro ao verificar código:', erro);
+    return res.status(500).json({ erro: 'Erro ao verificar o código.' });
+  }
+});
+
+router.post('/api/auth/reenviar-codigo', async (req, res) => {
+  try {
+    const resultado = await reenviarCodigo(String(req.body.desafio || ''));
+    if (!resultado.ok) {
+      return res.status(resultado.status).json({ erro: resultado.erro, reiniciar: resultado.reiniciar });
+    }
+    return res.json({ mensagem: 'Enviamos um novo código para o seu e-mail.' });
+  } catch (erro) {
+    console.error('Erro ao reenviar código:', erro);
+    return res.status(500).json({ erro: 'Erro ao reenviar o código.' });
   }
 });
 
@@ -302,20 +366,8 @@ router.post('/api/auth/google', async (req, res) => {
       return res.status(403).json({ erro: 'Sua conta está suspensa. Entre em contato com o suporte.' });
     }
 
-    const token = jwt.sign(
-      { id: usuario.id, email: usuario.email, papel: usuario.papel },
-      process.env.JWT_SECRET, { expiresIn: '7d' }
-    );
-
-    return res.json({
-      mensagem: `Bem-vindo(a) de volta, ${usuario.nome}!`,
-      token,
-      usuario: {
-        id: usuario.id, nome: usuario.nome, sobrenome: usuario.sobrenome,
-        email: usuario.email, bairro: usuario.bairro,
-        foto_perfil: usuario.foto_perfil, papel: usuario.papel,
-      }
-    });
+    // Sem código por e-mail: o Google já confirmou que a pessoa é dona do e-mail
+    return res.json({ mensagem: `Bem-vindo(a) de volta, ${usuario.nome}!`, ...montarSessao(usuario) });
   } catch (erro) {
     console.error('Erro no login com Google:', erro);
     return res.status(500).json({ erro: 'Não foi possível validar sua conta Google.' });

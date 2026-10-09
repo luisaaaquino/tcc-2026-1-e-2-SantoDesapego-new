@@ -229,6 +229,20 @@ CREATE TABLE cliques_comprador (
   data_clique   TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+-- Verificação em duas etapas por e-mail (migration 008)
+CREATE TABLE codigos_verificacao (
+  id              SERIAL PRIMARY KEY,
+  desafio         VARCHAR(64) NOT NULL UNIQUE,
+  usuario_id      INTEGER     NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  finalidade      VARCHAR(10) NOT NULL CHECK (finalidade IN ('cadastro', 'login')),
+  codigo_hash     VARCHAR(64) NOT NULL,
+  tentativas      SMALLINT    NOT NULL DEFAULT 0,
+  expira_em       TIMESTAMP   NOT NULL,
+  ultimo_envio_em TIMESTAMP   NOT NULL DEFAULT NOW(),
+  usado_em        TIMESTAMP,
+  criado_em       TIMESTAMP   NOT NULL DEFAULT NOW()
+);
+
 CREATE INDEX idx_usuarios_papel       ON usuarios(papel);
 CREATE INDEX idx_anuncios_status      ON anuncios(status);
 CREATE INDEX idx_anuncios_categoria   ON anuncios(categoria_id);
@@ -258,6 +272,7 @@ CREATE INDEX idx_indicios_status      ON indicios_moderacao(status, data_criacao
 CREATE INDEX idx_indicios_vendedor    ON indicios_moderacao(vendedor_id);
 CREATE INDEX idx_conversas_ia_vendedor ON conversas_ia_anuncio(vendedor_id, atualizada_em DESC);
 CREATE INDEX idx_cliques_comprador_usuario ON cliques_comprador(usuario_id, data_clique DESC);
+CREATE INDEX idx_codigos_verificacao_usuario ON codigos_verificacao(usuario_id);
 
 -- ============================================================
 -- Categorias iniciais (necessárias para publicar anúncios)
