@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import './VerificacaoCodigo.css';
+import './TransicaoPagina.css';
 import { API_URL } from '../config';
 
 /* ── Verificação em duas etapas ─────────────────────────────
@@ -77,7 +78,9 @@ const VerificacaoCodigo = ({ verificacao, aoVerificar, aoVoltar }) => {
   const cadastro = verificacao.finalidade === 'cadastro';
 
   return (
-    <div className="verificacao">
+    // Mesma entrada suave das trocas de página (TransicaoPagina.css):
+    // a tela do código substitui o formulário sem mudar de rota.
+    <div className="verificacao transicao-pagina">
       <div className="verificacao-icone" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="2" y="4" width="20" height="16" rx="2" />
