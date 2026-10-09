@@ -209,6 +209,8 @@
 .admin-table tr:hover td { background: rgba(0,0,0,0.015); }
 .admin-table .col-acoes { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: flex-end; }
 .admin-table td.col-desc { max-width: 260px; white-space: normal; color: var(--ink-soft); }
+.admin-cat-nome { display: inline-flex; align-items: center; gap: 0.5rem; }
+.admin-cat-nome svg { flex-shrink: 0; color: var(--ink-soft); }
 
 /* ── Badges de status ────────────────────────────────────── */
 .badge-status {

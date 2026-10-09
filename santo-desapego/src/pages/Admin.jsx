@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import './Admin.css';
 import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
 import { IconUser, IconShield, IconTag, IconFlag, IconPlus, IconAlert, IconChevron } from '../componentes/Icones';
+import { iconeDaCategoria } from '../utils/categorias';
 
 import { API_URL } from '../config';
 
@@ -702,7 +703,7 @@ const SecaoAnuncios = () => {
    CATEGORIAS — CRUD
    ════════════════════════════════════════════════════════════ */
 const FormCategoria = ({ inicial, categorias, aoSalvar, aoCancelar }) => {
-  const [form, setForm] = useState(inicial || { nome: '', slug: '', icone: '', categoria_pai: '', ordem: 0 });
+  const [form, setForm] = useState(inicial || { nome: '', slug: '', categoria_pai: '', ordem: 0 });
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState('');
 
@@ -731,10 +732,6 @@ const FormCategoria = ({ inicial, categorias, aoSalvar, aoCancelar }) => {
         <label>Slug (identificador único)</label>
         <input type="text" value={form.slug}
           onChange={(e) => setForm({ ...form, slug: e.target.value })} />
-
-        <label>Ícone (emoji, opcional)</label>
-        <input type="text" value={form.icone || ''} maxLength={4}
-          onChange={(e) => setForm({ ...form, icone: e.target.value })} />
 
         <label>Categoria pai (opcional)</label>
         <select value={form.categoria_pai || ''} onChange={(e) => setForm({ ...form, categoria_pai: e.target.value })}>
@@ -816,9 +813,17 @@ const SecaoCategorias = () => {
           <table className="admin-table">
             <thead><tr><th>Nome</th><th>Slug</th><th>Categoria pai</th><th>Ordem</th><th>Anúncios</th><th></th></tr></thead>
             <tbody>
-              {categorias.map((c) => (
+              {categorias.map((c) => {
+                // Mesmo ícone que Home/Explorar mostram (definido pelo id, não pela coluna icone)
+                const Icone = c.categoria_pai ? null : iconeDaCategoria(c.id);
+                return (
                 <tr key={c.id}>
-                  <td>{c.icone ? `${c.icone} ` : ''}{c.nome}</td>
+                  <td>
+                    <span className="admin-cat-nome">
+                      {Icone && <Icone />}
+                      {c.nome}
+                    </span>
+                  </td>
                   <td>{c.slug}</td>
                   <td>{c.categoria_pai ? nomePai(c.categoria_pai) : '—'}</td>
                   <td>{c.ordem}</td>
@@ -828,7 +833,8 @@ const SecaoCategorias = () => {
                     <button className="btn-admin-mini danger" onClick={() => setExcluindo(c)}>Excluir</button>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
