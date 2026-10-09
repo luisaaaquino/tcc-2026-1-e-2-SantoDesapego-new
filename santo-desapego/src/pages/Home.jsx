@@ -255,7 +255,6 @@ const Home = () => {
             {usuario ? (
               <>
                 <NotificacoesSino />
-                <Link to="/sobre" className="nav-btn">Sobre nós</Link>
                 <Link to="/perfil" className="nav-profile-chip" style={{
                   display: 'inline-flex',
                   alignItems: 'center',
