@@ -36,7 +36,7 @@ router.post('/api/avaliacoes', autenticar, async (req, res) => {
     // Avaliação só depois da entrega confirmada com o código (seção 3.1.1 do TCC)
     if (!compra.rows[0].entrega_confirmada_em) {
       return res.status(400).json({
-        erro: 'Você poderá avaliar assim que o vendedor confirmar a entrega com o seu código.',
+        erro: 'Você poderá avaliar assim que confirmar o recebimento com o código do vendedor.',
       });
     }
 

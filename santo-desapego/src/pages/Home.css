@@ -104,23 +104,20 @@
    NAV CATEGORIAS — pills/chips
    Cada categoria é um chip arredondado; "Todos" fica sempre
    preenchido em terracota como atalho principal.
+   Quebra em mais de uma linha quando não cabe: com scroll
+   horizontal e a barra de rolagem oculta, "Brechó vintage" e
+   "Outros" ficavam fora da tela sem o usuário perceber. No
+   celular (≤768px) a faixa some e vira a grade .mobile-cats.
    ========================================================== */
 .home-page .nav-categories {
   display: flex !important;
-  flex-wrap: nowrap !important;
+  flex-wrap: wrap !important;
   align-items: center;
-  /* flex-start, não center: com overflow-x:auto, centralizar um
-     conteúdo que estoura a largura faz o primeiro item nascer cortado
-     à esquerda, fora do alcance do scroll. */
-  justify-content: flex-start !important;
+  justify-content: center !important;
   gap: 0.55rem !important;
   padding: 0.85rem 1.25rem !important;
   border-top: 1px solid var(--border-soft);
   background: transparent;
-
-  overflow-x: auto !important;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
 }
 .home-page .nav-categories::-webkit-scrollbar { display: none; }
 
@@ -189,15 +186,6 @@
   outline-offset: 2px;
 }
 
-/* ── Separador entre principais e extras ── */
-.nav-sep {
-  flex-shrink: 0;
-  display: inline-block;
-  width: 1px;
-  height: 22px;
-  margin: 0 0.15rem;
-  background: var(--border);
-}
 
 /* ==========================================================
    HERO

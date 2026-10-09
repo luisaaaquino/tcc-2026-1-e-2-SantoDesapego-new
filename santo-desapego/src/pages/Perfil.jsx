@@ -736,15 +736,16 @@ const FormAvaliar = ({ compra, aoEnviar, aoCancelar }) => {
 
 /* ════════════════════════════════════════════════════════════
    TOKEN DE ENTREGA (seção 2.3 / RN05 do TCC)
-   O comprador vê o código; o vendedor digita o código que
-   recebeu no encontro — isso confirma a entrega.
+   O vendedor vê o código e o entrega junto com a peça; o
+   comprador digita ao receber — isso confirma a entrega e
+   libera o valor ao vendedor.
    ════════════════════════════════════════════════════════════ */
 const formatarCodigo = (c) => (c || '').replace(/^(\d{3})(\d{3})$/, '$1 $2');
 
-const ConfirmarEntrega = ({ venda, aoConfirmar }) => {
+const ConfirmarEntrega = ({ compra, aoConfirmar }) => {
   const [codigo, setCodigo] = useState('');
   const [erro, setErro] = useState('');
-  const [bloqueada, setBloqueada] = useState(venda.entrega_bloqueada);
+  const [bloqueada, setBloqueada] = useState(compra.entrega_bloqueada);
   const [enviando, setEnviando] = useState(false);
 
   const enviar = async (e) => {
@@ -753,7 +754,7 @@ const ConfirmarEntrega = ({ venda, aoConfirmar }) => {
     setEnviando(true);
     setErro('');
     try {
-      const resposta = await fetch(`${API_URL}/api/compras/${venda.id}/confirmar-entrega`, {
+      const resposta = await fetch(`${API_URL}/api/compras/${compra.id}/confirmar-entrega`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -787,12 +788,13 @@ const ConfirmarEntrega = ({ venda, aoConfirmar }) => {
 
   return (
     <form className="avaliar-form entrega-form" onSubmit={enviar}>
-      <label className="avaliar-form-label" htmlFor={`codigo-${venda.id}`}>
-        Entregou a peça? Peça o código de entrega a {venda.comprador_nome} e digite aqui.
+      <label className="avaliar-form-label" htmlFor={`codigo-${compra.id}`}>
+        Recebeu a peça? Peça o código de entrega a {compra.vendedor_nome} e digite aqui.
+        Só confirme com a peça em mãos: isso libera o pagamento ao vendedor.
       </label>
       <div className="entrega-form-linha">
         <input
-          id={`codigo-${venda.id}`}
+          id={`codigo-${compra.id}`}
           className="perfil-input entrega-input"
           inputMode="numeric"
           autoComplete="one-time-code"
@@ -802,7 +804,7 @@ const ConfirmarEntrega = ({ venda, aoConfirmar }) => {
           onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}
         />
         <button type="submit" className="btn-perfil-primary" disabled={enviando || codigo.length !== 6}>
-          {enviando ? 'Confirmando...' : 'Confirmar entrega'}
+          {enviando ? 'Confirmando...' : 'Confirmar recebimento'}
         </button>
       </div>
       {erro && <span className="avaliar-erro"><IconAlert /> {erro}</span>}
@@ -923,16 +925,11 @@ const SecaoCompras = () => {
                 <p>Vendido por {c.vendedor_nome} {c.vendedor_sobrenome} · {dataBR(c.criada_em)} · {c.status}</p>
                 <strong>{brl(c.preco)}</strong>
 
-                {!c.entrega_confirmada_em && c.codigo_entrega && (
-                  <div className="entrega-codigo">
-                    <span className="entrega-codigo-label">Código de entrega</span>
-                    <strong className="entrega-codigo-valor">{formatarCodigo(c.codigo_entrega)}</strong>
-                    <p>
-                      Passe este código ao vendedor <b>só quando estiver com a peça em mãos</b>.
-                      É ele que confirma a entrega e libera a avaliação.
-                    </p>
-                  </div>
-                )}
+                <span className={`repasse-status${c.entrega_confirmada_em ? ' liberado' : ''}`}>
+                  {c.entrega_confirmada_em
+                    ? `Recebimento confirmado em ${dataBR(c.entrega_confirmada_em)} · valor liberado ao vendedor`
+                    : 'Pagamento retido até você confirmar o recebimento'}
+                </span>
 
                 <div className="compra-card-perfil-acoes">
                   <button type="button" className="btn-perfil-secondary avaliar-btn" onClick={() => baixarComprovante(c.id)}>
@@ -949,6 +946,10 @@ const SecaoCompras = () => {
                     </button>
                   )}
                 </div>
+
+                {!c.entrega_confirmada_em && (
+                  <ConfirmarEntrega compra={c} aoConfirmar={carregar} />
+                )}
 
                 {c.entrega_confirmada_em && !c.ja_avaliei && abrirAvaliar === c.id && (
                   <FormAvaliar
@@ -1026,6 +1027,30 @@ const SecaoVendas = () => {
                 <Link to={`/anuncio/${v.anuncio_id}`}><h3>{v.anuncio_titulo}</h3></Link>
                 <p>Comprado por {v.comprador_nome} {v.comprador_sobrenome} · {dataBR(v.criada_em)} · {v.status}</p>
                 <strong>{brl(v.preco)}</strong>
+                <span className={`repasse-status${v.entrega_confirmada_em ? ' liberado' : ''}`}>
+                  {v.entrega_confirmada_em
+                    ? `Valor liberado: ${brl(v.valor_liquido)} (descontada a taxa de 5%)`
+                    : `Valor retido: ${brl(v.valor_liquido)} será liberado quando o comprador confirmar o recebimento`}
+                </span>
+
+                {!v.entrega_confirmada_em && v.codigo_entrega && (
+                  <div className="entrega-codigo">
+                    <span className="entrega-codigo-label">Código de entrega</span>
+                    <strong className="entrega-codigo-valor">{formatarCodigo(v.codigo_entrega)}</strong>
+                    <p>
+                      Passe este código a {v.comprador_nome} <b>junto com a peça</b>.
+                      Quando ele digitar o código no site, o valor é liberado para você.
+                    </p>
+                  </div>
+                )}
+
+                {!v.entrega_confirmada_em && v.entrega_bloqueada && (
+                  <span className="avaliar-erro">
+                    <IconAlert /> O comprador errou o código muitas vezes e a confirmação foi bloqueada.{' '}
+                    <Link to="/central-ajuda">Fale com o suporte</Link>.
+                  </span>
+                )}
+
                 <div className="compra-card-perfil-acoes">
                   <button type="button" className="btn-perfil-secondary avaliar-btn" onClick={() => baixarComprovante(v.id)}>
                     <I.download /> Comprovante (PDF)
@@ -1036,10 +1061,6 @@ const SecaoVendas = () => {
                     </span>
                   )}
                 </div>
-
-                {!v.entrega_confirmada_em && (
-                  <ConfirmarEntrega venda={v} aoConfirmar={carregar} />
-                )}
               </div>
             </div>
           ))}

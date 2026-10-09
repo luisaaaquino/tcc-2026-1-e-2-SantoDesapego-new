@@ -151,4 +151,5 @@ module.exports = {
   refreshAccessToken,
   garantirTokenVendedorValido,
   createSplitPreference,
+  MARKETPLACE_FEE_PERCENT,
 };

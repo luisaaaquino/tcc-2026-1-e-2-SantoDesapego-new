@@ -19,8 +19,6 @@ export default function CompraRealizada() {
   const [anuncio, setAnuncio]     = useState(state?.anuncio || null);
   const [pagamento, setPagamento] = useState(null);
   const [carregando, setCarregando] = useState(Boolean(anuncioId || paymentId));
-  // Token de entrega (seção 2.3 / RN05) — devolvido ao registrar a compra
-  const [codigoEntrega, setCodigoEntrega] = useState(null);
 
   // Busca o anúncio comprado
   useEffect(() => {
@@ -61,13 +59,6 @@ export default function CompraRealizada() {
       },
       body: JSON.stringify({ payment_id: paymentId, anuncio_id: anuncioId }),
     })
-      .then((r) => r.json())
-      .then((dados) => {
-        const compra = dados.compra;
-        if (compra?.codigo_entrega && !compra.entrega_confirmada_em) {
-          setCodigoEntrega(compra.codigo_entrega);
-        }
-      })
       .catch((e) => console.error('[compra] confirmar', e));
   }, [paymentId, anuncioId, pagamento]);
 
@@ -90,7 +81,7 @@ export default function CompraRealizada() {
     {
       n: '03',
       titulo: 'Entrega',
-      texto: 'Com a peça em mãos, passe seu código de entrega ao vendedor. Ele digita o código e a entrega fica confirmada.',
+      texto: 'O vendedor entrega a peça junto com um código de 6 dígitos. Com a peça em mãos, digite o código em "Compras realizadas", no seu perfil: só então o pagamento é liberado ao vendedor.',
     },
     {
       n: '04',
@@ -130,15 +121,13 @@ export default function CompraRealizada() {
             : 'Alguns cartões levam alguns minutos para aprovar. Você recebe um e-mail assim que sair o resultado.'}
         </p>
 
-        {aprovado && codigoEntrega && (
+        {aprovado && (
           <div className="compra-codigo">
-            <span className="compra-codigo__label">Seu código de entrega</span>
-            <strong className="compra-codigo__valor">
-              {codigoEntrega.replace(/^(\d{3})(\d{3})$/, '$1 $2')}
-            </strong>
+            <span className="compra-codigo__label">Seu pagamento está protegido</span>
             <p>
-              Passe este código ao vendedor <b>só quando estiver com a peça em mãos</b>.
-              Ele também fica salvo em "Compras realizadas", no seu perfil, e foi para o seu e-mail.
+              O valor fica <b>retido até você confirmar o recebimento</b>. Na entrega, o vendedor
+              te passa um código de 6 dígitos: digite em "Compras realizadas", no seu perfil,
+              só quando estiver com a peça em mãos.
             </p>
           </div>
         )}

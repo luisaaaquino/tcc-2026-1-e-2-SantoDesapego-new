@@ -328,7 +328,6 @@ const Home = () => {
           <Link to="/explorar?categoria_id=6"><IconBike /><span>Esporte & Lazer</span></Link>
           <Link to="/explorar?categoria_id=7"><IconPalette /><span>Arte & Decoração</span></Link>
           <Link to="/explorar?categoria_id=8"><IconWrench /><span>Ferramentas</span></Link>
-          <span className="nav-sep" aria-hidden="true" />
           <Link to="/explorar?categoria_id=9"><IconHanger /><span>Brechó vintage</span></Link>
           <Link to="/explorar?categoria_id=10"><IconMore /><span>Outros</span></Link>
         </nav>

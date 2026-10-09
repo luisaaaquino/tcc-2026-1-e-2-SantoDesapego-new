@@ -5,14 +5,18 @@ const { MercadoPagoConfig, Payment } = require('mercadopago');
 const pool = require('../db');
 const { autenticar } = require('../middleware/auth');
 const { criarNotificacao } = require('../utils/notificacoes');
-const { garantirTokenVendedorValido, createSplitPreference } = require('../services/mercadoPagoService');
+const {
+  garantirTokenVendedorValido, createSplitPreference, MARKETPLACE_FEE_PERCENT,
+} = require('../services/mercadoPagoService');
 
 const router = express.Router();
 
 // Token de confirmação de entrega (seção 2.3 / RN05): 6 dígitos que só o
-// comprador vê. Ele passa o código ao vendedor no encontro, depois de
-// receber a peça; o vendedor digita e a entrega fica registrada.
+// vendedor vê. Ele entrega o código junto com a peça; o comprador digita
+// ao receber, o que registra a entrega e libera o valor ao vendedor.
 const MAX_TENTATIVAS_CODIGO = 5;
+
+const brl = (v) => Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const gerarCodigoEntrega = () => String(crypto.randomInt(0, 1000000)).padStart(6, '0');
 
 // Busca o anúncio + as credenciais Mercado Pago do vendedor dono dele.
@@ -222,7 +226,8 @@ router.post('/api/compras/confirmar', autenticar, async (req, res) => {
          codigo_entrega)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        ON CONFLICT (payment_id) DO UPDATE SET status = EXCLUDED.status
-       RETURNING id, anuncio_id, preco, status, criada_em, codigo_entrega, entrega_confirmada_em,
+       RETURNING id, anuncio_id, preco, status, criada_em, entrega_confirmada_em,
+                 codigo_entrega,
                  (xmax = 0) AS inserida`,
       [
         anuncio_id, req.userId, vendedor_id, preco,
@@ -244,9 +249,9 @@ router.post('/api/compras/confirmar', autenticar, async (req, res) => {
       criarNotificacao(
         vendedor_id,
         'pagamento_confirmado',
-        'Sua peça foi vendida! 🎉',
-        `O pagamento de "${titulo}" foi aprovado. ${nomeComprador} já pode combinar a entrega com você pelo chat. No encontro, peça o código de entrega e digite em "Vendas realizadas" para confirmar.`,
-        '/mensagens'
+        'Sua peça foi vendida! 🎉 Guarde o código de entrega',
+        `O pagamento de "${titulo}" foi aprovado. Combine a entrega com ${nomeComprador} pelo chat. Seu código de entrega é ${compra.rows[0].codigo_entrega}: passe esse código ao comprador junto com a peça. Quando ele digitar o código no site, o valor da venda é liberado para você.`,
+        '/perfil?aba=vendas'
       );
 
       // A solicitação de avaliação (RF18) só sai quando a entrega é
@@ -254,13 +259,14 @@ router.post('/api/compras/confirmar', autenticar, async (req, res) => {
       criarNotificacao(
         req.userId,
         'pagamento_confirmado',
-        'Pagamento confirmado — guarde seu código de entrega',
-        `Seu pagamento de "${titulo}" foi aprovado. Seu código de entrega é ${compra.rows[0].codigo_entrega}. Passe esse código ao vendedor só quando estiver com a peça em mãos.`,
-        '/perfil?aba=compras'
+        'Pagamento confirmado',
+        `Seu pagamento de "${titulo}" foi aprovado e fica retido até você confirmar o recebimento. Combine a entrega com o vendedor pelo chat. Ao receber a peça, peça o código de entrega ao vendedor e digite em "Compras realizadas".`,
+        '/mensagens'
       );
     }
 
-    const { inserida, ...compraRegistrada } = compra.rows[0];
+    // O código fica só com o vendedor: nunca volta na resposta ao comprador
+    const { inserida, codigo_entrega, ...compraRegistrada } = compra.rows[0];
     return res.status(201).json({ registrada: true, compra: compraRegistrada });
   } catch (erro) {
     console.error('Erro ao confirmar compra:', erro);
@@ -269,8 +275,11 @@ router.post('/api/compras/confirmar', autenticar, async (req, res) => {
 });
 
 // ============================================================
-//  ENTREGA — vendedor confirma com o código do comprador
-//  (seção 2.3 / RN05). Registra a entrega e libera a avaliação.
+//  ENTREGA — comprador confirma o recebimento com o código que o
+//  vendedor entregou junto com a peça (seção 2.3 / RN05). Registra a
+//  entrega, libera o valor ao vendedor e libera a avaliação.
+//  A liberação é o status exibido no site; a retenção real do dinheiro
+//  fica com o Mercado Pago.
 //  Limite de tentativas pra o código não ser descoberto no chute.
 // ============================================================
 router.post('/api/compras/:id/confirmar-entrega', autenticar, async (req, res) => {
@@ -291,7 +300,7 @@ router.post('/api/compras/:id/confirmar-entrega', autenticar, async (req, res) =
     // FOR UPDATE: duas tentativas ao mesmo tempo não burlam o limite
     const resultado = await client.query(
       `SELECT co.vendedor_id, co.comprador_id, co.codigo_entrega, co.entrega_confirmada_em,
-              co.tentativas_codigo, a.titulo
+              co.tentativas_codigo, co.preco, a.titulo
          FROM compras co
          JOIN anuncios a ON a.id = co.anuncio_id
         WHERE co.id = $1
@@ -304,9 +313,9 @@ router.post('/api/compras/:id/confirmar-entrega', autenticar, async (req, res) =
       await client.query('ROLLBACK');
       return res.status(404).json({ erro: 'Compra não encontrada.' });
     }
-    if (compra.vendedor_id !== req.userId) {
+    if (compra.comprador_id !== req.userId) {
       await client.query('ROLLBACK');
-      return res.status(403).json({ erro: 'Só o vendedor pode confirmar a entrega.' });
+      return res.status(403).json({ erro: 'Só o comprador pode confirmar o recebimento.' });
     }
     if (compra.entrega_confirmada_em) {
       await client.query('ROLLBACK');
@@ -345,16 +354,25 @@ router.post('/api/compras/:id/confirmar-entrega', autenticar, async (req, res) =
     );
     await client.query('COMMIT');
 
+    const valorLiquido = Number(compra.preco) * (1 - MARKETPLACE_FEE_PERCENT / 100);
+    criarNotificacao(
+      compra.vendedor_id,
+      'pagamento_confirmado',
+      'Entrega confirmada — valor liberado 💸',
+      `O comprador confirmou o recebimento de "${compra.titulo}". O valor da venda (${brl(valorLiquido)}, já descontada a taxa de ${MARKETPLACE_FEE_PERCENT}%) foi liberado para você.`,
+      '/perfil?aba=vendas'
+    );
+
     // [RF18] Solicitação de avaliação — agora que a peça foi entregue
     criarNotificacao(
       compra.comprador_id,
       'avaliacao_pendente',
-      'Entrega confirmada — avalie o vendedor',
-      `A entrega de "${compra.titulo}" foi confirmada. Conte como foi a negociação: sua avaliação ajuda os vizinhos a comprar com confiança.`,
+      'Recebimento confirmado — avalie o vendedor',
+      `Você confirmou o recebimento de "${compra.titulo}". Conte como foi a negociação: sua avaliação ajuda os vizinhos a comprar com confiança.`,
       '/perfil?aba=compras'
     );
 
-    return res.json({ mensagem: 'Entrega confirmada!', compra: confirmada.rows[0] });
+    return res.json({ mensagem: 'Recebimento confirmado! O valor foi liberado ao vendedor.', compra: confirmada.rows[0] });
   } catch (erro) {
     await client.query('ROLLBACK').catch(() => {});
     console.error('Erro ao confirmar entrega:', erro);

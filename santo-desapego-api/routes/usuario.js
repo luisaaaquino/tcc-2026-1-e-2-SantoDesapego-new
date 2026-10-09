@@ -5,6 +5,7 @@ const { autenticar } = require('../middleware/auth');
 const { validarSenhaForte } = require('../utils/validacao');
 const { TERMOS_VERSAO_ATUAL } = require('../utils/termos');
 const { excluirOuAnonimizarUsuario } = require('../utils/usuarios');
+const { MARKETPLACE_FEE_PERCENT } = require('../services/mercadoPagoService');
 
 const router = express.Router();
 
@@ -428,9 +429,9 @@ router.get('/api/usuario/compras', autenticar, async (req, res) => {
          (SELECT imagem FROM anuncio_imagens
            WHERE anuncio_id = a.id AND is_principal = TRUE LIMIT 1) AS anuncio_imagem,
          (av.id IS NOT NULL) AS ja_avaliei,
-         -- O código só aparece pro comprador (esta rota) e some depois da entrega
-         CASE WHEN co.entrega_confirmada_em IS NULL THEN co.codigo_entrega END AS codigo_entrega,
-         co.entrega_confirmada_em
+         -- Nunca o código em si: o comprador o recebe do vendedor, junto com a peça
+         co.entrega_confirmada_em,
+         (co.tentativas_codigo >= 5) AS entrega_bloqueada
        FROM compras co
        JOIN anuncios a ON a.id = co.anuncio_id
        JOIN usuarios u ON u.id = co.vendedor_id
@@ -478,15 +479,18 @@ router.get('/api/usuario/vendas', autenticar, async (req, res) => {
          u.id AS comprador_id, u.nome AS comprador_nome, u.sobrenome AS comprador_sobrenome,
          (SELECT imagem FROM anuncio_imagens
            WHERE anuncio_id = a.id AND is_principal = TRUE LIMIT 1) AS anuncio_imagem,
-         -- Nunca o código em si: o vendedor só o recebe do comprador, no encontro
+         -- O código só aparece pro vendedor (esta rota) e some depois da entrega
+         CASE WHEN co.entrega_confirmada_em IS NULL THEN co.codigo_entrega END AS codigo_entrega,
          co.entrega_confirmada_em,
-         (co.tentativas_codigo >= 5) AS entrega_bloqueada
+         (co.tentativas_codigo >= 5) AS entrega_bloqueada,
+         -- Valor que o vendedor recebe: liberado quando o comprador confirma a entrega
+         ROUND(co.preco * (1 - $${params.length + 1}::numeric / 100), 2) AS valor_liquido
        FROM compras co
        JOIN anuncios a ON a.id = co.anuncio_id
        JOIN usuarios u ON u.id = co.comprador_id
        WHERE co.vendedor_id = $1${filtro}
        ORDER BY co.criada_em DESC`,
-      params
+      [...params, MARKETPLACE_FEE_PERCENT]
     );
 
     return res.json({ vendas: resultado.rows });

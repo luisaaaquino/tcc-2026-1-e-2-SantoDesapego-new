@@ -375,10 +375,6 @@ const Explorar = () => {
 
           {categoriasMain.map(renderCategoria)}
 
-          {categoriasExtras.length > 0 && (
-            <span className="nav-sep" aria-hidden="true" />
-          )}
-
           {categoriasExtras.map(renderCategoria)}
         </nav>
       </header>

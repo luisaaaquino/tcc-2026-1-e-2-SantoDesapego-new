@@ -520,21 +520,16 @@
 /* Escopado em .explorar-wrapper: .nav-categories é uma classe
    global (também usada na Home) — sem esse escopo essas regras
    vazam para as outras páginas via bundle CSS compartilhado.
-   Mesma abordagem de scroll horizontal da Home (não quebra linha):
-   flex-start, não center — com overflow-x:auto, centralizar um
-   conteúdo que estoura a largura faz o primeiro item nascer cortado
-   à esquerda, fora do alcance do scroll. */
+   Mesma abordagem da Home: quebra em mais de uma linha quando não
+   cabe, para nenhuma categoria ficar escondida fora da tela. */
 .explorar-wrapper .nav-categories {
   display: flex !important;
-  flex-wrap: nowrap !important;
+  flex-wrap: wrap !important;
   align-items: center;
-  justify-content: flex-start !important;
+  justify-content: center !important;
   gap: 0.55rem !important;
   padding: 0.85rem 2rem !important;
   border-top: 1px solid var(--border-soft);
-  overflow-x: auto !important;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
 }
 .explorar-wrapper .nav-categories::-webkit-scrollbar { display: none; }
 
@@ -590,15 +585,6 @@
 }
 .explorar-wrapper .nav-categories a.active:hover { transform: none; }
 
-/* Separador entre categorias principais e extras */
-.nav-sep {
-  width: 1px;
-  height: 22px;
-  background: var(--border);
-  margin: 0 0.15rem;
-  display: inline-block;
-  flex-shrink: 0;
-}
 
 /* ── Responsivo ─────────────────────────────────────────── */
 @media (max-width: 1024px) {
