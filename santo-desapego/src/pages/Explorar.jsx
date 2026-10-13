@@ -4,8 +4,7 @@ import './Explorar.css';
 import SeletorBairro, { BAIRROS } from '../componentes/SeletorBairro';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import LegalModal from '../componentes/LegalModal';
-import { IconSearch, IconLogout, IconGrid, IconHeart } from '../componentes/Icones';
-import { iconeDaCategoria } from '../utils/categorias';
+import { IconSearch, IconLogout, IconHeart } from '../componentes/Icones';
 import { API_URL as API_BASE } from '../config';
 
 const API_URL = `${API_BASE}/api`;
@@ -252,21 +251,6 @@ const Explorar = () => {
   };
 
   /* Renderiza um link de categoria já com o ícone certo */
-  const renderCategoria = (cat) => {
-    const Icon = iconeDaCategoria(cat.id);
-    return (
-      <a
-        key={cat.id}
-        href="#"
-        className={categoriaAtiva === cat.id ? 'active' : ''}
-        onClick={(e) => { e.preventDefault(); setCategoriaAtiva(cat.id); }}
-      >
-        <Icon />
-        <span>{cat.nome}</span>
-      </a>
-    );
-  };
-
   return (
     <div className="explorar-wrapper">
 
@@ -339,19 +323,6 @@ const Explorar = () => {
           </button>
         </div>
 
-        {/* ── Nav de categorias — versão editorial com line icons ── */}
-        <nav className="nav-categories">
-          <a
-            href="#"
-            className={!categoriaAtiva ? 'active' : ''}
-            onClick={(e) => { e.preventDefault(); setCategoriaAtiva(null); }}
-          >
-            <IconGrid />
-            <span>Todos</span>
-          </a>
-
-          {categorias.map(renderCategoria)}
-        </nav>
       </header>
 
       {/* ── Gaveta do menu (mobile) ── */}
@@ -446,8 +417,8 @@ const Explorar = () => {
           {/* ── Sidebar de filtros ── */}
           <aside className={`explorar-sidebar${filtrosAbertos ? ' mobile-aberta' : ''}`}>
 
-            {/* Categoria — só aparece no mobile; no desktop a filtragem
-                por categoria já acontece pelos chips do cabeçalho */}
+            {/* Categoria — fica só aqui no painel de filtros (a barra de
+                categorias do cabeçalho saiu em todas as telas) */}
             <div className="filter-section filter-section--categoria">
               <div className="filter-section-title">
                 <h3>Categoria</h3>

@@ -513,77 +513,6 @@
   cursor: not-allowed;
 }
 
-/* ==========================================================
-   NAV CATEGORIAS — versão editorial com line icons
-   (replicado aqui para a página ser autossuficiente)
-   ========================================================== */
-/* Escopado em .explorar-wrapper: .nav-categories é uma classe
-   global (também usada na Home) — sem esse escopo essas regras
-   vazam para as outras páginas via bundle CSS compartilhado.
-   Mesma abordagem da Home: quebra em mais de uma linha quando não
-   cabe, para nenhuma categoria ficar escondida fora da tela. */
-.explorar-wrapper .nav-categories {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  align-items: center;
-  justify-content: center !important;
-  gap: 0.55rem !important;
-  padding: 0.85rem 2rem !important;
-  border-top: 1px solid var(--border-soft);
-}
-.explorar-wrapper .nav-categories::-webkit-scrollbar { display: none; }
-
-.explorar-wrapper .nav-categories a {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.5rem 1rem;
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  font-weight: 500;
-  letter-spacing: -0.005em;
-  color: var(--ink-soft);
-  text-decoration: none;
-  background: var(--paper);
-  border: 1.5px solid var(--border-soft);
-  border-radius: var(--radius-pill);
-  white-space: nowrap;
-  flex-shrink: 0;
-  position: relative;
-  transition: background 0.18s ease, border-color 0.18s ease,
-              color 0.18s ease, transform 0.18s ease;
-}
-
-.explorar-wrapper .nav-categories a svg {
-  opacity: 0.7;
-  color: var(--ink-muted);
-  flex-shrink: 0;
-  transition: opacity 0.18s ease, color 0.18s ease;
-}
-
-.explorar-wrapper .nav-categories a:hover {
-  color: var(--ink);
-  background: var(--cream-deep);
-  border-color: var(--border);
-  transform: translateY(-1px);
-}
-.explorar-wrapper .nav-categories a:hover svg {
-  opacity: 1;
-  color: var(--terracotta);
-}
-
-/* Estado ativo — chip preenchido em terracota */
-.explorar-wrapper .nav-categories a.active {
-  color: var(--cream);
-  background: var(--terracotta);
-  border-color: var(--terracotta);
-  box-shadow: 2px 2px 0 var(--ink);
-}
-.explorar-wrapper .nav-categories a.active svg {
-  opacity: 1;
-  color: var(--cream);
-}
-.explorar-wrapper .nav-categories a.active:hover { transform: none; }
 
 
 /* ── Responsivo ─────────────────────────────────────────── */
@@ -655,18 +584,4 @@
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 0.8rem;
   }
-}
-
-/* A seção "Categoria" do painel de filtros só existe pro mobile —
-   no desktop a filtragem já acontece pelos chips do cabeçalho, ter
-   os dois ao mesmo tempo seria redundante. */
-.filter-section--categoria { display: none; }
-
-@media (max-width: 768px) {
-  /* A barra de categorias do cabeçalho rolava de lado e escondia
-     metade das opções — sai da tela e vira filtro dentro do painel
-     "Filtros" (junto com Bairro e Condição), em chips que quebram
-     linha em vez de rolar. */
-  .explorar-wrapper .nav-categories { display: none !important; }
-  .filter-section--categoria { display: block; }
 }

@@ -5,8 +5,7 @@ import Mapa from '../componentes/Mapa';
 import SeletorBairro, { BAIRROS } from '../componentes/SeletorBairro';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import LegalModal from '../componentes/LegalModal';
-import { IconSearch, IconArrowRight, IconLogout, IconGrid } from '../componentes/Icones';
-import { iconeDaCategoria } from '../utils/categorias';
+import { IconSearch, IconArrowRight, IconLogout } from '../componentes/Icones';
 import { API_URL, EMAILS } from '../config';
 
 /* ── Dados — altere aqui sem tocar no JSX ──────────────────── */
@@ -124,16 +123,6 @@ const Home = () => {
     e.preventDefault();
     setLegalAberto(aba);
   };
-
-  // Categorias principais do banco — mesma fonte do Explorar e da tela de
-  // anunciar (antes eram nomes fixos que não batiam com os ids do banco)
-  const [categorias, setCategorias] = useState([]);
-  useEffect(() => {
-    fetch(`${API_URL}/api/categorias`)
-      .then((r) => r.json())
-      .then((dados) => setCategorias(dados.categorias || []))
-      .catch((e) => console.error('[home] categorias', e));
-  }, []);
 
   // Colunas do rodapé (<details>) ficam sempre abertas
   useEffect(() => {
@@ -310,16 +299,6 @@ const Home = () => {
           </button>
         </div>
 
-        {/* ── Nav de categorias — linha única com scroll horizontal ── */}
-        <nav className="nav-categories">
-          <Link to="/explorar" className="nav-cat-all"><IconGrid /><span>Todos</span></Link>
-          {categorias.map((cat) => {
-            const Icon = iconeDaCategoria(cat.id);
-            return (
-              <Link key={cat.id} to={`/explorar?categoria_id=${cat.id}`}><Icon /><span>{cat.nome}</span></Link>
-            );
-          })}
-        </nav>
       </header>
 
       {/* ── Gaveta do menu (mobile) ── */}
@@ -402,25 +381,6 @@ const Home = () => {
             </div>
           ))}
         </div>
-      </section>
-
-      {/* ══════════════════════════════════
-          CATEGORIAS (só mobile — no desktop ficam na faixa do header)
-          ══════════════════════════════════ */}
-      <section className="mobile-cats" aria-label="Categorias">
-        <h2>Explore por <em>categoria</em></h2>
-        <div className="mobile-cats-grid">
-          {categorias.map((cat) => {
-            const Icon = iconeDaCategoria(cat.id);
-            return (
-              <Link key={cat.id} to={`/explorar?categoria_id=${cat.id}`} className="mobile-cat">
-                <span className="mobile-cat-icon"><Icon /></span>
-                <span className="mobile-cat-name">{cat.nome}</span>
-              </Link>
-            );
-          })}
-        </div>
-        <Link to="/explorar" className="mobile-cats-all">Ver todos os anúncios <IconArrowRight /></Link>
       </section>
 
       {/* ══════════════════════════════════
