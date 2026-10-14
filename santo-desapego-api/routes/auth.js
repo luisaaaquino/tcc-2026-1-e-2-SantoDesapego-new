@@ -19,6 +19,13 @@ const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
 
 const router = express.Router();
 
+// O e-mail é comparado sempre em minúsculas e sem espaços. Antes só o
+// cadastro padronizava: no login e no "esqueci minha senha" o e-mail ia
+// como digitado ("Luisa@..." do teclado do celular, espaço do
+// preenchimento automático) e não batia com o do banco. O lower(email) na
+// busca cobre contas antigas gravadas com maiúsculas.
+const normalizarEmail = (email) => String(email || '').trim().toLowerCase();
+
 // Token de sessão + dados públicos do usuário — mesmo formato no login
 // com senha (depois do código) e no login com Google.
 const montarSessao = (usuario) => ({
@@ -44,7 +51,8 @@ router.post('/api/auth/cadastro', async (req, res) => {
       cpf, aceita_termos, recebe_newsletter
     } = req.body;
 
-    if (!nome || !sobrenome || !email || !senha || !cpf) {
+    const emailNormalizado = normalizarEmail(email);
+    if (!nome || !sobrenome || !emailNormalizado || !senha || !cpf) {
       return res.status(400).json({
         erro: 'Nome, sobrenome, CPF, e-mail e senha são obrigatórios.'
       });
@@ -67,7 +75,7 @@ router.post('/api/auth/cadastro', async (req, res) => {
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())
        RETURNING id, nome, email`,
       [
-        nome, sobrenome, telefone || null, email, senhaHash,
+        nome, sobrenome, telefone || null, emailNormalizado, senhaHash,
         cep || null, logradouro || null, numero || null,
         complemento || null, bairro || null, cpf,
         aceita_termos === true, recebe_newsletter === true, TERMOS_VERSAO_ATUAL
@@ -104,14 +112,15 @@ router.post('/api/auth/cadastro', async (req, res) => {
 // ──────────────────────────────────────────────────────────
 router.post('/api/auth/login', async (req, res) => {
   try {
-    const { email, senha } = req.body;
+    const { senha } = req.body;
+    const email = normalizarEmail(req.body.email);
     if (!email || !senha) {
       return res.status(400).json({ erro: 'E-mail e senha são obrigatórios.' });
     }
 
     const resultado = await pool.query(
       `SELECT id, nome, sobrenome, email, senha, bairro, foto_perfil, papel, status_conta, anonimizada_em
-       FROM usuarios WHERE email = $1`, [email]
+       FROM usuarios WHERE lower(email) = $1`, [email]
     );
 
     if (resultado.rows.length === 0) {
@@ -136,7 +145,17 @@ router.post('/api/auth/login', async (req, res) => {
 
     // Senha certa não basta: o token só sai depois do código enviado por
     // e-mail (POST /api/auth/verificar-codigo).
-    const verificacao = await criarDesafio(usuario, 'login');
+    let verificacao;
+    try {
+      verificacao = await criarDesafio(usuario, 'login');
+    } catch (erroEnvio) {
+      // Sem o e-mail do código ninguém entra — melhor dizer isso do que
+      // "erro interno". A causa fica no log (ex.: SMTP recusou o login).
+      console.error('Erro ao enviar código de login:', erroEnvio);
+      return res.status(503).json({
+        erro: 'Não conseguimos enviar o código de acesso para o seu e-mail agora. Tente de novo em alguns minutos.',
+      });
+    }
     return res.json({ mensagem: 'Enviamos um código para o seu e-mail.', verificacao });
   } catch (erro) {
     console.error('Erro no login:', erro);
@@ -201,12 +220,14 @@ router.post('/api/auth/recuperar-senha', async (req, res) => {
   };
 
   try {
-    const { email } = req.body;
+    const email = normalizarEmail(req.body.email);
     if (!email) {
       return res.status(400).json({ erro: 'Informe o e-mail cadastrado.' });
     }
 
-    const resultado = await pool.query('SELECT id, nome FROM usuarios WHERE email = $1', [email]);
+    const resultado = await pool.query(
+      'SELECT id, nome, email FROM usuarios WHERE lower(email) = $1 AND anonimizada_em IS NULL', [email]
+    );
 
     // Resposta genérica em ambos os casos, para não revelar quais e-mails existem na base.
     if (resultado.rows.length === 0) {
@@ -226,7 +247,7 @@ router.post('/api/auth/recuperar-senha', async (req, res) => {
     const link = `${FRONTEND_URL}/redefinir-senha?token=${tokenBruto}`;
 
     await enviarEmail(
-      email,
+      usuario.email,
       'Recupere sua senha — Santo Desapego',
       montarEmail({
         titulo: 'Vamos criar uma nova senha',
@@ -346,11 +367,11 @@ router.post('/api/auth/google', async (req, res) => {
     if (!userInfo.email || userInfo.email_verified !== true) {
       return res.status(401).json({ erro: 'Sua conta Google não tem um e-mail verificado.' });
     }
-    const emailGoogle = userInfo.email;
+    const emailGoogle = normalizarEmail(userInfo.email);
 
     const resultado = await pool.query(
       `SELECT id, nome, sobrenome, email, bairro, foto_perfil, papel, status_conta
-       FROM usuarios WHERE email = $1`, [emailGoogle]
+       FROM usuarios WHERE lower(email) = $1`, [emailGoogle]
     );
 
     if (resultado.rows.length === 0) {
