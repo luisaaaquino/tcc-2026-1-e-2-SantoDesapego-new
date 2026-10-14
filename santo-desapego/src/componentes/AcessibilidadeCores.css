@@ -1,0 +1,138 @@
+/* ============================================================
+   ACESSIBILIDADECORES.CSS — Botão flutuante do modo de cor para
+   daltonismo. Fica no canto inferior esquerdo porque o direito já
+   tem o VLibras e o Consultor de Compra.
+   ============================================================ */
+.acess-cor-wrap {
+  position: fixed;
+  left: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 850; /* abaixo da gaveta do menu (900) e dos modais (1000) */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+/* No celular, o Anúncio tem uma barra de compra fixa no rodapé */
+@media (max-width: 880px) {
+  body:has(.anuncio-barra) .acess-cor-wrap { bottom: 5.25rem; }
+}
+@media (max-width: 480px) {
+  .acess-cor-wrap  { left: 1rem; bottom: 1rem; }
+  .acess-cor-linha {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* Etiqueta da primeira visita, apontando pro botão */
+.acess-cor-dica {
+  position: relative;
+  background: var(--ink);
+  color: var(--cream);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.45rem 0.8rem;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  white-space: nowrap;
+  animation: acess-cor-dica-entrada 0.35s ease-out 0.6s both;
+}
+.acess-cor-dica::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  background: inherit;
+  transform: translateY(-50%) rotate(45deg);
+}
+@keyframes acess-cor-dica-entrada {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .acess-cor-dica { animation: none; }
+}
+
+.acess-cor-botao { width: 48px; height: 48px; }
+}
+
+.acess-cor-botao {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid var(--cream); /* anel p/ não sumir em seções escuras */
+  background: var(--terracotta);
+  color: var(--cream);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.18s, background 0.18s;
+}
+.acess-cor-botao:hover { background: var(--terracotta-dark); transform: scale(1.06); }
+.acess-cor-botao:focus-visible,
+.acess-cor-opcao:focus-within {
+  outline: 3px solid var(--mustard);
+  outline-offset: 2px;
+}
+
+.acess-cor-painel {
+  position: relative;
+  width: min(18.5rem, calc(100vw - 2.5rem));
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+  padding: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.acess-cor-titulo {
+  float: left; /* tira a legend da borda do fieldset */
+  width: 100%;
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 0.35rem;
+  padding-right: 2rem; /* espaço do X */
+}
+
+.acess-cor-fechar {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  display: flex;
+  padding: 0.2rem;
+  color: var(--ink-soft);
+  border-radius: var(--radius-sm);
+}
+.acess-cor-fechar:hover { color: var(--ink); background: var(--cream); }
+
+.acess-cor-opcao {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.65rem;
+  border: 1.5px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.acess-cor-opcao.ativa { border-color: var(--ink); background: var(--cream); }
+.acess-cor-opcao input { accent-color: var(--ink); width: 1rem; height: 1rem; }
+
+.acess-cor-textos { display: flex; flex-direction: column; line-height: 1.25; flex: 1; }
+.acess-cor-textos strong { font-size: 0.9rem; }
+.acess-cor-textos small  { font-size: 0.78rem; color: var(--ink-soft); }
+
+.acess-cor-amostras { display: flex; gap: 3px; }
+.acess-cor-amostras i {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}

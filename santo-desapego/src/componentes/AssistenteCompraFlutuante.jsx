@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './AssistenteCompraFlutuante.css';
 import { API_URL } from '../config';
+import { IconChat, IconClose } from './Icones';
 
 /**
  * Botão flutuante global — "Agente A" (Consultor de Compra) do case
@@ -52,7 +53,7 @@ const AssistenteCompraFlutuante = () => {
         <div className="compra-ia-painel">
           <div className="compra-ia-painel-topo">
             <strong>Como te ajudo a encontrar algo?</strong>
-            <button type="button" className="compra-ia-fechar" onClick={() => setAberto(false)} aria-label="Fechar">×</button>
+            <button type="button" className="compra-ia-fechar" onClick={() => setAberto(false)} aria-label="Fechar"><IconClose size={18} /></button>
           </div>
 
           <div className="compra-ia-painel-corpo">
@@ -102,8 +103,9 @@ const AssistenteCompraFlutuante = () => {
         className="compra-ia-botao"
         onClick={alternar}
         aria-label="Assistente de compra"
+        aria-expanded={aberto}
       >
-        {aberto ? '×' : '💬'}
+        <IconChat />
       </button>
     </div>
   );

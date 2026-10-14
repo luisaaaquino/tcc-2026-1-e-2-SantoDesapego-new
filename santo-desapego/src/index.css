@@ -30,6 +30,37 @@
   --radius-pill: 100px;
 }
 
+/* ── Paletas para daltonismo ─────────────────────────────────
+   Ativadas pelo seletor flutuante (AcessibilidadeCores), que põe
+   data-daltonismo no <html>. Cores escolhidas simulando cada tipo
+   de daltonismo (Machado et al., 2009) até sucesso × erro ficarem
+   bem distintos, mantendo contraste ≥ 4.5:1 sobre o creme. ── */
+
+/* Vermelho-verde (protanopia/deuteranopia): verde vira azul e
+   terracota vira laranja queimado — par azul × laranja. */
+:root[data-daltonismo="protan-deutan"] {
+  --forest:          #173A66;
+  --forest-soft:     #2F5C94;
+  --success:         #1F6BB0;
+  --terracotta:      #A33E00;
+  --terracotta-dark: #7F3000;
+  --terracotta-soft: #F2B48A;
+  --error:           #A33E00;
+  --mustard:         #F0B020;
+  --mustard-soft:    #F7D27A;
+}
+
+/* Azul-amarelo (tritanopia): vermelho × verde já funciona; o
+   ajuste separa melhor a terracota da mostarda. */
+:root[data-daltonismo="tritan"] {
+  --terracotta:      #A8322A;
+  --terracotta-dark: #82251F;
+  --terracotta-soft: #E89A92;
+  --error:           #A8322A;
+  --mustard:         #F2B33D;
+  --mustard-soft:    #F7D08A;
+}
+
 /* ── Reset ──────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }

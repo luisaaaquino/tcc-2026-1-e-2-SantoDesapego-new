@@ -4,13 +4,12 @@
    toda navegação do site (montado em App.jsx).
    ============================================================ */
 
-/* O site já tem o widget de acessibilidade VLibras (governo, ver
-   index.html) fixo no canto inferior direito — o nosso botão fica um
-   pouco mais alto pra não sobrepor o botão de acessibilidade dele. */
+/* O VLibras (index.html) fica no meio da lateral direita, então o
+   botão desce pro rodapé, alinhado ao do modo de cor (canto esquerdo). */
 .compra-ia-flutuante-wrap {
   position: fixed;
   right: 1.25rem;
-  bottom: 6.5rem;
+  bottom: 1.25rem;
   z-index: 900;
   display: flex;
   flex-direction: column;
@@ -19,22 +18,23 @@
 }
 
 .compra-ia-botao {
-  width: 56px;
-  height: 56px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  border: none;
-  background: var(--forest);
+  /* Terracota + anel creme: destaca tanto nas seções claras quanto nas
+     verdes (antes era forest e sumia na seção "Três passos") */
+  border: 2px solid var(--cream);
+  background: var(--terracotta);
   color: var(--cream);
-  font-size: 1.5rem;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   transition: transform 0.18s, background 0.18s;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .compra-ia-botao:hover {
-  background: var(--terracotta);
+  background: var(--terracotta-dark);
   transform: scale(1.06);
 }
 
@@ -66,10 +66,9 @@
   background: none;
   border: none;
   color: var(--cream);
-  font-size: 1.2rem;
-  line-height: 1;
   cursor: pointer;
-  padding: 0.1rem 0.3rem;
+  padding: 0.2rem;
+  display: flex;
   opacity: 0.85;
 }
 .compra-ia-fechar:hover { opacity: 1; }
@@ -161,6 +160,11 @@
 .compra-ia-ver-mais:hover { text-decoration: underline; }
 
 @media (max-width: 480px) {
-  .compra-ia-flutuante-wrap { right: 1rem; bottom: 5.5rem; }
-  .compra-ia-botao { width: 50px; height: 50px; font-size: 1.3rem; }
+  .compra-ia-flutuante-wrap { right: 1rem; bottom: 1rem; }
+  .compra-ia-botao { width: 48px; height: 48px; }
+}
+
+/* No celular, o Anúncio tem uma barra de compra fixa no rodapé */
+@media (max-width: 880px) {
+  body:has(.anuncio-barra) .compra-ia-flutuante-wrap { bottom: 5.25rem; }
 }

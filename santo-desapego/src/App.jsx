@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import ScrollToTop      from './componentes/ScrollToTop';
 import TransicaoPagina  from './componentes/TransicaoPagina';
 import AssistenteCompraFlutuante from './componentes/AssistenteCompraFlutuante';
+import AcessibilidadeCores from './componentes/AcessibilidadeCores';
 import Home             from './pages/Home';
 import Login            from './pages/Login';
 import Cadastro         from './pages/Cadastro';
@@ -50,6 +51,7 @@ function App() {
         </Routes>
       </TransicaoPagina>
       <AssistenteCompraFlutuante />
+      <AcessibilidadeCores />
     </BrowserRouter>
   );
 }
