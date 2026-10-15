@@ -167,8 +167,8 @@
   margin-top: 1rem;
   font-size: 0.85rem;
   color: var(--forest);
-  background: rgba(31, 79, 63, 0.08);
-  border: 1px solid rgba(31, 79, 63, 0.25);
+  background: color-mix(in srgb, var(--forest) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--forest) 25%, transparent);
   border-radius: 10px;
   padding: 0.7rem 0.9rem;
 }

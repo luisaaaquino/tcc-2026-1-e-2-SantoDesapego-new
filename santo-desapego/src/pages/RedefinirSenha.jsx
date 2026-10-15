@@ -129,7 +129,7 @@ const RedefinirSenha = () => {
 
             {linkStatus === 'invalido' && !sucesso && (
               <div style={{
-                background: '#FFF5F3', border: '1.5px solid var(--terracotta)',
+                background: 'var(--erro-fundo)', border: '1.5px solid var(--terracotta)',
                 color: 'var(--terracotta)', padding: '0.75rem 1rem',
                 borderRadius: '10px', fontSize: '0.85rem', lineHeight: 1.5, marginBottom: '1rem',
               }}>
@@ -148,7 +148,7 @@ const RedefinirSenha = () => {
 
             {sucesso ? (
               <div style={{
-                background: '#F0F8EF', border: '1.5px solid var(--forest)',
+                background: 'var(--sucesso-fundo)', border: '1.5px solid var(--forest)',
                 color: 'var(--forest)', padding: '0.9rem 1rem',
                 borderRadius: '10px', fontSize: '0.88rem', lineHeight: 1.5,
               }}>
@@ -207,7 +207,7 @@ const RedefinirSenha = () => {
 
                 {errorMsg && (
                   <div style={{
-                    background: '#FFF5F3', border: '1.5px solid var(--terracotta)',
+                    background: 'var(--erro-fundo)', border: '1.5px solid var(--terracotta)',
                     color: 'var(--terracotta)', padding: '0.65rem 0.9rem',
                     borderRadius: '10px', fontSize: '0.85rem',
                     marginBottom: '0.5rem', display: 'flex',

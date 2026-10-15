@@ -89,7 +89,8 @@ const ModalConfirmar = ({ titulo, descricao, pedirMotivo, textoConfirmar = 'Conf
 /* ════════════════════════════════════════════════════════════
    GRÁFICOS — SVG puro, sem dependências externas
    ════════════════════════════════════════════════════════════ */
-const CORES_STATUS = { ativo: '#0ca30c', pausado: '#fab219', vendido: '#8a8778' };
+// Variáveis da paleta: acompanham os modos de cor para daltonismo
+const CORES_STATUS = { ativo: 'var(--success)', pausado: 'var(--mustard)', vendido: 'var(--ink-muted)' };
 const COR_RANKING = '#eb6834';
 const COR_SERIE = '#2a78d6';
 

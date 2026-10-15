@@ -368,7 +368,7 @@
   margin-bottom: 1.25rem;
 }
 .checkout-alerta.erro {
-  background: #FFF5F3;
+  background: var(--erro-fundo);
   border: 1.5px solid var(--terracotta);
   color: var(--terracotta);
 }

@@ -177,7 +177,7 @@
 .ia-chat-form input:focus {
   border-color: var(--terracotta);
   background: var(--paper);
-  box-shadow: 0 0 0 3px rgba(193, 75, 53, 0.08);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--terracotta) 8%, transparent);
 }
 .ia-chat-form input:disabled { opacity: 0.6; }
 .ia-chat-form button {
@@ -199,7 +199,7 @@
 .ia-chat-aviso {
   padding: 0.85rem 1rem;
   border-radius: var(--radius-md);
-  background: rgba(212, 160, 23, 0.12);
+  background: color-mix(in srgb, var(--mustard) 12%, transparent);
   border: 1px solid var(--mustard);
   color: var(--ink);
   font-size: 0.88rem;

@@ -122,7 +122,7 @@
 .admin-stat-label { font-size: 0.78rem; color: var(--ink-muted); font-weight: 600; margin-bottom: 0.4rem; }
 .admin-stat-num { font-family: var(--font-display); font-weight: 700; font-size: 1.8rem; color: var(--ink); }
 .admin-stat-sub { font-size: 0.76rem; color: var(--ink-muted); margin-top: 0.2rem; }
-.admin-stat.alerta { background: #FFF5F3; border-color: var(--terracotta-soft); }
+.admin-stat.alerta { background: var(--erro-fundo); border-color: var(--terracotta-soft); }
 .admin-stat.alerta .admin-stat-num { color: var(--terracotta); }
 
 .admin-stat-icon {
@@ -131,9 +131,9 @@
   display: grid; place-items: center;
   margin-bottom: 0.6rem;
 }
-.admin-stat-icon.terracotta { background: rgba(193,75,53,0.12); color: var(--terracotta); }
-.admin-stat-icon.forest     { background: rgba(31,79,63,0.12);  color: var(--forest); }
-.admin-stat-icon.mustard    { background: rgba(228,160,32,0.18); color: #8A5D0C; }
+.admin-stat-icon.terracotta { background: color-mix(in srgb, var(--terracotta) 12%, transparent); color: var(--terracotta); }
+.admin-stat-icon.forest     { background: color-mix(in srgb, var(--forest) 12%, transparent);  color: var(--forest); }
+.admin-stat-icon.mustard    { background: color-mix(in srgb, var(--mustard) 18%, transparent); color: var(--aviso-texto); }
 .admin-stat-icon.ink        { background: rgba(34,34,34,0.08);  color: var(--ink); }
 
 /* ── Grade de gráficos ───────────────────────────────────── */
@@ -222,9 +222,9 @@
   font-weight: 700;
   white-space: nowrap;
 }
-.badge-status.ativa,  .badge-status.ativo,     .badge-status.resolvida, .badge-status.respondido  { background: rgba(31,79,63,0.12); color: var(--forest); }
-.badge-status.suspensa, .badge-status.pausado, .badge-status.pendente, .badge-status.aberto  { background: rgba(193,75,53,0.12); color: var(--terracotta); }
-.badge-status.em_analise, .badge-status.em_atendimento { background: rgba(228,160,32,0.18); color: #8A5D0C; }
+.badge-status.ativa,  .badge-status.ativo,     .badge-status.resolvida, .badge-status.respondido  { background: color-mix(in srgb, var(--forest) 12%, transparent); color: var(--forest); }
+.badge-status.suspensa, .badge-status.pausado, .badge-status.pendente, .badge-status.aberto  { background: color-mix(in srgb, var(--terracotta) 12%, transparent); color: var(--terracotta); }
+.badge-status.em_analise, .badge-status.em_atendimento { background: color-mix(in srgb, var(--mustard) 18%, transparent); color: var(--aviso-texto); }
 .badge-status.arquivada, .badge-status.vendido, .badge-status.encerrado { background: rgba(34,34,34,0.08); color: var(--ink-soft); }
 .badge-status.administrador { background: var(--ink); color: var(--mustard-soft); }
 
@@ -297,8 +297,8 @@
   font-size: 0.86rem;
   margin-bottom: 1.25rem;
 }
-.admin-alert.success { background: rgba(31,79,63,0.1); border: 1.5px solid var(--forest); color: var(--forest); }
-.admin-alert.error   { background: #FFF5F3; border: 1.5px solid var(--terracotta); color: var(--terracotta); }
+.admin-alert.success { background: color-mix(in srgb, var(--forest) 10%, transparent); border: 1.5px solid var(--forest); color: var(--forest); }
+.admin-alert.error   { background: var(--erro-fundo); border: 1.5px solid var(--terracotta); color: var(--terracotta); }
 
 /* ── Modal de ação (confirmação com motivo) ──────────────── */
 .modal-overlay {

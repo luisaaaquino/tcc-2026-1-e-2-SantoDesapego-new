@@ -110,7 +110,7 @@
 }
 .sino-item:last-child { border-bottom: none; }
 .sino-item:hover { background: var(--cream-soft); }
-.sino-item.nao-lida { background: rgba(193,75,53,0.05); }
+.sino-item.nao-lida { background: color-mix(in srgb, var(--terracotta) 5%, transparent); }
 
 .sino-item-icone { font-size: 1.15rem; flex-shrink: 0; margin-top: 0.1rem; }
 

@@ -39,7 +39,7 @@
 }
 .home-nav .search-bar:focus-within {
   border-color: var(--terracotta);
-  box-shadow: 0 0 0 3px rgba(191, 85, 64, 0.12);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--terracotta) 12%, transparent);
 }
 .home-nav .search-bar > svg { color: var(--ink-muted); flex-shrink: 0; }
 
@@ -531,13 +531,13 @@
   text-decoration: none;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(191, 85, 64, 0.25);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--terracotta) 25%, transparent);
   margin-top: 0.5rem;
 }
 .empty-state .btn-home-primary:hover {
   background: var(--forest);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(191, 85, 64, 0.35);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--terracotta) 35%, transparent);
 }
 
 /* Loading state */

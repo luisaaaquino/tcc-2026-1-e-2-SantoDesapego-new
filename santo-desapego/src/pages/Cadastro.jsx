@@ -357,7 +357,7 @@ const Cadastro = () => {
                 {/* Mensagem de erro global */}
                 {globalError && (
                   <div style={{
-                    background: '#FFF5F3',
+                    background: 'var(--erro-fundo)',
                     border: '1.5px solid var(--terracotta)',
                     color: 'var(--terracotta)',
                     padding: '0.75rem 1rem',

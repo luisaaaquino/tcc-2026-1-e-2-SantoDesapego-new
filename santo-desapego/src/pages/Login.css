@@ -129,13 +129,13 @@
   width: 8px; height: 8px;
   border-radius: 50%;
   background: var(--mustard);
-  box-shadow: 0 0 0 4px rgba(228, 160, 32, 0.25);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--mustard) 25%, transparent);
   animation: badge-pulse 2s ease-in-out infinite;
   flex-shrink: 0;
 }
 @keyframes badge-pulse {
-  0%, 100% { box-shadow: 0 0 0 4px rgba(228, 160, 32, 0.25); }
-  50%       { box-shadow: 0 0 0 7px rgba(228, 160, 32, 0.05); }
+  0%, 100% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--mustard) 25%, transparent); }
+  50%       { box-shadow: 0 0 0 7px color-mix(in srgb, var(--mustard) 5%, transparent); }
 }
 
 /* Texto + stats no rodapé do painel verde */
@@ -246,7 +246,7 @@
 }
 .input-with-icon input:focus {
   border-color: var(--terracotta);
-  box-shadow: 0 0 0 3px rgba(193,75,53,0.08);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--terracotta) 8%, transparent);
 }
 .input-with-icon input::placeholder { color: var(--ink-muted); }
 

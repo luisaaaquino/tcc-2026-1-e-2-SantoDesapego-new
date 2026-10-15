@@ -61,7 +61,7 @@
   position: absolute;
   inset: -8px;
   border-radius: 50%;
-  background: rgba(193, 75, 53, 0.25);
+  background: color-mix(in srgb, var(--terracotta) 25%, transparent);
   z-index: -1;
   animation: mapaPinPulse 2.2s ease-out infinite;
 }

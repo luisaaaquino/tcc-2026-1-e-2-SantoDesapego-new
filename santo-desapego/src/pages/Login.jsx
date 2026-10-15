@@ -263,7 +263,7 @@ const LoginContent = () => {
               {/* Mensagem de erro */}
               {errorMsg && (
                 <div style={{
-                  background: '#FFF5F3', border: '1.5px solid var(--terracotta)',
+                  background: 'var(--erro-fundo)', border: '1.5px solid var(--terracotta)',
                   color: 'var(--terracotta)', padding: '0.65rem 0.9rem',
                   borderRadius: '10px', fontSize: '0.85rem',
                   marginBottom: '0.5rem', display: 'flex',

@@ -179,12 +179,12 @@
   margin-bottom: 0.5rem;
 }
 .ajuda-alerta.erro {
-  background: #FFF5F3;
+  background: var(--erro-fundo);
   border: 1.5px solid var(--terracotta);
   color: var(--terracotta);
 }
 .ajuda-alerta.sucesso {
-  background: #F0F8EF;
+  background: var(--sucesso-fundo);
   border: 1.5px solid var(--forest);
   color: var(--forest);
 }
@@ -273,9 +273,9 @@
   font-weight: 700;
   text-transform: capitalize;
 }
-.ajuda-badge.aberto          { background: #FFF3E0; color: var(--mustard); }
-.ajuda-badge.em_atendimento  { background: #E8F0FE; color: #2a78d6; }
-.ajuda-badge.respondido      { background: #F0F8EF; color: var(--forest); }
+.ajuda-badge.aberto          { background: var(--erro-fundo); color: var(--terracotta); }
+.ajuda-badge.em_atendimento  { background: var(--aviso-fundo); color: var(--aviso-texto); }
+.ajuda-badge.respondido      { background: var(--sucesso-fundo); color: var(--forest); }
 .ajuda-badge.encerrado       { background: var(--cream-soft); color: var(--ink-muted); }
 
 /* ── Responsivo ─────────────────────────────────────────── */

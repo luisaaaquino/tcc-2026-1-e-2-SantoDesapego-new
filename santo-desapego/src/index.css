@@ -19,6 +19,14 @@
   --success:         #2A7D5C;
   --error:           #C14B35;
 
+  /* Derivadas das cores acima (color-mix) — acompanham sozinhas os
+     modos de cor para daltonismo, sem precisar redefinir cada uma */
+  --erro-fundo:        color-mix(in srgb, var(--error) 5%, #fff);
+  --sucesso-fundo:     color-mix(in srgb, var(--success) 7%, #fff);
+  --aviso-fundo:       color-mix(in srgb, var(--mustard) 10%, #fff);
+  --aviso-texto:       color-mix(in srgb, var(--mustard) 55%, #000);
+  --aviso-texto-forte: color-mix(in srgb, var(--mustard) 42%, #000);
+
   /* Tipografia */
   --font-body:    'DM Sans', system-ui, sans-serif;
   --font-display: 'Fraunces', serif;

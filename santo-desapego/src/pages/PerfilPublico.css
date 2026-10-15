@@ -91,7 +91,7 @@
 /* ── Estrelas ── */
 .estrelas-display { display: flex; gap: 2px; }
 .estrelas-display span { color: var(--border); }
-.estrelas-display span.cheia { color: #E4A020; }
+.estrelas-display span.cheia { color: var(--mustard); }
 
 .perfilpub-secao-titulo {
   font-family: var(--font-display);

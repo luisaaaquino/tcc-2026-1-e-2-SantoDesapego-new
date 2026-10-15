@@ -97,7 +97,7 @@
 }
 .galeria-mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .galeria-mini:hover { border-color: var(--ink); transform: translateY(-2px); }
-.galeria-mini.ativa { border-color: var(--terracotta); box-shadow: 0 0 0 3px rgba(193, 75, 53, 0.08); }
+.galeria-mini.ativa { border-color: var(--terracotta); box-shadow: 0 0 0 3px color-mix(in srgb, var(--terracotta) 8%, transparent); }
 
 /* ── Painel de compra ───────────────────────────────────── */
 .anuncio-painel {
@@ -155,7 +155,7 @@
 .anuncio-tag.positiva {
   border-color: var(--forest);
   color: var(--forest);
-  background: rgba(86, 119, 84, 0.08);
+  background: color-mix(in srgb, var(--forest) 8%, transparent);
 }
 
 .anuncio-local {
@@ -241,7 +241,7 @@
   transition: border-color 0.18s, background 0.18s, color 0.18s;
 }
 .btn-anuncio-favorito:hover { border-color: var(--terracotta); color: var(--terracotta); }
-.btn-anuncio-favorito.ativo { border-color: var(--terracotta); color: var(--terracotta); background: rgba(193, 75, 53, 0.06); }
+.btn-anuncio-favorito.ativo { border-color: var(--terracotta); color: var(--terracotta); background: color-mix(in srgb, var(--terracotta) 6%, transparent); }
 
 .anuncio-nota {
   font-size: 0.8rem;
@@ -254,8 +254,8 @@
   font-size: 0.82rem;
   line-height: 1.5;
   color: var(--terracotta);
-  background: rgba(193, 75, 53, 0.08);
-  border: 1px solid rgba(193, 75, 53, 0.25);
+  background: color-mix(in srgb, var(--terracotta) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--terracotta) 25%, transparent);
   border-radius: 10px;
   padding: 0.7rem 0.9rem;
   margin-bottom: 0.9rem;

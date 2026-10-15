@@ -40,7 +40,7 @@
 .rapido-ia-textarea:focus {
   border-color: var(--terracotta);
   background: var(--paper);
-  box-shadow: 0 0 0 3px rgba(193, 75, 53, 0.08);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--terracotta) 8%, transparent);
 }
 .rapido-ia-textarea:disabled { opacity: 0.6; }
 

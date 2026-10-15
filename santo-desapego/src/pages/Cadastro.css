@@ -222,8 +222,8 @@
   appearance: none;
 }
 .field-input::placeholder { color: var(--ink-muted); }
-.field-input:focus        { border-color: var(--terracotta); background: var(--paper); box-shadow: 0 0 0 3px rgba(193,75,53,0.08); }
-.field-input.error        { border-color: var(--error); background: #FFF5F3; }
+.field-input:focus        { border-color: var(--terracotta); background: var(--paper); box-shadow: 0 0 0 3px color-mix(in srgb, var(--terracotta) 8%, transparent); }
+.field-input.error        { border-color: var(--error); background: var(--erro-fundo); }
 .field-input.success      { border-color: var(--success); }
 
 .field-hint  { font-size: 0.76rem; color: var(--ink-muted); }
@@ -281,7 +281,7 @@
   appearance: none;
   cursor: pointer;
 }
-.field-select:focus { border-color: var(--terracotta); background: var(--paper); box-shadow: 0 0 0 3px rgba(193,75,53,0.08); }
+.field-select:focus { border-color: var(--terracotta); background: var(--paper); box-shadow: 0 0 0 3px color-mix(in srgb, var(--terracotta) 8%, transparent); }
 
 .select-wrap { position: relative; }
 .select-wrap .select-icon  { position: absolute; left: 0.9rem;  top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--ink-muted); }
@@ -318,9 +318,9 @@
   display: flex;
   align-items: flex-start;
   gap: 0.7rem;
-  background: #FFF8E8;
+  background: var(--aviso-fundo);
   border: 1.5px solid var(--mustard);
-  color: #8A5D0C;
+  color: var(--aviso-texto);
   padding: 0.85rem 1rem;
   border-radius: var(--radius-md);
   font-size: 0.83rem;
@@ -328,7 +328,7 @@
   margin: -0.2rem 0 1rem;
 }
 .alerta-fora-area svg { flex-shrink: 0; margin-top: 0.15rem; }
-.alerta-fora-area strong { display: block; color: #6B4700; }
+.alerta-fora-area strong { display: block; color: var(--aviso-texto-forte); }
 
 /* ── Rótulo de seção dentro do formulário ───────────────── */
 .form-section-label {
