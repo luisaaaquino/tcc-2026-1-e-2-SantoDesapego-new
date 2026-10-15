@@ -373,3 +373,61 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 /* E-mails longos no rodapé quebram em vez de vazar a coluna no celular */
 .footer-col a { overflow-wrap: anywhere; }
+
+/* ── Ícones de status (não depender só da cor) ───────────────
+   WCAG 1.4.1: badges e mensagens que diferem pela cor ganham
+   também um ícone, pintado com a cor do texto (currentColor via
+   mask). Vale em qualquer modo de cor, inclusive o padrão.
+     ✓ ok/concluído  ⚠ atenção  ⏸ pausado
+     🕒 em andamento  📦 finalizado ── */
+:root {
+  --ic-ok:         url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6 9 17l-5-5'/></svg>");
+  --ic-alerta:     url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round'><circle cx='12' cy='12' r='10'/><path d='M12 7v6M12 16.5v.5'/></svg>");
+  --ic-pausa:      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'><rect x='5' y='4' width='5' height='16' rx='1.2'/><rect x='14' y='4' width='5' height='16' rx='1.2'/></svg>");
+  --ic-relogio:    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><path d='M12 6v6l4 2'/></svg>");
+  --ic-finalizado: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><rect x='2' y='3' width='20' height='5' rx='1'/><path d='M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8M10 12h4'/></svg>");
+}
+
+/* Badges: Admin, Central de Ajuda e Perfil */
+.badge-status.ativa, .badge-status.ativo, .badge-status.resolvida, .badge-status.respondido,
+.status-badge.ativo, .status-badge.resolvida,
+.ajuda-badge.respondido,
+.repasse-status.liberado                                            { --icone-ativo: ''; --icone: var(--ic-ok); }
+
+.badge-status.suspensa, .badge-status.pendente, .badge-status.aberto,
+.status-badge.pendente,
+.ajuda-badge.aberto                                                 { --icone-ativo: ''; --icone: var(--ic-alerta); }
+
+.badge-status.pausado, .badge-status.expirado, .status-badge.pausado                        { --icone-ativo: ''; --icone: var(--ic-pausa); }
+
+.badge-status.em_analise, .badge-status.em_atendimento,
+.badge-status.reservado, .badge-status.em-negociacao,
+.status-badge.em_analise,
+.ajuda-badge.em_atendimento,
+.repasse-status:not(.liberado)                                      { --icone-ativo: ''; --icone: var(--ic-relogio); }
+
+.badge-status.arquivada, .badge-status.vendido, .badge-status.encerrado,
+.status-badge.vendido, .status-badge.arquivada,
+.ajuda-badge.encerrado                                              { --icone-ativo: ''; --icone: var(--ic-finalizado); }
+
+/* Mensagens de erro e sucesso que ainda não tinham ícone no JSX */
+.admin-alert.error, .checkout-alerta.erro, .anuncio-erro-pagamento,
+.ajuda-alerta.erro, .msg-erro, .verificacao-erro, .compra-ia-msg.erro { --icone-ativo: ''; --icone: var(--ic-alerta); }
+.admin-alert.success, .ajuda-alerta.sucesso                         { --icone-ativo: ''; --icone: var(--ic-ok); }
+
+/* Só ganha ícone quem definiu --icone acima (badges como "Admin"
+   e "Usuário" ficam sem). O --icone-ativo libera o ::before. */
+:is(.badge-status, .status-badge, .ajuda-badge, .repasse-status, .admin-alert,
+    .checkout-alerta, .anuncio-erro-pagamento, .ajuda-alerta, .msg-erro,
+    .verificacao-erro, .compra-ia-msg)::before {
+  content: var(--icone-ativo, none);
+  display: inline-block;
+  flex-shrink: 0;
+  width: 1.1em;
+  height: 1.1em;
+  margin-right: 0.4em;
+  vertical-align: -0.2em;
+  background: currentColor;
+  -webkit-mask: var(--icone) center / contain no-repeat;
+          mask: var(--icone) center / contain no-repeat;
+}

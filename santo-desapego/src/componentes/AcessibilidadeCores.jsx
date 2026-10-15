@@ -16,15 +16,24 @@ const OPCOES = [
 const AcessibilidadeCores = () => {
   const [aberto, setAberto] = useState(false);
   const [modo, setModo] = useState(lerModoCor);
-  const [mostrarDica, setMostrarDica] = useState(() => !dicaModoCorVista());
+  const [expandido, setExpandido] = useState(false);
   const wrapRef = useRef(null);
+
+  // Primeira visita: o botão se abre mostrando o rótulo e recolhe sozinho
+  useEffect(() => {
+    if (dicaModoCorVista()) return;
+    const abrir = setTimeout(() => setExpandido(true), 600);
+    const recolher = setTimeout(() => {
+      setExpandido(false);
+      marcarDicaModoCorVista();
+    }, 6000);
+    return () => { clearTimeout(abrir); clearTimeout(recolher); };
+  }, []);
 
   const alternar = () => {
     setAberto((a) => !a);
-    if (mostrarDica) {
-      setMostrarDica(false);
-      marcarDicaModoCorVista();
-    }
+    setExpandido(false);
+    marcarDicaModoCorVista();
   };
 
   // Fecha ao clicar fora ou apertar Esc
@@ -75,25 +84,17 @@ const AcessibilidadeCores = () => {
           ))}
         </fieldset>
       )}
-      <div className="acess-cor-linha">
-        <button
-          type="button"
-          className="acess-cor-botao"
-          onClick={alternar}
-          aria-expanded={aberto}
-          aria-controls="acess-cor-painel"
-          aria-label="Modo de cor para daltonismo"
-          title="Modo de cor para daltonismo"
-        >
-          <IconVisao />
-        </button>
-        {/* Só visual: leitores de tela já recebem o aria-label do botão */}
-        {mostrarDica && (
-          <button type="button" className="acess-cor-dica" onClick={alternar} tabIndex={-1} aria-hidden="true">
-            Modo para daltonismo
-          </button>
-        )}
-      </div>
+      <button
+        type="button"
+        className={`acess-cor-botao${expandido && !aberto ? ' expandido' : ''}`}
+        onClick={alternar}
+        aria-expanded={aberto}
+        aria-controls="acess-cor-painel"
+        aria-label="Modo de cor para daltonismo"
+      >
+        <IconVisao />
+        <span className="acess-cor-rotulo" aria-hidden="true">Modo daltonismo</span>
+      </button>
     </div>
   );
 };
