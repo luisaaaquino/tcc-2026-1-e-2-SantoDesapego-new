@@ -1,23 +1,58 @@
 const express = require('express');
 const pool = require('../db');
 const { autenticar } = require('../middleware/auth');
-const { rodarAgente, estadoInicial, gerarRascunhoRapido } = require('../services/agenteAnuncioService');
+const { rodarAgente, decidirPendencia, estadoInicial, gerarRascunhoRapido } = require('../services/agenteAnuncioService');
 const { registrarClique, gerarSugestaoCompra } = require('../services/agenteCompraService');
 
 const router = express.Router();
 
+const ERROS_LLM = ['LLM_INDISPONIVEL', 'LLM_RESPOSTA_INVALIDA'];
+
+// Resposta comum das duas rotas do agente de anúncio
+function respostaAgente(conversaId, resultado) {
+  const e = resultado.estado;
+  return {
+    conversa_id: conversaId,
+    mensagem_agente: resultado.mensagem_agente,
+    status: resultado.status,
+    conversa: e.conversa,
+    anuncio: resultado.anuncio || null,
+    indicio: resultado.indicio || null,
+    // Rascunho esperando a decisão do vendedor (aprovar / editar / desistir)
+    pendencia: e.pendencia || null,
+    // Anúncios comparáveis da consulta de preço — o chat mostra como cards clicáveis
+    observacao_preco: e.faixa_preco,
+  };
+}
+
+async function salvarConversa(client, conversaId, resultado) {
+  const e = resultado.estado;
+  await client.query(
+    `UPDATE conversas_ia_anuncio
+        SET estado = $1, finalizado = $2, status_final = $3, anuncio_id = $4, atualizada_em = NOW()
+      WHERE id = $5`,
+    [JSON.stringify(e), e.finalizado, e.finalizado ? resultado.status : null,
+      resultado.anuncio?.id || e.anuncio_publicado?.id || null, conversaId]
+  );
+}
+
 // ============================================================
 //  POST /api/ia/agente-anuncio — Agente de Anúncio (IA)
-//  Conversa turno a turno com o vendedor pra montar e publicar um
-//  anúncio. O estado (rascunho, orçamento, trajetória) fica no
-//  banco (tabela conversas_ia_anuncio) — o cliente só guarda o
-//  conversa_id, nunca o estado em si (evita adulteração do lado
-//  do cliente, ex. forjar aprovação do avaliador).
+//  Conversa turno a turno com o vendedor pra montar o anúncio. O
+//  estado (rascunho, faixa de preço, avaliação, trajetória) fica no
+//  banco (conversas_ia_anuncio) — o cliente só guarda o conversa_id,
+//  nunca o estado em si (evita adulteração, ex. forjar aprovação do
+//  avaliador). O agente nunca publica: rascunho aprovado volta como
+//  `pendencia`, e quem decide é o vendedor (rota /decisao abaixo).
 // ============================================================
 router.post('/api/ia/agente-anuncio', autenticar, async (req, res) => {
+  const { conversa_id, mensagem } = req.body;
+  if (!mensagem || !String(mensagem).trim()) {
+    return res.status(400).json({ erro: 'Escreva uma mensagem.' });
+  }
+
   const client = await pool.connect();
   try {
-    const { conversa_id, mensagem, imagens } = req.body;
     let conversaId = conversa_id;
     let estado;
 
@@ -26,14 +61,12 @@ router.post('/api/ia/agente-anuncio', autenticar, async (req, res) => {
     if (!conversaId) {
       const perfil = await client.query('SELECT cep, bairro FROM usuarios WHERE id = $1', [req.userId]);
       const { cep, bairro } = perfil.rows[0] || {};
-
       if (!cep) {
         await client.query('ROLLBACK');
         return res.status(400).json({
           erro: 'Complete seu CEP no perfil antes de anunciar com IA. Vá em Perfil → Endereço.',
         });
       }
-
       estado = await estadoInicial({ cep, bairro });
       const nova = await client.query(
         `INSERT INTO conversas_ia_anuncio (vendedor_id, estado) VALUES ($1, $2) RETURNING id`,
@@ -53,51 +86,80 @@ router.post('/api/ia/agente-anuncio', autenticar, async (req, res) => {
         await client.query('ROLLBACK');
         return res.status(400).json({ erro: 'Esta conversa já foi concluída. Inicie uma nova.' });
       }
+      // Conversas do agente antigo (antes do porte da Parte 2) não têm `versao`
+      if (linha.rows[0].estado.versao !== 2) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ erro: 'Esta conversa é de uma versão antiga do assistente. Inicie uma nova.' });
+      }
       estado = linha.rows[0].estado;
     }
 
     const resultado = await rodarAgente({
       estado,
-      mensagemVendedor: mensagem || null,
-      imagens: imagens || [],
+      mensagemVendedor: String(mensagem).trim().slice(0, 1000),
       vendedorId: req.userId,
     });
 
-    await client.query(
-      `UPDATE conversas_ia_anuncio
-          SET estado = $1, finalizado = $2, status_final = $3, anuncio_id = $4, atualizada_em = NOW()
-        WHERE id = $5`,
-      [
-        JSON.stringify(resultado.estado),
-        resultado.estado.finalizado,
-        resultado.estado.finalizado ? resultado.status : null,
-        resultado.anuncio?.id || null,
-        conversaId,
-      ]
-    );
+    await salvarConversa(client, conversaId, resultado);
     await client.query('COMMIT');
-
-    return res.json({
-      conversa_id: conversaId,
-      mensagem_agente: resultado.mensagem_agente,
-      status: resultado.status,
-      conversa: resultado.estado.conversa,
-      anuncio: resultado.anuncio || null,
-      indicio: resultado.indicio || null,
-      // Anúncios comparáveis da última consulta de preço (se já rolou
-      // alguma) — o chat mostra como cards clicáveis, pra pessoa ver a
-      // concorrência de verdade, não só um resumo de faixa de preço.
-      observacao_preco: resultado.estado.observacoes.ultima_consulta_preco,
-    });
+    return res.json(respostaAgente(conversaId, resultado));
   } catch (erro) {
     await client.query('ROLLBACK');
     console.error('Erro no agente de anúncio (IA):', erro);
-    if (erro.codigo === 'LLM_INDISPONIVEL' || erro.codigo === 'LLM_RESPOSTA_INVALIDA') {
+    if (ERROS_LLM.includes(erro.codigo)) {
       return res.status(503).json({
         erro: 'O assistente de IA está indisponível no momento. Tente novamente em instantes ou use o formulário manual.',
       });
     }
     return res.status(500).json({ erro: 'Erro ao processar a conversa com o assistente.' });
+  } finally {
+    client.release();
+  }
+});
+
+// ============================================================
+//  POST /api/ia/agente-anuncio/decisao — o vendedor decide
+//  Ponto de parada humano: com o rascunho aprovado pelo avaliador,
+//  só o vendedor publica. acao = aprovar | editar | rejeitar;
+//  `campos` (editar) só aceita titulo, descricao, preco e
+//  estado_conservacao. As fotos vêm aqui (são exigidas pra publicar).
+//  Idempotente: aprovar duas vezes não cria dois anúncios.
+// ============================================================
+router.post('/api/ia/agente-anuncio/decisao', autenticar, async (req, res) => {
+  const { conversa_id, acao, campos, imagens } = req.body;
+  if (!conversa_id) return res.status(400).json({ erro: 'conversa_id é obrigatório.' });
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const linha = await client.query(
+      `SELECT estado FROM conversas_ia_anuncio WHERE id = $1 AND vendedor_id = $2 FOR UPDATE`,
+      [conversa_id, req.userId]
+    );
+    if (linha.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ erro: 'Conversa não encontrada.' });
+    }
+
+    const resultado = await decidirPendencia({
+      estado: linha.rows[0].estado, acao, campos, imagens: imagens || [], vendedorId: req.userId,
+    });
+    if (resultado.erro && !resultado.estado) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ erro: resultado.erro });
+    }
+
+    await salvarConversa(client, conversa_id, resultado);
+    await client.query('COMMIT');
+    if (resultado.erro) {
+      // Ex.: sem foto — a pendência continua aberta pra corrigir
+      return res.status(400).json({ erro: resultado.erro, ...respostaAgente(conversa_id, resultado) });
+    }
+    return res.json(respostaAgente(conversa_id, resultado));
+  } catch (erro) {
+    await client.query('ROLLBACK');
+    console.error('Erro na decisão do vendedor (IA):', erro);
+    return res.status(500).json({ erro: 'Erro ao registrar sua decisão.' });
   } finally {
     client.release();
   }
@@ -127,11 +189,11 @@ router.post('/api/ia/anuncio-rapido', autenticar, async (req, res) => {
       });
     }
 
-    const resultado = await gerarRascunhoRapido({ mensagem: mensagem.trim(), cep, bairro });
+    const resultado = await gerarRascunhoRapido({ mensagem: mensagem.trim().slice(0, 1000), cep, bairro });
     return res.json(resultado);
   } catch (erro) {
     console.error('Erro no anúncio rápido (IA):', erro);
-    if (erro.codigo === 'LLM_INDISPONIVEL' || erro.codigo === 'LLM_RESPOSTA_INVALIDA') {
+    if (ERROS_LLM.includes(erro.codigo)) {
       return res.status(503).json({
         erro: 'O assistente de IA está indisponível no momento. Tente novamente em instantes ou preencha manualmente.',
       });
@@ -143,8 +205,8 @@ router.post('/api/ia/anuncio-rapido', autenticar, async (req, res) => {
 // ============================================================
 //  POST /api/ia/registrar-clique — Consultor de Compra (Agente A)
 //  Registra que o comprador logado visualizou um anúncio — é o
-//  sinal de intenção que o Agente A usa depois pra sugerir. Falha
-//  silenciosa (não atrapalha a navegação se der erro).
+//  sinal usado quando ele não diz o que procura. Falha silenciosa
+//  (não atrapalha a navegação se der erro).
 // ============================================================
 router.post('/api/ia/registrar-clique', autenticar, async (req, res) => {
   try {
@@ -160,23 +222,39 @@ router.post('/api/ia/registrar-clique', autenticar, async (req, res) => {
 });
 
 // ============================================================
-//  GET /api/ia/sugestao-compra — Consultor de Compra (Agente A)
-//  Sugestão de produtos baseada nos cliques recentes do comprador
-//  logado. Nunca falha visivelmente pro usuário — qualquer problema
-//  (LLM indisponível, sinal insuficiente) cai numa descoberta
-//  genérica em vez de mostrar erro no botão flutuante.
+//  POST /api/ia/sugestao-compra — Consultor de Compra (Agente A)
+//  O comprador escreve o que procura ("to montando a cozinha, até
+//  700"); o agente interpreta, busca no catálogo e monta a sugestão.
+//  `mensagens`: as falas do comprador neste painel (refinamento).
+//  Sem texto, usa os cliques recentes dele. GET mantido por
+//  compatibilidade (equivale a POST sem mensagens).
 // ============================================================
-router.get('/api/ia/sugestao-compra', autenticar, async (req, res) => {
+async function responderSugestao(req, res, mensagens) {
   try {
     const perfil = await pool.query('SELECT bairro FROM usuarios WHERE id = $1', [req.userId]);
-    const bairro = perfil.rows[0]?.bairro || null;
-
-    const resultado = await gerarSugestaoCompra({ usuarioId: req.userId, bairro });
+    const resultado = await gerarSugestaoCompra({
+      usuarioId: req.userId,
+      bairroPerfil: perfil.rows[0]?.bairro || null,
+      mensagens,
+    });
     return res.json(resultado);
   } catch (erro) {
     console.error('Erro ao gerar sugestão de compra (Agente A):', erro);
+    if (ERROS_LLM.includes(erro.codigo)) {
+      return res.status(503).json({ erro: 'O assistente está indisponível no momento. Tente de novo em instantes.' });
+    }
     return res.status(500).json({ erro: 'Erro ao gerar sugestão.' });
   }
+}
+
+router.post('/api/ia/sugestao-compra', autenticar, (req, res) => {
+  const mensagens = (Array.isArray(req.body?.mensagens) ? req.body.mensagens : [])
+    .filter((m) => typeof m === 'string' && m.trim())
+    .slice(-6)
+    .map((m) => m.trim().slice(0, 500));
+  return responderSugestao(req, res, mensagens);
 });
+
+router.get('/api/ia/sugestao-compra', autenticar, (req, res) => responderSugestao(req, res, []));
 
 module.exports = router;

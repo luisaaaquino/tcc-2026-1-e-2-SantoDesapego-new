@@ -445,7 +445,9 @@ const Anunciar = () => {
                 {avisoIA.observacao_preco && !avisoIA.observacao_preco.erro && (
                   <> Preço de mercado observado: R$ {avisoIA.observacao_preco.faixa_min} – R$ {avisoIA.observacao_preco.faixa_max}.</>
                 )}
-                {avisoIA.avaliacao?.correcao && <> {avisoIA.avaliacao.correcao}</>}
+                {avisoIA.avaliacao?.faltando?.length > 0 && (
+                  <> Pontos a revisar: {avisoIA.avaliacao.faltando.join('; ')}.</>
+                )}
               </span>
             </div>
           )}

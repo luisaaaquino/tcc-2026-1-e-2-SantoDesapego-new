@@ -168,3 +168,52 @@
 @media (max-width: 880px) {
   body:has(.anuncio-barra) .compra-ia-flutuante-wrap { bottom: 5.25rem; }
 }
+
+/* ── Pedido em texto livre (Agente A, Parte 2) ── */
+.compra-ia-pedido {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  font-style: italic;
+  line-height: 1.4;
+}
+.compra-ia-escolha {
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  line-height: 1.45;
+}
+.compra-ia-item-local {
+  font-size: 0.74rem;
+  color: var(--ink-muted);
+}
+.compra-ia-form {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.75rem;
+  border-top: 1px solid var(--border-soft);
+  background: var(--paper);
+}
+.compra-ia-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.55rem 0.8rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--cream);
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+.compra-ia-form input:focus { outline: none; border-color: var(--forest); }
+.compra-ia-form button {
+  padding: 0.55rem 0.9rem;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--ink);
+  color: var(--cream);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.compra-ia-form button:hover:not(:disabled) { background: var(--terracotta); }
+.compra-ia-form button:disabled { opacity: 0.5; cursor: not-allowed; }

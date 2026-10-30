@@ -215,3 +215,65 @@
   .ia-chat-balao { max-width: 88%; }
   .ia-chat-balloes { max-height: 20rem; }
 }
+
+/* ── Cartão de aprovação: o vendedor confere e decide antes de publicar ── */
+.ia-chat-aprovacao {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 1rem;
+  border: 1.5px solid var(--forest);
+  border-radius: var(--radius-md);
+  background: var(--paper);
+}
+.ia-chat-aprovacao-titulo { font-weight: 700; color: var(--forest); }
+.ia-chat-aprovacao label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  flex: 1;
+  min-width: 0;
+}
+.ia-chat-aprovacao input,
+.ia-chat-aprovacao textarea,
+.ia-chat-aprovacao select {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--cream);
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--ink);
+  resize: vertical;
+}
+.ia-chat-aprovacao input:focus,
+.ia-chat-aprovacao textarea:focus,
+.ia-chat-aprovacao select:focus { outline: none; border-color: var(--forest); }
+.ia-chat-aprovacao-linha { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.ia-chat-aprovacao-consequencia { font-size: 0.82rem; color: var(--ink-soft); line-height: 1.5; }
+.ia-chat-aprovacao-foto { font-size: 0.82rem; font-weight: 600; color: var(--terracotta); }
+.ia-chat-aprovacao-botoes { display: flex; gap: 0.6rem; justify-content: flex-end; flex-wrap: wrap; }
+.ia-chat-aprovacao-botoes button {
+  padding: 0.7rem 1.3rem;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--ink);
+  color: var(--cream);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.ia-chat-aprovacao-botoes button:hover:not(:disabled) { background: var(--terracotta); }
+.ia-chat-aprovacao-botoes button.secundario {
+  background: transparent;
+  color: var(--ink-soft);
+  border: 1.5px solid var(--border);
+}
+.ia-chat-aprovacao-botoes button.secundario:hover:not(:disabled) { background: var(--cream); color: var(--ink); }
+.ia-chat-aprovacao-botoes button:disabled { opacity: 0.5; cursor: not-allowed; }
