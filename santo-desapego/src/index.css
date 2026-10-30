@@ -122,7 +122,11 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 
 .nav-top {
-  max-width: 1280px;
+  /* 80rem = 1280px no tamanho padrão. Em rem (e não px) pra largura
+     crescer junto com o texto ampliado: com 1280px fixos, o header logado
+     (busca + sino + perfil + sair + anunciar) não cabia a 110%/125% e os
+     itens se sobrepunham */
+  max-width: 80rem;
   margin: 0 auto;
   padding: 1.1rem 2rem;
   display: flex;
@@ -272,7 +276,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   border-radius: var(--radius-pill);
   padding: 0.5rem 0.5rem 0.5rem 1.3rem;
   flex: 1;
-  max-width: 500px;
+  max-width: 31.25rem; /* = 500px no padrão; em rem pra acompanhar o texto ampliado */
 }
 .search-bar svg   { color: var(--ink-muted); }
 .search-bar input { flex: 1; border: none; background: transparent; padding: 0.5rem 0.8rem; outline: none; }
