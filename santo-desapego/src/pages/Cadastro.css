@@ -92,7 +92,7 @@
   font-size: 0.9rem;
 }
 .benefit-icon {
-  width: 34px; height: 34px;
+  width: calc(34px * var(--escala-fonte, 1)); height: calc(34px * var(--escala-fonte, 1));
   background: rgba(255,255,255,0.08);
   border: 1px solid rgba(255,255,255,0.12);
   border-radius: 10px;
@@ -117,7 +117,7 @@
 
 .testimonial-author { display: flex; align-items: center; gap: 0.8rem; }
 .testimonial-avatar {
-  width: 34px; height: 34px;
+  width: calc(34px * var(--escala-fonte, 1)); height: calc(34px * var(--escala-fonte, 1));
   border-radius: 50%;
   background: var(--terracotta);
   display: grid; place-items: center;
@@ -415,7 +415,7 @@
     gap: 0.7rem 0.8rem;
   }
   .benefits-list li { align-items: center; }
-  .benefit-icon { width: 26px; height: 26px; font-size: 0.8rem; }
+  .benefit-icon { width: calc(26px * var(--escala-fonte, 1)); height: calc(26px * var(--escala-fonte, 1)); font-size: 0.8rem; }
   .benefit-text strong { font-size: 0.8rem; line-height: 1.25; }
   /* Descrição de cada item some no celular — fica só ícone + título,
      compacto o bastante pra caber 2 por linha */

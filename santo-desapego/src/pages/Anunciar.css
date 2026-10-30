@@ -110,8 +110,8 @@
   margin-bottom: 1rem;
 }
 .anunciar-section-num {
-  width: 28px;
-  height: 28px;
+  width: calc(28px * var(--escala-fonte, 1));
+  height: calc(28px * var(--escala-fonte, 1));
   border-radius: 50%;
   background: var(--forest);
   color: var(--cream);
@@ -292,8 +292,8 @@
   position: absolute;
   top: 0.35rem;
   right: 0.35rem;
-  width: 28px;
-  height: 28px;
+  width: calc(28px * var(--escala-fonte, 1));
+  height: calc(28px * var(--escala-fonte, 1));
   background: var(--ink);
   color: var(--cream);
   border: none;

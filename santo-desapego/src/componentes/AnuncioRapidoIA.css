@@ -66,8 +66,8 @@
   position: absolute;
   top: -6px;
   right: -6px;
-  width: 20px;
-  height: 20px;
+  width: calc(20px * var(--escala-fonte, 1));
+  height: calc(20px * var(--escala-fonte, 1));
   border-radius: 50%;
   border: none;
   background: var(--ink);
@@ -81,8 +81,8 @@
 }
 
 .rapido-ia-imagem-add {
-  width: 72px;
-  height: 72px;
+  width: calc(72px * var(--escala-fonte, 1));
+  height: calc(72px * var(--escala-fonte, 1));
   border-radius: var(--radius-md);
   border: 1.5px dashed var(--border);
   display: flex;

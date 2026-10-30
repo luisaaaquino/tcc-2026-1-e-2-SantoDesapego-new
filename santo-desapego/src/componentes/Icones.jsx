@@ -189,9 +189,10 @@ export const IconMore = () => (
     <circle cx="19" cy="12" r="1.4" fill="currentColor"/>
   </svg>
 );
-export const IconVisao = ({ size = 22, strokeWidth = 2 }) => (
+export const IconAcessibilidade = ({ size = 24, strokeWidth = 2 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>
+    <circle cx="12" cy="12" r="10"/><circle cx="12" cy="7" r="1.4" fill="currentColor" stroke="none"/>
+    <path d="m7.5 9.8 4.5 1 4.5-1M12 10.8v3.4m0 0-2.4 4.3m2.4-4.3 2.4 4.3"/>
   </svg>
 );
 export const IconChat = ({ size = 22, strokeWidth = 2 }) => (

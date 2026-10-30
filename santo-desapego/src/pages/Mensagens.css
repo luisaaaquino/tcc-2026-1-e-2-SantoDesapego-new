@@ -84,8 +84,8 @@
 
 .msg-conversa-foto {
   flex-shrink: 0;
-  width: 48px;
-  height: 48px;
+  width: calc(48px * var(--escala-fonte, 1));
+  height: calc(48px * var(--escala-fonte, 1));
   border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--cream-soft);
@@ -143,8 +143,8 @@
   position: absolute;
   right: 1.25rem;
   bottom: 0.9rem;
-  min-width: 20px;
-  height: 20px;
+  min-width: calc(20px * var(--escala-fonte, 1));
+  height: calc(20px * var(--escala-fonte, 1));
   padding: 0 6px;
   border-radius: var(--radius-pill);
   background: var(--terracotta);

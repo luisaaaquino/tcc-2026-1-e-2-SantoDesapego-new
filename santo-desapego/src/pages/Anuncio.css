@@ -270,8 +270,8 @@
   border-top: 1px dashed var(--border);
 }
 .vendedor-avatar {
-  width: 42px;
-  height: 42px;
+  width: calc(42px * var(--escala-fonte, 1));
+  height: calc(42px * var(--escala-fonte, 1));
   flex-shrink: 0;
   border-radius: 50%;
   background: var(--terracotta);

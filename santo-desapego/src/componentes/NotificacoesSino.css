@@ -27,8 +27,8 @@
   position: absolute;
   top: -4px;
   right: -4px;
-  min-width: 18px;
-  height: 18px;
+  min-width: calc(18px * var(--escala-fonte, 1));
+  height: calc(18px * var(--escala-fonte, 1));
   padding: 0 4px;
   border-radius: 999px;
   background: var(--terracotta);

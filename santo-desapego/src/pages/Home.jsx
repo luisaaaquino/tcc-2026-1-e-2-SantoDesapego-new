@@ -256,8 +256,8 @@ const Home = () => {
                 title="Meu perfil"
                 >
                   <span style={{
-                    width: 30,
-                    height: 30,
+                    width: '2.35em', // proporcional à letra: cresce junto com o texto ampliado
+                    height: '2.35em',
                     borderRadius: '50%',
                     background: 'var(--terracotta)',
                     color: 'var(--cream)',

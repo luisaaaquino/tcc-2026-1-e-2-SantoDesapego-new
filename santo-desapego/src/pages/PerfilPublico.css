@@ -38,8 +38,8 @@
 }
 
 .perfilpub-avatar {
-  width: 84px;
-  height: 84px;
+  width: calc(84px * var(--escala-fonte, 1));
+  height: calc(84px * var(--escala-fonte, 1));
   border-radius: 50%;
   background: var(--terracotta);
   color: var(--cream);

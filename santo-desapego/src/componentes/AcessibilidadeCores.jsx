@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
-import { IconVisao, IconClose } from './Icones';
+import { IconAcessibilidade, IconClose } from './Icones';
 import { aplicarModoCor, lerModoCor, dicaModoCorVista, marcarDicaModoCorVista } from '../utils/modoCor';
+import { aplicarEscalaFonte, lerEscalaFonte, NIVEIS_FONTE } from '../utils/tamanhoFonte';
 import './AcessibilidadeCores.css';
 
-/* ── Seletor de modo de cor (acessibilidade p/ daltonismo) ──
+/* ── Painel de acessibilidade ───────────────────────────────
    Botão flutuante no canto inferior esquerdo, em toda navegação
-   (montado em App.jsx). As amostras mostram as cores de sucesso,
-   erro e destaque de cada paleta. ── */
+   (montado em App.jsx), com tamanho do texto e modo de cor para
+   daltonismo. As amostras mostram as cores de sucesso, erro e
+   destaque de cada paleta. ── */
 const OPCOES = [
   { valor: 'padrao',        titulo: 'Padrão',         descricao: 'Cores originais do site',          amostras: ['#2A7D5C', '#C14B35', '#E4A020'] },
   { valor: 'protan-deutan', titulo: 'Vermelho-verde', descricao: 'Protanopia e deuteranopia',        amostras: ['#1F6BB0', '#A33E00', '#F0B020'] },
@@ -16,6 +18,7 @@ const OPCOES = [
 const AcessibilidadeCores = () => {
   const [aberto, setAberto] = useState(false);
   const [modo, setModo] = useState(lerModoCor);
+  const [escala, setEscala] = useState(lerEscalaFonte);
   const [expandido, setExpandido] = useState(false);
   const wrapRef = useRef(null);
 
@@ -56,33 +59,75 @@ const AcessibilidadeCores = () => {
     aplicarModoCor(valor);
   };
 
+  const nivel = NIVEIS_FONTE.indexOf(escala);
+  const mudarFonte = (novaEscala) => {
+    setEscala(novaEscala);
+    aplicarEscalaFonte(novaEscala);
+  };
+
   return (
     <div className="acess-cor-wrap" ref={wrapRef}>
       {aberto && (
-        <fieldset className="acess-cor-painel" id="acess-cor-painel">
-          <legend className="acess-cor-titulo">Modo de cor para daltonismo</legend>
-          <button type="button" className="acess-cor-fechar" onClick={() => setAberto(false)} aria-label="Fechar">
-            <IconClose size={18} />
-          </button>
-          {OPCOES.map((op) => (
-            <label key={op.valor} className={`acess-cor-opcao${modo === op.valor ? ' ativa' : ''}`}>
-              <input
-                type="radio"
-                name="modo-cor"
-                value={op.valor}
-                checked={modo === op.valor}
-                onChange={() => escolher(op.valor)}
-              />
-              <span className="acess-cor-textos">
-                <strong>{op.titulo}</strong>
-                <small>{op.descricao}</small>
-              </span>
-              <span className="acess-cor-amostras" aria-hidden="true">
-                {op.amostras.map((cor) => <i key={cor} style={{ background: cor }} />)}
-              </span>
-            </label>
-          ))}
-        </fieldset>
+        <div className="acess-cor-painel" id="acess-cor-painel" role="group" aria-labelledby="acess-titulo">
+          <div className="acess-topo">
+            <strong id="acess-titulo">Acessibilidade</strong>
+            <button type="button" className="acess-cor-fechar" onClick={() => setAberto(false)} aria-label="Fechar">
+              <IconClose size={18} />
+            </button>
+          </div>
+
+          <div className="acess-secao">
+            <span className="acess-secao-titulo" id="acess-fonte-titulo">Tamanho do texto</span>
+            <div className="acess-fonte" role="group" aria-labelledby="acess-fonte-titulo">
+              <button
+                type="button"
+                className="acess-fonte-btn menor"
+                onClick={() => mudarFonte(NIVEIS_FONTE[nivel - 1])}
+                disabled={nivel <= 0}
+                aria-label="Diminuir texto"
+              >
+                A−
+              </button>
+              <output className="acess-fonte-valor" aria-live="polite">{Math.round(escala * 100)}%</output>
+              <button
+                type="button"
+                className="acess-fonte-btn maior"
+                onClick={() => mudarFonte(NIVEIS_FONTE[nivel + 1])}
+                disabled={nivel >= NIVEIS_FONTE.length - 1}
+                aria-label="Aumentar texto"
+              >
+                A+
+              </button>
+            </div>
+            {escala !== 1 && (
+              <button type="button" className="acess-fonte-restaurar" onClick={() => mudarFonte(1)}>
+                Restaurar tamanho padrão
+              </button>
+            )}
+          </div>
+
+          <fieldset className="acess-secao">
+            <legend className="acess-secao-titulo">Modo de cor para daltonismo</legend>
+            {OPCOES.map((op) => (
+              <label key={op.valor} className={`acess-cor-opcao${modo === op.valor ? ' ativa' : ''}`}>
+                <input
+                  type="radio"
+                  name="modo-cor"
+                  value={op.valor}
+                  checked={modo === op.valor}
+                  onChange={() => escolher(op.valor)}
+                />
+                <span className="acess-cor-textos">
+                  <strong>{op.titulo}</strong>
+                  <small>{op.descricao}</small>
+                </span>
+                <span className="acess-cor-amostras" aria-hidden="true">
+                  {op.amostras.map((cor) => <i key={cor} style={{ background: cor }} />)}
+                </span>
+              </label>
+            ))}
+          </fieldset>
+        </div>
       )}
       <button
         type="button"
@@ -90,10 +135,10 @@ const AcessibilidadeCores = () => {
         onClick={alternar}
         aria-expanded={aberto}
         aria-controls="acess-cor-painel"
-        aria-label="Modo de cor para daltonismo"
+        aria-label="Acessibilidade: tamanho do texto e modo de cor"
       >
-        <IconVisao />
-        <span className="acess-cor-rotulo" aria-hidden="true">Modo daltonismo</span>
+        <IconAcessibilidade />
+        <span className="acess-cor-rotulo" aria-hidden="true">Acessibilidade</span>
       </button>
     </div>
   );

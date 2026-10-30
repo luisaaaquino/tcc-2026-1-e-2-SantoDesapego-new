@@ -124,8 +124,8 @@
   position: absolute;
   top: -6px;
   right: -6px;
-  width: 20px;
-  height: 20px;
+  width: calc(20px * var(--escala-fonte, 1));
+  height: calc(20px * var(--escala-fonte, 1));
   border-radius: 50%;
   border: none;
   background: var(--ink);
@@ -139,8 +139,8 @@
 }
 
 .ia-chat-imagem-add {
-  width: 64px;
-  height: 64px;
+  width: calc(64px * var(--escala-fonte, 1));
+  height: calc(64px * var(--escala-fonte, 1));
   border-radius: var(--radius-md);
   border: 1.5px dashed var(--border);
   display: flex;

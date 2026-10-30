@@ -61,6 +61,7 @@
 
 .explorar-sort {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.6rem;
   font-size: 0.88rem;
@@ -72,6 +73,7 @@
   font-style: italic;
 }
 .explorar-sort select {
+  max-width: 100%;
   padding: 0.5rem 2rem 0.5rem 0.75rem;
   border: 1.5px solid var(--border);
   border-radius: var(--radius-md);
@@ -487,8 +489,8 @@
   margin-top: 3rem;
 }
 .pagination-btn {
-  width: 40px;
-  height: 40px;
+  width: calc(40px * var(--escala-fonte, 1));
+  height: calc(40px * var(--escala-fonte, 1));
   border-radius: var(--radius-md);
   border: 1.5px solid var(--border);
   background: var(--paper);

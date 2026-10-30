@@ -51,8 +51,8 @@
 }
 
 .checkout-etapas li span {
-  width: 26px;
-  height: 26px;
+  width: calc(26px * var(--escala-fonte, 1));
+  height: calc(26px * var(--escala-fonte, 1));
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -127,8 +127,8 @@
 }
 
 .checkout-sem-foto {
-  width: 84px;
-  height: 84px;
+  width: calc(84px * var(--escala-fonte, 1));
+  height: calc(84px * var(--escala-fonte, 1));
   border-radius: var(--radius-md);
   background: var(--cream-soft);
   border: 1.5px solid var(--border);

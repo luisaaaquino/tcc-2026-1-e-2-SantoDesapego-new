@@ -287,7 +287,7 @@ const Explorar = () => {
                   fontSize: '0.9rem', color: 'var(--ink)', fontWeight: 600, textDecoration: 'none',
                 }} title="Meu perfil">
                   <span style={{
-                    width: 30, height: 30, borderRadius: '50%',
+                    width: '2.35em', height: '2.35em', borderRadius: '50%',
                     background: 'var(--terracotta)', color: 'var(--cream)',
                     display: 'grid', placeItems: 'center', fontSize: '0.8rem',
                     fontWeight: 700, overflow: 'hidden',

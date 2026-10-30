@@ -71,7 +71,18 @@
 
 /* ── Reset ──────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  /* 100% = tamanho padrão do navegador; --escala-fonte vem do
+     controle de tamanho do texto (utils/tamanhoFonte.js) */
+  font-size: calc(100% * var(--escala-fonte, 1));
+}
+/* Escala geral menor no celular (tudo em rem encolhe junto): 87,5% = 14px
+   no padrão do navegador. Fica aqui, e não em Home.css, porque o index.css
+   carrega por último e a regra acima passaria por cima. */
+@media (max-width: 768px) {
+  html { font-size: calc(87.5% * var(--escala-fonte, 1)); }
+}
 body {
   font-family: var(--font-body);
   background: var(--cream);
@@ -82,6 +93,8 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  /* palavra que não cabe na linha (texto ampliado em tela estreita) quebra em vez de vazar */
+  overflow-wrap: break-word;
 }
 a    { color: inherit; text-decoration: none; }
 img  { max-width: 100%; display: block; }
@@ -116,6 +129,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   justify-content: space-between;
   align-items: center;
   gap: 2rem;
+  /* com o texto ampliado (controle de acessibilidade) o menu quebra
+     linha em vez de empurrar botões pra fora da tela */
+  flex-wrap: wrap;
+  row-gap: 0.6rem;
 }
 
 /* ── Logo ───────────────────────────────────────────────── */
@@ -130,8 +147,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   gap: 0.5rem;
 }
 .logo-mark {
-  width: 38px;
-  height: 38px;
+  /* em = relativo à letra do próprio círculo: com o texto ampliado o
+     círculo cresce junto e o "SD" não vaza (2.16em = 38px no padrão) */
+  width: 2.16em;
+  height: 2.16em;
   background: var(--terracotta);
   border-radius: 50%;
   display: grid;
@@ -145,7 +164,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .logo em { font-style: italic; font-weight: 400; color: var(--terracotta); }
 
 /* ── Nav actions ────────────────────────────────────────── */
-.nav-actions { display: flex; align-items: center; gap: 1.5rem; }
+.nav-actions { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; row-gap: 0.5rem; justify-content: flex-end; }
 .nav-actions a {
   font-weight: 500;
   font-size: 0.95rem;
@@ -167,7 +186,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   color: var(--ink-soft) !important;
   font-weight: 600 !important;
   font-size: 0.87rem !important;
-  white-space: nowrap;
+  max-width: 100%; /* texto ampliado em tela estreita: quebra em vez de vazar */
   transition: border-color 0.18s, background 0.18s, color 0.18s, transform 0.15s;
 }
 .nav-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
@@ -371,13 +390,13 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 @media (max-width: 768px) {
   .nav-top { padding: 0.9rem 1rem; flex-wrap: wrap; row-gap: 0.6rem; }
   .logo { font-size: 1.3rem; gap: 0.4rem; }
-  .logo-mark { width: 32px; height: 32px; font-size: 0.95rem; }
+  .logo-mark { width: 2.4em; height: 2.4em; font-size: 0.95rem; }
   .nav-actions { flex-wrap: wrap; row-gap: 0.5rem; gap: 0.9rem; }
 }
 
 @media (max-width: 420px) {
   .logo { font-size: 1.1rem; }
-  .logo-mark { width: 28px; height: 28px; font-size: 0.85rem; }
+  .logo-mark { width: 2.35em; height: 2.35em; font-size: 0.85rem; }
 }
 /* E-mails longos no rodapé quebram em vez de vazar a coluna no celular */
 .footer-col a { overflow-wrap: anywhere; }
