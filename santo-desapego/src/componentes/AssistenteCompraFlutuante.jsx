@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import './AssistenteCompraFlutuante.css';
 import { API_URL } from '../config';
 import { IconChat, IconClose } from './Icones';
@@ -21,6 +21,12 @@ const AssistenteCompraFlutuante = () => {
   const [mensagens, setMensagens] = useState([]);
   const [texto, setTexto] = useState('');
 
+  // O componente fica fora das rotas (App.jsx) e não é recriado ao navegar.
+  // Login e logout trocam de página sem recarregar, então ler o token só na
+  // montagem deixava o botão sumido depois do login (ou visível depois de
+  // sair) até um F5. useLocation faz ele renderizar de novo a cada navegação
+  // e reler o token.
+  useLocation();
   const token = localStorage.getItem('sd_token');
 
   const buscar = (falas) => {
