@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import './CentralAjuda.css';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import SiteHeader from '../componentes/SiteHeader';
+import DicasSeguranca from '../componentes/DicasSeguranca';
 
 import { API_URL, EMAILS } from '../config';
 
@@ -123,6 +124,16 @@ const CentralAjuda = () => {
           Encontre respostas rápidas abaixo ou fale diretamente com a nossa equipe de suporte.
           Toda mensagem enviada por aqui vai direto para os administradores da plataforma.
         </p>
+
+        {/* ── Dicas de segurança (link "ver todas" das outras telas cai aqui) ── */}
+        <section className="ajuda-bloco ajuda-seguranca" id="seguranca">
+          <h2>Dicas de segurança</h2>
+          <p className="ajuda-seguranca-intro">
+            No Santo Desapego o pagamento fica retido no Mercado Pago até o comprador confirmar
+            o recebimento com o código de entrega. Essas dicas mantêm essa proteção funcionando.
+          </p>
+          <DicasSeguranca variante="completa" />
+        </section>
 
         <div className="ajuda-grid">
           {/* ── FAQ ── */}

@@ -4,6 +4,7 @@ import './Anuncio.css';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
 import { IconHeart } from '../componentes/Icones';
+import DicasSeguranca from '../componentes/DicasSeguranca';
 
 import { API_URL, EMAILS } from '../config';
 
@@ -367,8 +368,9 @@ const Anuncio = () => {
 
             <p className="anuncio-nota">
               Pagamento com cartão em até 12x, processado pelo Mercado Pago.
-              Combine a entrega com o vendedor pelo chat e nunca pague fora da plataforma.
             </p>
+
+            <DicasSeguranca dicas={['pague-no-site', 'codigo-entrega', 'local-publico']} />
 
             <Link to={`/usuario/${anuncio.vendedor_id}`} className="anuncio-vendedor">
               <span className="vendedor-avatar">{vendedor[0]?.toUpperCase()}</span>

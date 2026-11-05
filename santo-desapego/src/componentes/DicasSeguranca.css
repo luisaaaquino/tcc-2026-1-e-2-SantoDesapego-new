@@ -1,0 +1,78 @@
+/* ============================================================
+   DICASSEGURANCA.CSS — Dicas de segurança (compacta e completa)
+   ============================================================ */
+
+/* ── Compacta: quadrinho no anúncio, checkout, chat... ── */
+.dicas-seg {
+  background: color-mix(in srgb, var(--forest) 6%, var(--paper));
+  border: 1.5px solid color-mix(in srgb, var(--forest) 25%, transparent);
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1rem;
+  margin-bottom: 1.5rem;
+}
+.dicas-seg-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--forest);
+  margin-bottom: 0.5rem;
+}
+.dicas-seg-titulo svg { flex-shrink: 0; }
+.dicas-seg ul,
+.dicas-seg-completa ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.dicas-seg li,
+.dicas-seg-completa li {
+  position: relative;
+  padding-left: 1.1rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+/* Marcador: um "check" pequeno na cor do grupo (não depende só da cor) */
+.dicas-seg li::before,
+.dicas-seg-completa li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 0.45em;
+  height: 0.75em;
+  border: solid var(--forest);
+  border-width: 0 2px 2px 0;
+  transform: translateY(-25%) rotate(45deg);
+}
+.dicas-seg-link {
+  display: inline-block;
+  margin-top: 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--forest);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.dicas-seg-link:hover { color: var(--terracotta); }
+
+/* ── Completa: Central de Ajuda ── */
+.dicas-seg-completa {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+.dicas-seg-grupo h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0.6rem;
+}
+.dicas-seg-completa li { font-size: 0.88rem; }
+
+@media (max-width: 860px) {
+  .dicas-seg-completa { grid-template-columns: 1fr; gap: 1rem; }
+}

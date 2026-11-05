@@ -309,3 +309,13 @@
   .btn-ajuda { transition: none; }
   .btn-ajuda:hover:not(:disabled) { transform: none; }
 }
+
+/* ── Dicas de segurança (seção #seguranca) ── */
+.ajuda-seguranca { margin-bottom: 1.5rem; scroll-margin-top: 6rem; } /* não fica atrás do header fixo ao vir pelo link */
+.ajuda-seguranca-intro {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin: -0.4rem 0 1.25rem;
+  max-width: 60rem;
+}
