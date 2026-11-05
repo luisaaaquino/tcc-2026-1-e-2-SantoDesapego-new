@@ -22,7 +22,10 @@ const LoginContent = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg]     = useState('');
+  // ?sessao=expirada: vindo do aviso de sessão vencida (utils/sessao.js)
+  const [errorMsg, setErrorMsg]     = useState(() =>
+    new URLSearchParams(window.location.search).get('sessao') === 'expirada'
+      ? 'Sua sessão expirou. Entre de novo para continuar.' : '');
   // Verificação em duas etapas: preenchido quando a senha confere e o código foi enviado
   const [verificacao, setVerificacao] = useState(null);
 
