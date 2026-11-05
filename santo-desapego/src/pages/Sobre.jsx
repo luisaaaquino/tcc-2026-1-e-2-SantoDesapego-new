@@ -71,7 +71,7 @@ const FOOTER_LINKS = [
   },
   {
     title: 'Comunidade',
-    links: ['Nosso impacto', 'Indique um vizinho'],
+    links: ['Nosso impacto'],
   },
   {
     title: 'Suporte',
@@ -382,7 +382,6 @@ const Sobre = () => {
                   if (l === 'Anunciar') return <Link key={l} to={linkAnunciar}>{l}</Link>;
                   if (l === 'Categorias') return <Link key={l} to="/explorar">{l}</Link>;
                   if (l === 'Nosso impacto') return <Link key={l} to="/sobre">Sobre nós</Link>;
-                  if (l === 'Indique um vizinho') return <Link key={l} to="/indique">Indique um vizinho</Link>;
                   if (l === 'Central de ajuda') return <Link key={l} to="/central-ajuda">Central de ajuda</Link>;
                   if (l === 'Fale conosco') return <a key={l} href={`mailto:${EMAILS.contato}`}>{EMAILS.contato}</a>;
                   if (l === 'Termos de uso') return <a key={l} href="#termos" onClick={abrirLegal('termos')}>{l}</a>;

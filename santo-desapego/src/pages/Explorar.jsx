@@ -625,7 +625,6 @@ const Explorar = () => {
             <summary><h4>Comunidade</h4></summary>
             <div className="footer-col-links">
               <Link to="/sobre">Sobre nós</Link>
-              <Link to="/indique">Indique um vizinho</Link>
             </div>
           </details>
 

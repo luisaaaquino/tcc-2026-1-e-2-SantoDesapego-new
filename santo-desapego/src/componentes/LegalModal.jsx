@@ -3,7 +3,7 @@ import { TERMOS_USO, POLITICA_PRIVACIDADE } from '../pages/termosContent';
 
 /* ── Modal de Termos de Uso / Privacidade (LGPD) ─────────────
    Compartilhado por todas as páginas com rodapé completo (Home,
-   Explorar, Sobre, Indique) e pelo Cadastro — nasceu só na Home,
+   Explorar, Sobre) e pelo Cadastro — nasceu só na Home,
    virou componente pra não duplicar as ~60 linhas de JSX em cada
    página. Cada página continua dona do próprio estado (aba aberta),
    só passa como prop. ── */
