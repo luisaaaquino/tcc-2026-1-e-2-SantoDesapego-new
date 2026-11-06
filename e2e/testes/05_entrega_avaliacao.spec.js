@@ -2,7 +2,10 @@
 // passa pelo Mercado Pago, fora do site). Daqui em diante é tudo pela tela.
 const { test, expect } = require('@playwright/test');
 const { USUARIOS, ANUNCIOS, CODIGO_ENTREGA } = require('../dados');
-const { entrar } = require('../utilitarios');
+const { entrar, novaPessoa, fecharPessoas } = require('../utilitarios');
+
+// Fecha os navegadores extras de cada teste
+test.afterEach(fecharPessoas);
 
 const cartaoDaCompra = (page) => page.locator('.compra-card-perfil', { hasText: ANUNCIOS.geladeira.titulo });
 const confirmarCodigo = async (page, codigo) => {
@@ -25,12 +28,12 @@ test.describe('RF17 - Histórico de Transações', () => {
 
 test.describe('RN05 - Garantia de Recebimento (Escrow)', () => {
   test('antes da entrega, o pagamento aparece retido para os dois lados', async ({ browser }) => {
-    const ana = await (await browser.newContext()).newPage();
+    const ana = await novaPessoa(browser);
     await entrar(ana, USUARIOS.comprador);
     await ana.goto('/perfil?aba=compras');
     await expect(cartaoDaCompra(ana)).toContainText('Pagamento retido até você confirmar o recebimento');
 
-    const caio = await (await browser.newContext()).newPage();
+    const caio = await novaPessoa(browser);
     await entrar(caio, USUARIOS.vendedor);
     await caio.goto('/perfil?aba=vendas');
     await expect(cartaoDaCompra(caio)).toContainText(/Valor retido: R\$\s?1\.425,00/); // 1.500 - 5%
@@ -39,12 +42,12 @@ test.describe('RN05 - Garantia de Recebimento (Escrow)', () => {
 
 test.describe('RF23 - Confirmação de Entrega por Código', () => {
   test('o vendedor vê o código de entrega; o comprador não', async ({ browser }) => {
-    const caio = await (await browser.newContext()).newPage();
+    const caio = await novaPessoa(browser);
     await entrar(caio, USUARIOS.vendedor);
     await caio.goto('/perfil?aba=vendas');
     await expect(cartaoDaCompra(caio).locator('.entrega-codigo-valor')).toHaveText('482 913');
 
-    const ana = await (await browser.newContext()).newPage();
+    const ana = await novaPessoa(browser);
     await entrar(ana, USUARIOS.comprador);
     await ana.goto('/perfil?aba=compras');
     await expect(cartaoDaCompra(ana)).not.toContainText('482');
@@ -60,7 +63,7 @@ test.describe('RN16 - Código de Entrega', () => {
   });
 });
 
-test.describe('RN08 - Avaliação Obrigatória', () => {
+test.describe('RN08 - Liberação da Avaliação', () => {
   test('a avaliação só é liberada depois da entrega confirmada', async ({ page }) => {
     await entrar(page, USUARIOS.comprador);
     await page.goto('/perfil?aba=compras');

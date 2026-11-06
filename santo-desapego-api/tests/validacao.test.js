@@ -1,6 +1,50 @@
 const {
-  validarCEPSantoAmaro, validarSenhaForte, conteudoTemPalavrasProibidas,
+  validarCEPSantoAmaro, validarSenhaForte, conteudoTemPalavrasProibidas, validarCPF, validarDataNascimento,
 } = require('../utils/validacao');
+
+describe('RN02 - Verificação de Identidade (Compliance)', () => {
+  test.each(['52998224725', '529.982.247-25', '11144477735'])('aceita o CPF válido %s', (cpf) => {
+    expect(validarCPF(cpf)).toBe(true);
+  });
+
+  test.each([
+    ['dígito verificador errado', '52998224724'],
+    ['todos os dígitos iguais', '11111111111'],
+    ['menos de 11 dígitos', '5299822472'],
+    ['vazio', ''],
+  ])('recusa CPF com %s', (_caso, cpf) => {
+    expect(validarCPF(cpf)).toBe(false);
+  });
+});
+
+describe('RF27 - Verificação de Maioridade', () => {
+  const HOJE = new Date(2026, 10, 6); // 06/11/2026
+
+  test('a idade é exata, contando dia e mês: 18 anos completos aceita', () => {
+    expect(validarDataNascimento('2008-11-06', HOJE)).toBeNull(); // faz 18 hoje
+    expect(validarDataNascimento('2008-01-15', HOJE)).toBeNull();
+  });
+
+  test('quem faz 18 anos amanhã ainda é menor de idade', () => {
+    expect(validarDataNascimento('2008-11-07', HOJE)).toMatch(/18 anos ou mais/);
+  });
+
+  test('nascido em 29/02: completa 18 anos só a partir de 01/03', () => {
+    expect(validarDataNascimento('2008-02-29', new Date(2026, 1, 28))).toMatch(/18 anos ou mais/);
+    expect(validarDataNascimento('2008-02-29', new Date(2026, 2, 1))).toBeNull();
+  });
+
+  test.each([
+    ['30/02 (não existe)', '2000-02-30'],
+    ['data no futuro', '2027-01-01'],
+    ['antes de 1900', '1899-12-31'],
+    ['formato dd/mm/aaaa', '14/07/1995'],
+    ['vazia', ''],
+    ['nula', null],
+  ])('recusa data %s', (_caso, data) => {
+    expect(validarDataNascimento(data, HOJE)).not.toBeNull();
+  });
+});
 
 describe('RN01 - Restrição Geográfica de Anúncios', () => {
   test('aceita CEP no início da faixa (04600-000)', () => {

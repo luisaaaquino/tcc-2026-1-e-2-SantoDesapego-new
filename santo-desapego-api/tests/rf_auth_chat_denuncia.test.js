@@ -373,7 +373,7 @@ describe('RF21 - Canal de Denúncias', () => {
     expect((await denunciar({ anuncio_id: 10, motivo: 'nao_gostei' })).status).toBe(400);
   });
 
-  test('denúncia sem anúncio nem usuário é recusada', async () => {
+  test('denúncia sem anúncio é recusada', async () => {
     expect((await denunciar({ motivo: 'fraude' })).status).toBe(400);
   });
 
@@ -382,8 +382,17 @@ describe('RF21 - Canal de Denúncias', () => {
     expect((await denunciar({ anuncio_id: 10, motivo: 'fraude' }, VENDEDOR)).status).toBe(400);
   });
 
-  test('não é possível denunciar a si mesmo', async () => {
-    expect((await denunciar({ usuario_denunciado_id: COMPRADOR, motivo: 'fraude' })).status).toBe(400);
+  test('não há denúncia direta de perfil: sem anúncio, a denúncia é recusada', async () => {
+    const res = await denunciar({ usuario_denunciado_id: VENDEDOR, motivo: 'fraude' });
+    expect(res.status).toBe(400);
+    expect(res.body.erro).toMatch(/\[RF19\]/);
+    expect(pool.query).not.toHaveBeenCalled();
+  });
+
+  test('o anunciante denunciado é sempre o dono do anúncio (não o que veio no pedido)', async () => {
+    pool.query.mockResolvedValueOnce(linhas({ vendedor_id: VENDEDOR })).mockResolvedValueOnce(linhas({ id: 1 }));
+    await denunciar({ anuncio_id: 10, usuario_denunciado_id: 77, motivo: 'fraude' });
+    expect(pool.query.mock.calls[1][1][2]).toBe(VENDEDOR);
   });
 
   test('anúncio inexistente retorna 404', async () => {

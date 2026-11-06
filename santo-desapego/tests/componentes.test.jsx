@@ -10,9 +10,13 @@ import { renderComRota, respostaJson, simularFetch, logar } from './helpers';
 
 /* ─────────────────────────────────────────────────────────── */
 describe('RF08 - Busca Geolocalizada por Proximidade', () => {
-  test('a lista tem os 18 bairros de Santo Amaro e região atendidos', () => {
-    expect(BAIRROS).toHaveLength(18);
-    expect(BAIRROS).toEqual(expect.arrayContaining(['Santo Amaro Centro', 'Brooklin', 'Campo Belo', 'Socorro']));
+  test('a lista tem os 17 bairros de Santo Amaro e região atendidos', () => {
+    expect(BAIRROS).toHaveLength(17);
+    expect(BAIRROS).toEqual(expect.arrayContaining(['Santo Amaro Centro', 'Campo Belo', 'Granja Julieta', 'Socorro']));
+  });
+
+  test('o Brooklin não está na lista (os CEPs dele ficam fora da faixa da RN01)', () => {
+    expect(BAIRROS).not.toContain('Brooklin');
   });
 
   test('sem bairro escolhido, mostra "Todos os bairros"', () => {
@@ -36,8 +40,8 @@ describe('RF08 - Busca Geolocalizada por Proximidade', () => {
   test('"Todos os bairros" tira o filtro', async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
-    renderComRota(<SeletorBairro value="Brooklin" onChange={onChange} />);
-    await user.click(screen.getByRole('button', { name: /Brooklin/ }));
+    renderComRota(<SeletorBairro value="Campo Belo" onChange={onChange} />);
+    await user.click(screen.getByRole('button', { name: /Campo Belo/ }));
     await user.click(screen.getAllByRole('button', { name: /Todos os bairros/ }).at(-1));
     expect(onChange).toHaveBeenCalledWith('');
   });

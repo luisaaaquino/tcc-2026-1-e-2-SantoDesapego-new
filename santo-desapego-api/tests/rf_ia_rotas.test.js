@@ -48,7 +48,7 @@ describe('RF06 - Anúncio de Produtos', () => {
 
   test('IA: primeira mensagem cria a conversa e guarda o estado no banco', async () => {
     const client = clienteBanco({
-      'SELECT cep, bairro': linhas({ cep: '04710150', bairro: 'Brooklin' }),
+      'SELECT cep, bairro': linhas({ cep: '04710150', bairro: 'Campo Belo' }),
       'INSERT INTO conversas_ia_anuncio': linhas({ id: 33 }),
     });
     rodarAgente.mockResolvedValueOnce(resultadoAgente());
@@ -139,7 +139,7 @@ describe('RF06 - Anúncio de Produtos', () => {
 
   // ── Anúncio rápido ──
   test('IA: anúncio rápido devolve o rascunho para revisar no formulário', async () => {
-    pool.query.mockResolvedValueOnce(linhas({ cep: '04710150', bairro: 'Brooklin' }));
+    pool.query.mockResolvedValueOnce(linhas({ cep: '04710150', bairro: 'Campo Belo' }));
     gerarRascunhoRapido.mockResolvedValueOnce({ rascunho: { titulo: 'Sofá' } });
     const res = await request(app).post('/api/ia/anuncio-rapido').set('Authorization', tokenDe(VENDEDOR)).send({ mensagem: 'sofá' });
     expect(res.body.rascunho.titulo).toBe('Sofá');
@@ -169,13 +169,13 @@ describe('RF24 - Assistente de Compra com IA', () => {
   });
 
   test('envia ao assistente só as últimas 6 falas do comprador, sem textos vazios', async () => {
-    pool.query.mockResolvedValueOnce(linhas({ bairro: 'Brooklin' }));
+    pool.query.mockResolvedValueOnce(linhas({ bairro: 'Campo Belo' }));
     gerarSugestaoCompra.mockResolvedValueOnce({ tipo: 'sugestao', itens: [] });
     const falas = ['  a  ', '', 'b', 'c', 7, 'd', 'e', 'f', 'g'];
 
     await request(app).post('/api/ia/sugestao-compra').set('Authorization', tokenDe(1)).send({ mensagens: falas });
 
-    expect(gerarSugestaoCompra).toHaveBeenCalledWith({ usuarioId: 1, bairroPerfil: 'Brooklin', mensagens: ['b', 'c', 'd', 'e', 'f', 'g'] });
+    expect(gerarSugestaoCompra).toHaveBeenCalledWith({ usuarioId: 1, bairroPerfil: 'Campo Belo', mensagens: ['b', 'c', 'd', 'e', 'f', 'g'] });
   });
 
   test('sem mensagens, usa só o histórico de cliques (GET)', async () => {

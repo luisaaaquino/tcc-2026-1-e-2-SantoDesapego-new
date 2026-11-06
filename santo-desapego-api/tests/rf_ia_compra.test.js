@@ -28,7 +28,7 @@ const pedido = (extra = {}) => ({
 
 // Catálogo simulado: anúncios ativos por categoria (a busca filtra no SQL)
 const CATALOGO = {
-  10: [{ id: 101, titulo: 'Geladeira Consul', preco: '700', bairro: 'Brooklin' },
+  10: [{ id: 101, titulo: 'Geladeira Consul', preco: '700', bairro: 'Campo Belo' },
     { id: 102, titulo: 'Geladeira Brastemp', preco: '650', bairro: 'Granja Julieta' }],
   11: [{ id: 111, titulo: 'Fogão 4 bocas', preco: '400', bairro: 'Santo Amaro Centro' }],
   20: [],
@@ -52,7 +52,7 @@ beforeEach(() => {
 describe('RF24 - Assistente de Compra com IA', () => {
   test('sem mensagem e sem histórico, pergunta o que a pessoa procura', async () => {
     montarBanco();
-    const r = await gerarSugestaoCompra({ usuarioId: COMPRADOR, bairroPerfil: 'Brooklin' });
+    const r = await gerarSugestaoCompra({ usuarioId: COMPRADOR, bairroPerfil: 'Campo Belo' });
     expect(r.tipo).toBe('pergunta');
     expect(r.texto).toMatch(/o que você está procurando/);
     expect(chamadaEstruturada).not.toHaveBeenCalled();
@@ -75,7 +75,7 @@ describe('RF24 - Assistente de Compra com IA', () => {
     montarBanco();
     roteiro(pedido({ categorias_ids: [10], orcamento_total: 800 }), { itens_ids: [101], justificativa: 'ok', categorias_de_fora: [] });
 
-    await gerarSugestaoCompra({ usuarioId: COMPRADOR, bairroPerfil: 'Brooklin', mensagens: ['geladeira até 800'] });
+    await gerarSugestaoCompra({ usuarioId: COMPRADOR, bairroPerfil: 'Campo Belo', mensagens: ['geladeira até 800'] });
 
     const [sql, params] = pool.query.mock.calls.find(([s]) => /FROM anuncios a WHERE/.test(s));
     expect(sql).toMatch(/a\.status = 'ativo'/);
@@ -91,7 +91,7 @@ describe('RF24 - Assistente de Compra com IA', () => {
     await gerarSugestaoCompra({ usuarioId: COMPRADOR, bairroPerfil: 'Santo Amaro Centro', mensagens: ['geladeira'] });
 
     const candidatos = JSON.parse(chamadaEstruturada.mock.calls[1][0].usuario).candidatos;
-    expect(candidatos.map((c) => c.id)).toEqual([102, 101]); // Granja Julieta fica mais perto que o Brooklin
+    expect(candidatos.map((c) => c.id)).toEqual([102, 101]); // Granja Julieta fica mais perto que o Campo Belo
     expect(candidatos[0].dist_km).toBeLessThan(candidatos[1].dist_km);
   });
 
@@ -99,7 +99,7 @@ describe('RF24 - Assistente de Compra com IA', () => {
     montarBanco();
     roteiro(pedido(), { itens_ids: [101, 111], justificativa: 'Geladeira e fogão por R$ 1.100.', categorias_de_fora: [] });
 
-    const r = await gerarSugestaoCompra({ usuarioId: COMPRADOR, bairroPerfil: 'Brooklin', mensagens: ['montar a cozinha até 1000'] });
+    const r = await gerarSugestaoCompra({ usuarioId: COMPRADOR, bairroPerfil: 'Campo Belo', mensagens: ['montar a cozinha até 1000'] });
 
     // 700 + 400 = 1100 > 1000: sai a categoria de menor prioridade (Fogões, a 2ª)
     expect(r.itens.map((i) => i.id)).toEqual([101]);
@@ -123,14 +123,14 @@ describe('RF24 - Assistente de Compra com IA', () => {
   test('categoria inventada pelo modelo é descartada', async () => {
     montarBanco();
     roteiro(pedido({ categorias_ids: [999, 10, 10] }), { itens_ids: [101], justificativa: 'ok', categorias_de_fora: [] });
-    const r = await gerarSugestaoCompra({ usuarioId: COMPRADOR, bairroPerfil: 'Brooklin', mensagens: ['geladeira'] });
+    const r = await gerarSugestaoCompra({ usuarioId: COMPRADOR, bairroPerfil: 'Campo Belo', mensagens: ['geladeira'] });
     expect(r.pedido.categorias).toEqual(['Geladeiras']);
   });
 
   test('se o modelo diz que não entendeu, a categoria que ele chutou não vale', async () => {
     montarBanco();
     roteiro(pedido({ categorias_ids: [20], faltando: ['o_que_procura'], intencao: null }));
-    const r = await gerarSugestaoCompra({ usuarioId: COMPRADOR, bairroPerfil: 'Brooklin', mensagens: ['oi'] });
+    const r = await gerarSugestaoCompra({ usuarioId: COMPRADOR, bairroPerfil: 'Campo Belo', mensagens: ['oi'] });
     expect(r.tipo).toBe('pergunta');
     expect(pool.query.mock.calls.some(([s]) => /FROM anuncios a WHERE/.test(s))).toBe(false);
   });
@@ -138,14 +138,14 @@ describe('RF24 - Assistente de Compra com IA', () => {
   test('pedido sem categoria no site é respondido com clareza', async () => {
     montarBanco();
     roteiro(pedido({ categorias_ids: [], intencao: 'uma moto' }));
-    const r = await gerarSugestaoCompra({ usuarioId: COMPRADOR, bairroPerfil: 'Brooklin', mensagens: ['quero uma moto'] });
+    const r = await gerarSugestaoCompra({ usuarioId: COMPRADOR, bairroPerfil: 'Campo Belo', mensagens: ['quero uma moto'] });
     expect(r.texto).toMatch(/Entendi que você procura: uma moto\. Não temos uma categoria/);
   });
 
   test('sem anúncios disponíveis, recusa e explica em vez de inventar', async () => {
     montarBanco();
     roteiro(pedido({ categorias_ids: [20], orcamento_total: 300 }));
-    const r = await gerarSugestaoCompra({ usuarioId: COMPRADOR, bairroPerfil: 'Brooklin', mensagens: ['mesa até 300'] });
+    const r = await gerarSugestaoCompra({ usuarioId: COMPRADOR, bairroPerfil: 'Campo Belo', mensagens: ['mesa até 300'] });
     expect(r.tipo).toBe('recusa');
     expect(r.texto).toMatch(/Procurei Mesas ativos até R\$ 300/);
     expect(chamadaEstruturada).toHaveBeenCalledTimes(1); // nem chamou o modelo para montar
@@ -159,9 +159,9 @@ describe('RF24 - Assistente de Compra com IA', () => {
   });
 
   test('registra o anúncio visto com categoria, preço e bairro daquele momento', async () => {
-    pool.query.mockResolvedValueOnce(linhas({ categoria_id: 10, preco: '700', bairro: 'Brooklin' })).mockResolvedValueOnce(linhas());
+    pool.query.mockResolvedValueOnce(linhas({ categoria_id: 10, preco: '700', bairro: 'Campo Belo' })).mockResolvedValueOnce(linhas());
     await registrarClique({ usuarioId: COMPRADOR, anuncioId: 101 });
-    expect(pool.query.mock.calls[1][1]).toEqual([COMPRADOR, 101, 10, '700', 'Brooklin']);
+    expect(pool.query.mock.calls[1][1]).toEqual([COMPRADOR, 101, 10, '700', 'Campo Belo']);
   });
 
   test('clique em anúncio que não existe mais não registra nada', async () => {

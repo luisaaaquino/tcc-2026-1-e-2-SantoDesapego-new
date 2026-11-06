@@ -5,7 +5,7 @@ const { entrar } = require('../utilitarios');
 const cards = (page) => page.locator('.ecard');
 const tituloDosCards = (page) => page.locator('.ecard-titulo');
 
-test.describe('RN13 - Validação de Raio de Atuação', () => {
+test.describe('RN13 - Priorização por Proximidade', () => {
   test('o catálogo é público: visitante vê os anúncios sem fazer login', async ({ page }) => {
     await page.goto('/explorar');
     await expect(tituloDosCards(page)).toContainText([ANUNCIOS.livro.titulo, ANUNCIOS.sofa.titulo, ANUNCIOS.bicicleta.titulo]);
@@ -18,7 +18,7 @@ test.describe('RN13 - Validação de Raio de Atuação', () => {
 
     await expect(tituloDosCards(page).first()).toHaveText(ANUNCIOS.sofa.titulo); // Santo Amaro Centro
     await expect(cards(page).first().locator('.ecard-distancia')).toHaveText(/menos de 1 km/);
-    await expect(cards(page).last()).toContainText(ANUNCIOS.bicicleta.titulo); // Brooklin, o mais longe
+    await expect(cards(page).last()).toContainText(ANUNCIOS.bicicleta.titulo); // Campo Belo, o mais longe
   });
 });
 
@@ -79,7 +79,7 @@ test.describe('RF06 - Anúncio de Produtos', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(ANUNCIOS.bicicleta.titulo);
     await expect(page.locator('.anuncio-preco')).toHaveText(/R\$\s?850,00/);
     await expect(page.getByText(ANUNCIOS.bicicleta.descricao)).toBeVisible();
-    await expect(page.locator('.anuncio-ficha')).toContainText('Brooklin');
+    await expect(page.locator('.anuncio-ficha')).toContainText('Campo Belo');
     await expect(page.locator('.anuncio-vendedor')).toContainText('Caio');
   });
 });
@@ -108,7 +108,7 @@ test.describe('RF10 - Favoritos e Itens Salvos', () => {
   });
 });
 
-test.describe('RF19 - Denúncia de Anúncios e Usuários', () => {
+test.describe('RF19 - Denúncia de Anúncios', () => {
   test('denuncia um anúncio pela página dele', async ({ page }) => {
     await entrar(page, USUARIOS.vizinho);
     await page.goto('/explorar');

@@ -163,7 +163,7 @@ describe('RF07 - Busca por Filtros', () => {
 /* ─────────────────────────────────────────────────────────── */
 describe('RF08 - Busca Geolocalizada por Proximidade', () => {
   const anuncios = [
-    { id: 1, bairro: 'Brooklin', data_criacao: '2026-10-01' },
+    { id: 1, bairro: 'Campo Belo', data_criacao: '2026-10-01' },
     { id: 2, bairro: 'Bairro Desconhecido', data_criacao: '2026-10-03' },
     { id: 3, bairro: 'Santo Amaro Centro', data_criacao: '2026-10-02' },
     { id: 4, bairro: 'Granja Julieta', data_criacao: '2026-10-04' },
@@ -181,7 +181,7 @@ describe('RF08 - Busca Geolocalizada por Proximidade', () => {
   test('anúncio de bairro sem coordenadas vai para o fim da lista', async () => {
     pool.query.mockResolvedValue(linhas(...anuncios));
     const res = await request(app).get('/api/anuncios')
-      .query({ ordenacao: 'distancia', origem_bairro: 'Brooklin' });
+      .query({ ordenacao: 'distancia', origem_bairro: 'Campo Belo' });
 
     const ultimo = res.body.anuncios[res.body.anuncios.length - 1];
     expect(ultimo.id).toBe(2);
@@ -200,10 +200,10 @@ describe('RF08 - Busca Geolocalizada por Proximidade', () => {
 
   test('filtra anúncios por bairro', async () => {
     pool.query.mockImplementation(async (sql) => (/COUNT\(\*\)/.test(sql) ? linhas({ count: '0' }) : linhas()));
-    await request(app).get('/api/anuncios').query({ bairro: 'Brooklin' });
+    await request(app).get('/api/anuncios').query({ bairro: 'Campo Belo' });
     const [sql, params] = pool.query.mock.calls[0];
     expect(sql).toMatch(/a\.bairro = \$1/);
-    expect(params[0]).toBe('Brooklin');
+    expect(params[0]).toBe('Campo Belo');
   });
 });
 

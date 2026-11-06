@@ -80,7 +80,7 @@ beforeEach(() => {
 /* ─────────────────────────────────────────────────────────── */
 describe('RF06 - Anúncio de Produtos', () => {
   test('IA: quando falta informação, o agente pergunta ao vendedor', async () => {
-    const estado = await estadoInicial({ cep: '04710150', bairro: 'Brooklin' });
+    const estado = await estadoInicial({ cep: '04710150', bairro: 'Campo Belo' });
     roteiro(decisao('perguntar', { pergunta: 'Qual a marca e a capacidade da geladeira?' }));
 
     const r = await rodarAgente({ estado, mensagemVendedor: 'Quero vender minha geladeira', vendedorId: VENDEDOR });
@@ -91,7 +91,7 @@ describe('RF06 - Anúncio de Produtos', () => {
   });
 
   test('IA: o rascunho só sai depois de perguntar sobre defeitos (portão de avaria)', async () => {
-    const estado = await estadoInicial({ cep: '04710150', bairro: 'Brooklin' });
+    const estado = await estadoInicial({ cep: '04710150', bairro: 'Campo Belo' });
     roteiro(decisao('preencher_rascunho', { rascunho: RASCUNHO }));
 
     const r = await rodarAgente({ estado, mensagemVendedor: 'Geladeira Brastemp 400L, 900 reais', vendedorId: VENDEDOR });
@@ -132,7 +132,7 @@ describe('RF06 - Anúncio de Produtos', () => {
   });
 
   test('IA: para quando estoura o limite de uso (tokens) da conversa', async () => {
-    const estado = await estadoInicial({ cep: '04710150', bairro: 'Brooklin' });
+    const estado = await estadoInicial({ cep: '04710150', bairro: 'Campo Belo' });
     chamadaEstruturada.mockResolvedValueOnce({
       conteudo: decisao('consultar_preco', { consulta: { categoria_id: 10, termo_busca: 'geladeira' } }),
       uso: { tokens_entrada: 70000, tokens_saida: 0 },
@@ -146,7 +146,7 @@ describe('RF06 - Anúncio de Produtos', () => {
   });
 
   test('IA: para quando o modelo repete a mesma ação 3 vezes seguidas (laço)', async () => {
-    const estado = await estadoInicial({ cep: '04710150', bairro: 'Brooklin' });
+    const estado = await estadoInicial({ cep: '04710150', bairro: 'Campo Belo' });
     const mesma = decisao('consultar_preco', { consulta: { categoria_id: 10, termo_busca: 'geladeira' } });
     roteiro(mesma, mesma, mesma);
     pool.query.mockResolvedValue(linhas());
@@ -175,7 +175,7 @@ describe('RF06 - Anúncio de Produtos', () => {
         { id: 1, titulo: 'a', preco: '600' }, { id: 2, titulo: 'b', preco: '400' }, { id: 3, titulo: 'c', preco: '800' },
       ));
 
-    const faixa = await consultarPrecoComparaveis({ categoria_id: 10, termo_busca: 'Geladeira', bairro: 'Brooklin' });
+    const faixa = await consultarPrecoComparaveis({ categoria_id: 10, termo_busca: 'Geladeira', bairro: 'Campo Belo' });
 
     expect(faixa).toMatchObject({ precisao: 'cidade_e_termo', n: 3, faixa_min: 400, faixa_max: 800, media: 600 });
     expect(faixa.comparaveis.map((c) => c.id)).toEqual([2, 1, 3]); // do mais barato
@@ -184,7 +184,7 @@ describe('RF06 - Anúncio de Produtos', () => {
 
   test('IA: sem anúncios parecidos, a consulta de preço avisa em vez de inventar', async () => {
     pool.query.mockResolvedValue(linhas());
-    expect(await consultarPrecoComparaveis({ categoria_id: 10, termo_busca: 'x', bairro: 'Brooklin' }))
+    expect(await consultarPrecoComparaveis({ categoria_id: 10, termo_busca: 'x', bairro: 'Campo Belo' }))
       .toMatchObject({ erro: 'sem_comparaveis' });
     expect(await consultarPrecoComparaveis({ termo_busca: 'x' })).toMatchObject({ erro: 'categoria_id_obrigatorio' });
   });
@@ -257,7 +257,7 @@ describe('RF06 - Anúncio de Produtos', () => {
   });
 
   test('IA: decisão sem rascunho pendente ou com ação desconhecida é recusada', async () => {
-    const novo = await estadoInicial({ cep: '04710150', bairro: 'Brooklin' });
+    const novo = await estadoInicial({ cep: '04710150', bairro: 'Campo Belo' });
     expect((await decidirPendencia({ estado: novo, acao: 'aprovar' })).erro).toMatch(/Não há nenhum rascunho/);
     const estado = await estadoAguardandoAprovacao();
     expect((await decidirPendencia({ estado, acao: 'publicar_ja' })).erro).toBe('Ação inválida.');
@@ -271,9 +271,9 @@ describe('RF06 - Anúncio de Produtos', () => {
     );
     pool.query.mockResolvedValueOnce(linhas({ id: 1, titulo: 'a', preco: '600' }, { id: 2, titulo: 'b', preco: '700' }, { id: 3, titulo: 'c', preco: '900' }));
 
-    const r = await gerarRascunhoRapido({ mensagem: 'sofá 3 lugares cinza 700', cep: '04710150', bairro: 'Brooklin' });
+    const r = await gerarRascunhoRapido({ mensagem: 'sofá 3 lugares cinza 700', cep: '04710150', bairro: 'Campo Belo' });
 
-    expect(r.rascunho).toMatchObject({ categoria_id: 20, cep: '04710150', bairro: 'Brooklin' });
+    expect(r.rascunho).toMatchObject({ categoria_id: 20, cep: '04710150', bairro: 'Campo Belo' });
     expect(r.observacao_preco.precisao).toBe('bairro_e_termo');
     expect(r.avaliacao.aprovado).toBe(true);
     expect(r.custo_estimado_usd).toBeGreaterThan(0);
@@ -281,7 +281,7 @@ describe('RF06 - Anúncio de Produtos', () => {
 
   test('IA: anúncio rápido descarta categoria que não existe e não chama o avaliador', async () => {
     roteiro({ titulo: 'Coisa', categoria_id: 999, descricao: null, preco: null, estado_conservacao: null, termo_busca: null });
-    const r = await gerarRascunhoRapido({ mensagem: 'coisa', cep: '04710150', bairro: 'Brooklin' });
+    const r = await gerarRascunhoRapido({ mensagem: 'coisa', cep: '04710150', bairro: 'Campo Belo' });
     expect(r.rascunho.categoria_id).toBeNull();
     expect(r.avaliacao).toBeNull();
     expect(chamadaEstruturada).toHaveBeenCalledTimes(1);

@@ -17,7 +17,7 @@ const app = montarApp(require('../routes/auth'));
 
 const cadastroValido = (extra = {}) => ({
   nome: 'Ana', sobrenome: 'Lima', email: 'ana@teste.com', senha: 'Desapego@2026',
-  cpf: '52998224725', cep: '04710150', bairro: 'Santo Amaro Centro', aceita_termos: true,
+  cpf: '52998224725', data_nascimento: '1995-07-14', cep: '04710150', bairro: 'Santo Amaro Centro', aceita_termos: true,
   ...extra,
 });
 
@@ -102,20 +102,68 @@ describe('RN11 - Consentimento Livre e Esclarecido', () => {
 
 describe('RN12 - Minimização de Dados', () => {
   test('dados sensíveis enviados no cadastro são descartados', async () => {
-    await cadastrar(cadastroValido({
-      data_nascimento: '1990-01-01', origem_racial: 'parda', religiao: 'católica', biometria: 'xyz',
-    }));
+    await cadastrar(cadastroValido({ origem_racial: 'parda', religiao: 'católica', biometria: 'xyz' }));
     const [sql, params] = insertDoCadastro();
-    expect(sql).not.toMatch(/nascimento|racial|religiao|biometria/);
-    expect(params).not.toEqual(expect.arrayContaining(['1990-01-01', 'parda', 'católica', 'xyz']));
+    expect(sql).not.toMatch(/racial|religiao|biometria/);
+    expect(params).not.toEqual(expect.arrayContaining(['parda', 'católica', 'xyz']));
   });
 
-  test('o cadastro grava só os campos necessários (15 colunas)', async () => {
+  test('o cadastro grava só os campos necessários (16 colunas)', async () => {
     await cadastrar(cadastroValido());
     const colunas = insertDoCadastro()[0].match(/\(([^)]+)\)\s*VALUES/s)[1].split(',').map((c) => c.trim());
     expect(colunas).toEqual([
       'nome', 'sobrenome', 'telefone', 'email', 'senha', 'cep', 'logradouro', 'numero', 'complemento',
-      'bairro', 'cpf', 'aceita_termos', 'recebe_newsletter', 'termos_versao', 'termos_aceitos_em',
+      'bairro', 'cpf', 'data_nascimento', 'aceita_termos', 'recebe_newsletter', 'termos_versao', 'termos_aceitos_em',
     ]);
+  });
+});
+
+describe('RF27 - Verificação de Maioridade', () => {
+  // Datas relativas a hoje, para o teste valer em qualquer dia em que rodar
+  const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const anosAtras = (anos, diasAMais = 0) => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - anos);
+    d.setDate(d.getDate() + diasAMais);
+    return iso(d);
+  };
+
+  test('a data de nascimento completa é gravada no cadastro', async () => {
+    const res = await cadastrar(cadastroValido({ data_nascimento: '1995-07-14' }));
+    expect(res.status).toBe(201);
+    expect(insertDoCadastro()[1]).toContain('1995-07-14');
+  });
+
+  test('quem completa 18 anos hoje já consegue se cadastrar', async () => {
+    expect((await cadastrar(cadastroValido({ data_nascimento: anosAtras(18) }))).status).toBe(201);
+  });
+
+  test('quem só completa 18 anos amanhã ainda tem o cadastro bloqueado', async () => {
+    const res = await cadastrar(cadastroValido({ data_nascimento: anosAtras(18, 1) }));
+    expect(res.status).toBe(400);
+    expect(res.body.erro).toBe('É preciso ter 18 anos ou mais para se cadastrar no Santo Desapego.');
+    expect(insertDoCadastro()).toBeUndefined();
+  });
+
+  test('cadastro sem a data de nascimento é recusado', async () => {
+    const res = await cadastrar(cadastroValido({ data_nascimento: undefined }));
+    expect(res.status).toBe(400);
+    expect(insertDoCadastro()).toBeUndefined();
+  });
+
+  test.each([
+    ['data que não existe (30/02)', '2000-02-30'],
+    ['data no futuro', anosAtras(-1)],
+    ['antes de 1900', '1850-05-10'],
+    ['no formato dd/mm/aaaa', '14/07/1995'],
+    ['só o ano', '1995'],
+  ])('%s é recusada', async (_caso, data) => {
+    expect((await cadastrar(cadastroValido({ data_nascimento: data }))).status).toBe(400);
+  });
+
+  test('a data aparece na exportação de dados da LGPD', () => {
+    const rota = require('fs').readFileSync(require.resolve('../routes/usuario'), 'utf8');
+    const exportar = rota.slice(rota.indexOf("'/api/usuario/exportar'"));
+    expect(exportar.slice(0, 600)).toMatch(/data_nascimento/);
   });
 });

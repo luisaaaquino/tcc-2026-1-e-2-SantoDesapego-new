@@ -103,7 +103,7 @@ describe('RN09 - Moderação de Conteúdo', () => {
   });
 });
 
-describe('RN08 - Avaliação Obrigatória', () => {
+describe('RN08 - Liberação da Avaliação', () => {
   const app = montarApp(require('../routes/avaliacoes'));
   const avaliar = () => request(app).post('/api/avaliacoes')
     .set('Authorization', tokenDe(COMPRADOR)).send({ compra_id: 7, nota: 5, comentario: 'Ótimo' });

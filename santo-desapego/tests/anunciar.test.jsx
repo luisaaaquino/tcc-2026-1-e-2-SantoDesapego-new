@@ -16,7 +16,7 @@ const CATEGORIAS = [
   { id: 1, nome: 'Móveis', subcategorias: [{ id: 11, nome: 'Sofás' }, { id: 12, nome: 'Mesas' }] },
   { id: 8, nome: 'Outros', subcategorias: [] },
 ];
-const PERFIL = { usuario: { id: 2, nome: 'Caio', cep: '04710150', bairro: 'Brooklin' } };
+const PERFIL = { usuario: { id: 2, nome: 'Caio', cep: '04710150', bairro: 'Campo Belo' } };
 
 const foto = (nome, tipo = 'image/jpeg') => new File(['x'], nome, { type: tipo });
 const abrir = async (rotas = {}) => {
@@ -64,7 +64,7 @@ describe('RF06 - Anúncio de Produtos', () => {
   test('o CEP e o bairro do anúncio já vêm do cadastro do vendedor', async () => {
     await abrir();
     expect(campo('04000-000')).toHaveValue('04710-150');
-    expect(screen.getAllByRole('combobox')[2]).toHaveValue('Brooklin');
+    expect(screen.getAllByRole('combobox')[2]).toHaveValue('Campo Belo');
   });
 
   test('oferece preencher à mão, conversar com a IA ou fazer o anúncio rápido', async () => {
@@ -85,7 +85,7 @@ describe('RF06 - Anúncio de Produtos', () => {
       titulo: 'Sofá 3 lugares retrátil',
       descricao: 'Sofá cinza, 3 lugares, retrátil e reclinável, sem rasgos.',
       preco: 850.5, estado_conservacao: 'usado', categoria_id: 11,
-      cep: '04710150', bairro: 'Brooklin', imagens: ['data:image/jpeg;base64,foto1.jpg'],
+      cep: '04710150', bairro: 'Campo Belo', imagens: ['data:image/jpeg;base64,foto1.jpg'],
     });
   });
 

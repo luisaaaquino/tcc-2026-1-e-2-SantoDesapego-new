@@ -87,24 +87,28 @@ describe('RN07 - Ciclo de Vida do Anúncio', () => {
   });
 });
 
-describe('RN13 - Validação de Raio de Atuação', () => {
+describe('RN13 - Priorização por Proximidade', () => {
   test('distância de um bairro para ele mesmo é zero', () => {
-    expect(distanciaEntreBairros('Brooklin', 'Brooklin')).toBe(0);
+    expect(distanciaEntreBairros('Campo Belo', 'Campo Belo')).toBe(0);
   });
 
-  test('calcula a distância entre bairros vizinhos (Brooklin x Campo Belo, ~1 km)', () => {
-    const d = distanciaEntreBairros('Brooklin', 'Campo Belo');
+  test('calcula a distância entre bairros vizinhos (Jardim Cordeiro x Jardim Petrópolis, ~1 km)', () => {
+    const d = distanciaEntreBairros('Jardim Cordeiro', 'Jardim Petrópolis');
     expect(d).toBeGreaterThan(0.5);
     expect(d).toBeLessThan(2);
   });
 
   test('bairro mais distante fica com distância maior (ordenação por proximidade)', () => {
     const perto = distanciaEntreBairros('Santo Amaro Centro', 'Granja Julieta');
-    const longe = distanciaEntreBairros('Santo Amaro Centro', 'Brooklin');
+    const longe = distanciaEntreBairros('Santo Amaro Centro', 'Campo Belo');
     expect(perto).toBeLessThan(longe);
   });
 
   test('bairro fora da lista não recebe distância', () => {
-    expect(distanciaEntreBairros('Brooklin', 'Copacabana')).toBeNull();
+    expect(distanciaEntreBairros('Campo Belo', 'Copacabana')).toBeNull();
+  });
+
+  test('o Brooklin não é bairro atendido (os CEPs dele ficam fora da faixa da RN01)', () => {
+    expect(distanciaEntreBairros('Brooklin', 'Santo Amaro Centro')).toBeNull();
   });
 });

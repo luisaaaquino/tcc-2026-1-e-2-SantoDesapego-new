@@ -1,6 +1,9 @@
 const { test, expect } = require('@playwright/test');
 const { USUARIOS, ANUNCIOS, SENHA } = require('../dados');
-const { entrar } = require('../utilitarios');
+const { entrar, novaPessoa, fecharPessoas } = require('../utilitarios');
+
+// Fecha os navegadores extras de cada teste
+test.afterEach(fecharPessoas);
 
 const linhaDoUsuario = (page, email) => page.locator('.admin-table tr', { hasText: email });
 
@@ -47,7 +50,7 @@ test.describe('RN02 - Verificação de Identidade (Compliance)', () => {
     await page.getByRole('button', { name: 'Suspender', exact: true }).last().click();
     await expect(linhaDoUsuario(page, USUARIOS.vizinho.email)).toContainText(/Suspens/);
 
-    const bia = await (await browser.newContext()).newPage();
+    const bia = await novaPessoa(browser);
     await bia.goto('/login');
     await bia.getByPlaceholder('seu@email.com').fill(USUARIOS.vizinho.email);
     await bia.getByPlaceholder('Sua senha').fill(SENHA);

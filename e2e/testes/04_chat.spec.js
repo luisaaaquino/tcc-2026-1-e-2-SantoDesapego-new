@@ -1,6 +1,9 @@
 const { test, expect } = require('@playwright/test');
 const { USUARIOS, ANUNCIOS } = require('../dados');
-const { entrar } = require('../utilitarios');
+const { entrar, novaPessoa, fecharPessoas } = require('../utilitarios');
+
+// Fecha os navegadores extras de cada teste
+test.afterEach(fecharPessoas);
 
 const campoMensagem = (page) => page.getByPlaceholder('Escreva sua mensagem...');
 // Só os balões da conversa aberta (a lista ao lado também mostra a prévia)
@@ -13,8 +16,8 @@ const enviarMensagem = async (page, texto) => {
 test.describe('RF15 - Chat Interno', () => {
   test('comprador fala com o vendedor pelo anúncio e o vendedor recebe a mensagem', async ({ browser }) => {
     // Duas pessoas, dois navegadores
-    const ana = await (await browser.newContext()).newPage();
-    const caio = await (await browser.newContext()).newPage();
+    const ana = await novaPessoa(browser);
+    const caio = await novaPessoa(browser);
 
     await entrar(ana, USUARIOS.comprador);
     await ana.goto('/explorar');
@@ -29,8 +32,8 @@ test.describe('RF15 - Chat Interno', () => {
     await caio.getByText(ANUNCIOS.bicicleta.titulo).first().click();
     await expect(baloes(caio).getByText('Oi! A bicicleta ainda está disponível?')).toBeVisible();
 
-    await enviarMensagem(caio, 'Está sim! Pode retirar no Brooklin.');
-    await expect(baloes(ana).getByText('Está sim! Pode retirar no Brooklin.')).toBeVisible({ timeout: 20_000 });
+    await enviarMensagem(caio, 'Está sim! Pode retirar no Campo Belo.');
+    await expect(baloes(ana).getByText('Está sim! Pode retirar no Campo Belo.')).toBeVisible({ timeout: 20_000 });
   });
 });
 

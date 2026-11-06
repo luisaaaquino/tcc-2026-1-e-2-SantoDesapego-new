@@ -139,7 +139,7 @@ describe('RF04 - Gestão de Dados Pessoais (LGPD)', () => {
   test('atualiza os dados cadastrais do perfil', async () => {
     pool.query.mockResolvedValueOnce(linhas({ id: USUARIO, nome: 'Ana' }));
     const res = await request(appUsuario).put('/api/usuario/perfil').set('Authorization', tokenDe(USUARIO))
-      .send({ nome: ' Ana ', sobrenome: 'Lima', bairro: 'Brooklin' });
+      .send({ nome: ' Ana ', sobrenome: 'Lima', bairro: 'Campo Belo' });
     expect(res.status).toBe(200);
     expect(pool.query.mock.calls[0][1].slice(0, 2)).toEqual(['Ana', 'Lima']);
   });

@@ -40,4 +40,17 @@ const entrar = async (page, usuario, { senha = SENHA } = {}) => {
   await expect(page.getByText(`Olá, ${usuario.nome}!`).first()).toBeVisible();
 };
 
-module.exports = { codigosEnviados, esperarCodigo, digitarCodigo, entrar };
+// Navegadores extras (uma pessoa em cada) para testes com comprador e vendedor.
+// Precisam ser fechados no fim do teste: a tela de Mensagens fica consultando
+// a API sem parar e, aberta, deixava os testes seguintes lentos até travar.
+const pessoasAbertas = [];
+const novaPessoa = async (browser) => {
+  const contexto = await browser.newContext();
+  pessoasAbertas.push(contexto);
+  return contexto.newPage();
+};
+const fecharPessoas = async () => {
+  while (pessoasAbertas.length) await pessoasAbertas.pop().close();
+};
+
+module.exports = { codigosEnviados, esperarCodigo, digitarCodigo, entrar, novaPessoa, fecharPessoas };

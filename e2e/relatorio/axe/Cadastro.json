@@ -11,7 +11,7 @@
       "regra": "color-contrast",
       "impacto": "serious",
       "descricao": "Elements must meet minimum color contrast ratio thresholds",
-      "elementos": 8
+      "elementos": 9
     },
     {
       "regra": "link-in-text-block",

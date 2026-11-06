@@ -53,7 +53,7 @@ beforeEach(() => {
 /* ─────────────────────────────────────────────────────────── */
 describe('RF01 - Gestão de Perfil Geográfico', () => {
   const cadastro = (extra = {}) => ({
-    nome: 'Ana', sobrenome: 'Lima', email: 'ana@teste.com', senha: 'Desapego@2026', cpf: '52998224725',
+    nome: 'Ana', sobrenome: 'Lima', email: 'ana@teste.com', senha: 'Desapego@2026', cpf: '52998224725', data_nascimento: '1995-07-14',
     cep: '04710-150', logradouro: 'Rua Padre José', numero: '10', bairro: 'Santo Amaro Centro', aceita_termos: true,
     ...extra,
   });
@@ -258,7 +258,7 @@ describe('RF16 - Sistema de Reputação', () => {
 });
 
 /* ─────────────────────────────────────────────────────────── */
-describe('RF19 - Denúncia de Anúncios e Usuários', () => {
+describe('RF19 - Denúncia de Anúncios', () => {
   test('a denúncia feita pela página do anúncio registra o anúncio e o vendedor', async () => {
     pool.query.mockResolvedValueOnce(linhas({ vendedor_id: VENDEDOR })).mockResolvedValueOnce(linhas({ id: 1, status: 'pendente' }));
     const res = await request(appAvaliacoes).post('/api/denuncias').set('Authorization', tokenDe(COMPRADOR))

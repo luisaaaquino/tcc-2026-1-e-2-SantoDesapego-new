@@ -1,4 +1,4 @@
-﻿// Dados fixos do banco de teste ponta a ponta. Os testes usam estas
+// Dados fixos do banco de teste ponta a ponta. Os testes usam estas
 // constantes para saber com quem logar e o que procurar na tela.
 
 // Gera um CPF válido a partir de 9 dígitos (calcula os 2 verificadores)
@@ -18,7 +18,7 @@ const USUARIOS = {
   comprador: { nome: 'Ana', sobrenome: 'Lima', email: 'ana@e2e.santodesapego.com', cpf: cpf('529982247'),
     cep: '04710150', bairro: 'Santo Amaro Centro' },
   vendedor: { nome: 'Caio', sobrenome: 'Souza', email: 'caio@e2e.santodesapego.com', cpf: cpf('111444777'),
-    cep: '04602000', bairro: 'Brooklin' },
+    cep: '04602000', bairro: 'Campo Belo' },
   vizinho: { nome: 'Bia', sobrenome: 'Ramos', email: 'bia@e2e.santodesapego.com', cpf: cpf('123456789'),
     cep: '04650000', bairro: 'Granja Julieta' },
   admin: { nome: 'Dora', sobrenome: 'Admin', email: 'admin@e2e.santodesapego.com', cpf: cpf('987654321'),
@@ -28,15 +28,15 @@ const USUARIOS = {
 // Anúncios do vendedor (Caio). "Geladeira" já foi comprada pela Ana.
 const ANUNCIOS = {
   bicicleta: { titulo: 'Bicicleta aro 29 Caloi', categoria: 'esporte-bicicletas', preco: 850, estado: 'usado',
-    descricao: 'Bicicleta aro 29 com 21 marchas, freio a disco, pneus novos. Pouco usada.', bairro: 'Brooklin', cep: '04602000' },
+    descricao: 'Bicicleta aro 29 com 21 marchas, freio a disco, pneus novos. Pouco usada.', bairro: 'Campo Belo', cep: '04602000' },
   sofa: { titulo: 'Sofá 3 lugares retrátil cinza', categoria: 'moveis-sofas-poltronas', preco: 1200, estado: 'seminovo',
     descricao: 'Sofá retrátil e reclinável, tecido suede cinza, sem rasgos nem manchas.', bairro: 'Santo Amaro Centro', cep: '04710150' },
   livro: { titulo: 'Coleção Harry Potter 7 livros', categoria: 'livros-literatura', preco: 180, estado: 'usado',
     descricao: 'Coleção completa capa dura, todos os 7 volumes em bom estado.', bairro: 'Granja Julieta', cep: '04650000' },
   pausado: { titulo: 'Mesa de jantar 6 cadeiras', categoria: 'moveis-mesas-cadeiras', preco: 900, estado: 'usado',
-    descricao: 'Mesa de madeira maciça com 6 cadeiras estofadas.', bairro: 'Brooklin', cep: '04602000', status: 'pausado' },
+    descricao: 'Mesa de madeira maciça com 6 cadeiras estofadas.', bairro: 'Campo Belo', cep: '04602000', status: 'pausado' },
   geladeira: { titulo: 'Geladeira Brastemp 400L', categoria: 'eletronicos-eletrodomesticos', preco: 1500, estado: 'usado',
-    descricao: 'Geladeira frost free 400 litros, funcionando perfeitamente.', bairro: 'Brooklin', cep: '04602000', status: 'vendido' },
+    descricao: 'Geladeira frost free 400 litros, funcionando perfeitamente.', bairro: 'Campo Belo', cep: '04602000', status: 'vendido' },
 };
 
 // Compra já paga (o Mercado Pago real não entra no teste): Ana comprou a geladeira

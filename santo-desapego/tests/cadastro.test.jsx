@@ -1,13 +1,14 @@
 import { describe, test, expect } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Cadastro from '../src/pages/Cadastro';
 import { renderComRota, respostaJson, simularFetch } from './helpers';
 
-const VIACEP_SANTO_AMARO = respostaJson({ logradouro: 'Rua Padre José de Anchieta', bairro: 'Brooklin' });
+const VIACEP_SANTO_AMARO = respostaJson({ logradouro: 'Rua Padre José de Anchieta', bairro: 'Campo Belo' });
 const CADASTRO_OK = respostaJson({ usuario: { id: 1 }, verificacao: { desafio: 'abc', email_mascarado: 'an***@teste.com', finalidade: 'cadastro' } }, 201);
 
 const campo = (placeholder) => screen.getByPlaceholderText(placeholder);
+const campoData = () => screen.getByLabelText(/^Data de nascimento/);
 const abrir = (rotas = {}) => {
   const fetchFalso = simularFetch({ viacep: VIACEP_SANTO_AMARO, '/api/auth/cadastro': CADASTRO_OK, ...rotas });
   renderComRota(<Cadastro />, { rota: '/cadastro' });
@@ -17,13 +18,15 @@ const abrir = (rotas = {}) => {
 // Preenche o formulário inteiro com dados válidos (dá para trocar campos)
 const preencher = async (user, dados = {}) => {
   const d = {
-    nome: 'Ana', sobrenome: 'Lima', cpf: '52998224725', telefone: '11987654321',
+    nome: 'Ana', sobrenome: 'Lima', cpf: '52998224725', data: '1995-07-14', telefone: '11987654321',
     email: 'Ana@Teste.com', confirmEmail: 'Ana@Teste.com', senha: 'Desapego@2026', confirmSenha: 'Desapego@2026',
     cep: '04710150', numero: '10', termos: true, ...dados,
   };
   if (d.nome) await user.type(campo('Ex: Mariana'), d.nome);
   if (d.sobrenome) await user.type(campo('Ex: Costa'), d.sobrenome);
   if (d.cpf) await user.type(campo('000.000.000-00'), d.cpf);
+  // Campo de data do navegador: o valor chega sempre como AAAA-MM-DD
+  if (d.data) fireEvent.change(campoData(), { target: { value: d.data } });
   if (d.telefone) await user.type(campo('(11) 99999-9999'), d.telefone);
   if (d.email) await user.type(campo('voce@email.com'), d.email);
   if (d.confirmEmail) await user.type(campo('repita seu e-mail'), d.confirmEmail);
@@ -49,7 +52,7 @@ describe('RF01 - Gestão de Perfil Geográfico', () => {
     await user.type(campo('04000-000'), '04710150');
 
     await waitFor(() => expect(campo('Rua, Av., Travessa...')).toHaveValue('Rua Padre José de Anchieta'));
-    expect(screen.getByRole('combobox')).toHaveValue('Brooklin');
+    expect(screen.getByRole('combobox')).toHaveValue('Campo Belo');
     expect(campo('04000-000')).toHaveValue('04710-150');
   });
 
@@ -109,9 +112,9 @@ describe('RF01 - Gestão de Perfil Geográfico', () => {
 
     await waitFor(() => expect(corpoDoCadastro(fetchFalso)).not.toBeNull());
     expect(corpoDoCadastro(fetchFalso)).toMatchObject({
-      nome: 'Ana', sobrenome: 'Lima', cpf: '52998224725', telefone: '11987654321',
+      nome: 'Ana', sobrenome: 'Lima', cpf: '52998224725', data_nascimento: '1995-07-14', telefone: '11987654321',
       email: 'ana@teste.com', cep: '04710150', logradouro: 'Rua Padre José de Anchieta',
-      numero: '10', bairro: 'Brooklin', aceita_termos: true,
+      numero: '10', bairro: 'Campo Belo', aceita_termos: true,
     });
   });
 
@@ -176,6 +179,71 @@ describe('RN02 - Verificação de Identidade (Compliance)', () => {
     await enviar(user);
     expect(screen.getByText('CPF inválido. Verifique os dígitos.')).toBeInTheDocument();
     expect(corpoDoCadastro(fetchFalso)).toBeNull();
+  });
+});
+
+/* ─────────────────────────────────────────────────────────── */
+describe('RF27 - Verificação de Maioridade', () => {
+  // Datas relativas a hoje, para o teste valer em qualquer dia em que rodar
+  const anosAtras = (anos, diasAMais = 0) => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - anos);
+    d.setDate(d.getDate() + diasAMais);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+
+  test('o campo é de data completa (dia, mês e ano), com calendário do navegador', () => {
+    abrir();
+    const data = campoData();
+    expect(data).toHaveAttribute('type', 'date');
+    expect(data).toHaveAttribute('min', '1900-01-01');
+    expect(data).toHaveAttribute('max', anosAtras(0));
+  });
+
+  test('a tela avisa que o cadastro é só para maiores de 18 anos', () => {
+    abrir();
+    expect(screen.getByText('O cadastro é só para maiores de 18 anos.')).toBeInTheDocument();
+  });
+
+  test('menor de 18 anos é avisado na hora e o cadastro não é enviado', async () => {
+    const { user, fetchFalso } = abrir();
+    await preencher(user, { data: anosAtras(17) });
+    expect(screen.getByText(/É preciso ter 18 anos ou mais/)).toBeInTheDocument();
+    await enviar(user);
+    expect(screen.getByRole('alert')).toHaveTextContent('É preciso ter 18 anos ou mais para se cadastrar no Santo Desapego.');
+    expect(corpoDoCadastro(fetchFalso)).toBeNull();
+  });
+
+  test('quem completa 18 anos hoje consegue se cadastrar', async () => {
+    const { user, fetchFalso } = abrir();
+    await preencher(user, { data: anosAtras(18) });
+    await enviar(user);
+    await waitFor(() => expect(corpoDoCadastro(fetchFalso)).not.toBeNull());
+    expect(corpoDoCadastro(fetchFalso).data_nascimento).toBe(anosAtras(18));
+  });
+
+  test('quem só completa 18 anos amanhã ainda não consegue', async () => {
+    const { user, fetchFalso } = abrir();
+    await preencher(user, { data: anosAtras(18, 1) });
+    await enviar(user);
+    expect(screen.getByRole('alert')).toHaveTextContent('É preciso ter 18 anos ou mais');
+    expect(corpoDoCadastro(fetchFalso)).toBeNull();
+  });
+
+  test('sem a data de nascimento o cadastro não é enviado', async () => {
+    const { user, fetchFalso } = abrir();
+    await preencher(user, { data: '' });
+    await enviar(user);
+    expect(screen.getByRole('alert')).toHaveTextContent('Informe a data de nascimento completa (dia, mês e ano).');
+    expect(corpoDoCadastro(fetchFalso)).toBeNull();
+  });
+
+  test('envia a data completa para a API (AAAA-MM-DD)', async () => {
+    const { user, fetchFalso } = abrir();
+    await preencher(user);
+    await enviar(user);
+    await waitFor(() => expect(corpoDoCadastro(fetchFalso)).not.toBeNull());
+    expect(corpoDoCadastro(fetchFalso).data_nascimento).toBe('1995-07-14');
   });
 });
 
@@ -258,7 +326,7 @@ describe('RF22 - Newsletter', () => {
 /* ─────────────────────────────────────────────────────────── */
 describe('RNF12 - Acessibilidade WCAG 2.1 Nível AA', () => {
   // WCAG 1.3.1 / 4.1.2: o leitor de tela precisa anunciar o nome de cada campo
-  test.each(['Nome', 'CPF', 'E-mail', 'Senha', 'CEP'])('o campo "%s" do cadastro tem rótulo ligado a ele', (rotulo) => {
+  test.each(['Nome', 'CPF', 'Data de nascimento', 'E-mail', 'Senha', 'CEP'])('o campo "%s" do cadastro tem rótulo ligado a ele', (rotulo) => {
     abrir();
     expect(screen.getByLabelText(new RegExp(`^${rotulo}`))).toBeInTheDocument();
   });
