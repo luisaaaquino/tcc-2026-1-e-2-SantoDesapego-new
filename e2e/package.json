@@ -1,0 +1,16 @@
+{
+  "name": "santo-desapego-e2e",
+  "private": true,
+  "description": "Testes ponta a ponta (Playwright): site + API + banco de teste",
+  "type": "commonjs",
+  "scripts": {
+    "test": "playwright test",
+    "test:relatorio": "playwright test --reporter=list,json",
+    "graficos": "node converter-relatorio.js && python ../santo-desapego-api/tests/graficos.py --relatorio relatorio --sistema \"Ponta a ponta\" --prefixo ponta-a-ponta --sem-cobertura",
+    "relatorio-html": "playwright show-report relatorio/html"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.65.0"
+  }
+}

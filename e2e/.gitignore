@@ -1,0 +1,5 @@
+﻿node_modules/
+relatorio/html/
+relatorio/evidencias/
+relatorio/api.log
+relatorio/resultado*.json

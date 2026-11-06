@@ -1,0 +1,35 @@
+{
+  "pagina": "Cadastro",
+  "por_impacto": {
+    "critical": 2,
+    "serious": 2,
+    "moderate": 0,
+    "minor": 0
+  },
+  "violacoes": [
+    {
+      "regra": "button-name",
+      "impacto": "critical",
+      "descricao": "Buttons must have discernible text",
+      "elementos": 2
+    },
+    {
+      "regra": "color-contrast",
+      "impacto": "serious",
+      "descricao": "Elements must meet minimum color contrast ratio thresholds",
+      "elementos": 8
+    },
+    {
+      "regra": "link-in-text-block",
+      "impacto": "serious",
+      "descricao": "Links must be distinguishable without relying on color",
+      "elementos": 2
+    },
+    {
+      "regra": "select-name",
+      "impacto": "critical",
+      "descricao": "Select element must have an accessible name",
+      "elementos": 1
+    }
+  ]
+}

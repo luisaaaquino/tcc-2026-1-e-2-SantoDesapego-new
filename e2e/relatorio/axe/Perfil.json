@@ -1,0 +1,23 @@
+{
+  "pagina": "Perfil",
+  "por_impacto": {
+    "critical": 0,
+    "serious": 2,
+    "moderate": 0,
+    "minor": 0
+  },
+  "violacoes": [
+    {
+      "regra": "color-contrast",
+      "impacto": "serious",
+      "descricao": "Elements must meet minimum color contrast ratio thresholds",
+      "elementos": 10
+    },
+    {
+      "regra": "label-content-name-mismatch",
+      "impacto": "serious",
+      "descricao": "Elements must have their visible text as part of their accessible name",
+      "elementos": 1
+    }
+  ]
+}

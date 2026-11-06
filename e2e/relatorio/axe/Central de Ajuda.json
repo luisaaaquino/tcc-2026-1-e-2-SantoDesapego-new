@@ -1,0 +1,17 @@
+{
+  "pagina": "Central de Ajuda",
+  "por_impacto": {
+    "critical": 0,
+    "serious": 1,
+    "moderate": 0,
+    "minor": 0
+  },
+  "violacoes": [
+    {
+      "regra": "color-contrast",
+      "impacto": "serious",
+      "descricao": "Elements must meet minimum color contrast ratio thresholds",
+      "elementos": 8
+    }
+  ]
+}

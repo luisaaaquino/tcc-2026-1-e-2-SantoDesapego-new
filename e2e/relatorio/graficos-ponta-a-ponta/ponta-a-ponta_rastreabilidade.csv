@@ -1,0 +1,29 @@
+﻿Código;Nome;Casos de teste;Aprovados;Reprovados;Situação;Testes que falharam
+RN01;Restrição Geográfica de Anúncios;1;1;0;Atendido;
+RN02;Verificação de Identidade (Compliance);2;2;0;Atendido;
+RN05;Garantia de Recebimento (Escrow);1;1;0;Atendido;
+RN08;Avaliação Obrigatória;1;1;0;Atendido;
+RN09;Moderação de Conteúdo;2;2;0;Atendido;
+RN11;Consentimento Livre e Esclarecido;1;1;0;Atendido;
+RN13;Validação de Raio de Atuação;2;2;0;Atendido;
+RN14;Bloqueio de Mensagens Externas;1;1;0;Atendido;
+RN16;Código de Entrega;1;1;0;Atendido;
+RN18;Condições de Compra;1;1;0;Atendido;
+RF01;Gestão de Perfil Geográfico;2;2;0;Atendido;
+RF02;Autenticação e Gestão de Sessão;5;5;0;Atendido;
+RF06;Anúncio de Produtos;3;3;0;Atendido;
+RF07;Busca por Filtros;5;5;0;Atendido;
+RF08;Busca Geolocalizada por Proximidade;1;1;0;Atendido;
+RF10;Favoritos e Itens Salvos;1;1;0;Atendido;
+RF12;Gestão do Ciclo de Vida do Anúncio;1;1;0;Atendido;
+RF15;Chat Interno;1;1;0;Atendido;
+RF16;Sistema de Reputação;1;1;0;Atendido;
+RF17;Histórico de Transações;1;1;0;Atendido;
+RF18;Notificações ao Usuário;1;1;0;Atendido;
+RF19;Denúncia de Anúncios e Usuários;1;1;0;Atendido;
+RF20;Módulo Administrativo;3;3;0;Atendido;
+RF23;Confirmação de Entrega por Código;1;1;0;Atendido;
+RNF04;Princípio do Menor Privilégio;1;1;0;Atendido;
+RNF11;Usabilidade e Responsividade;8;8;0;Atendido;
+RNF12;Acessibilidade WCAG 2.1 Nível AA;11;8;3;Não atendido;axe: página Explorar sem erros críticos de acessibilidade | axe: página Cadastro sem erros críticos de acessibilidade | axe: página Anunciar (logado) sem erros críticos de acessibilidade
+RNF20;Tolerância a Falhas da Inteligência Artificial;1;1;0;Atendido;

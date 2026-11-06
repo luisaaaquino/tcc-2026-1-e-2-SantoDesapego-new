@@ -1,0 +1,17 @@
+{
+  "pagina": "Home",
+  "por_impacto": {
+    "critical": 0,
+    "serious": 1,
+    "moderate": 0,
+    "minor": 0
+  },
+  "violacoes": [
+    {
+      "regra": "aria-command-name",
+      "impacto": "serious",
+      "descricao": "ARIA commands must have an accessible name",
+      "elementos": 3
+    }
+  ]
+}
