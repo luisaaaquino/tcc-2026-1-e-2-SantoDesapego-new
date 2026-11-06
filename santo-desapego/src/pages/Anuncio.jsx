@@ -120,18 +120,15 @@ const Anuncio = () => {
       .then(async (res) => {
         const texto = await res.text();
 
-        if (!res.ok) {
-          throw new Error(
-            res.status === 404
-              ? `O servidor respondeu 404 em /api/anuncios/${id} — essa rota provavelmente não existe no back-end ainda.`
-              : `O servidor respondeu ${res.status}.`
-          );
-        }
+        // 404 = anúncio removido/inexistente: a tela usa o texto padrão
+        // ("pode ter sido vendido ou removido"); outros erros, mensagem genérica.
+        if (res.status === 404) throw new Error('');
+        if (!res.ok) throw new Error('Não foi possível carregar o anúncio agora. Tente de novo em instantes.');
 
         try {
           return JSON.parse(texto);
         } catch {
-          throw new Error('O servidor respondeu, mas não em JSON. Confira a rota /api/anuncios/:id.');
+          throw new Error('Não foi possível carregar o anúncio agora. Tente de novo em instantes.');
         }
       })
       .then((dados) => {

@@ -1,0 +1,51 @@
+/* ============================================================
+   NAOENCONTRADA.CSS — Página 404 (rota inexistente)
+   ============================================================ */
+.nao-encontrada-wrapper { display: flex; flex-direction: column; min-height: 100vh; }
+
+.nao-encontrada {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 1.5rem;
+  gap: 0.75rem;
+}
+.nao-encontrada-codigo {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(4rem, 14vw, 7rem);
+  line-height: 1;
+  color: var(--terracotta);
+}
+.nao-encontrada h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  color: var(--ink);
+}
+.nao-encontrada p { color: var(--ink-soft); max-width: 28rem; }
+
+.nao-encontrada-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.nao-encontrada-btn {
+  padding: 0.8rem 1.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--ink);
+  color: var(--cream);
+  font-weight: 700;
+  transition: background 0.18s;
+}
+.nao-encontrada-btn:hover { background: var(--terracotta); }
+.nao-encontrada-btn.secundario {
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid var(--border);
+}
+.nao-encontrada-btn.secundario:hover { background: var(--cream-soft); }

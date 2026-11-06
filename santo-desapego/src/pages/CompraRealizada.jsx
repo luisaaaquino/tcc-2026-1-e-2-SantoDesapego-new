@@ -90,6 +90,25 @@ export default function CompraRealizada() {
     },
   ];
 
+  // Aberta direto, sem retorno do Mercado Pago: não há compra pra mostrar
+  // (antes o status caía em 'approved' e dizia "Compra realizada").
+  if (!paymentId && !statusUrl && !state?.anuncio) {
+    return (
+      <main className="compra">
+        <section className="compra-hero">
+          <h1 className="compra-hero__titulo">Nenhuma compra para mostrar.</h1>
+          <p className="compra-hero__texto">
+            Esta página aparece depois de um pagamento. Suas compras ficam em "Compras realizadas", no seu perfil.
+          </p>
+          <div className="compra-hero__acoes">
+            <Link to="/perfil?aba=compras" className="btn btn--solido">Ver minhas compras</Link>
+            <Link to="/explorar" className="btn btn--vazado">Continuar garimpando</Link>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   if (carregando) {
     return (
       <main className="compra">
