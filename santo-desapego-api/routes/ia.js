@@ -8,6 +8,16 @@ const router = express.Router();
 
 const ERROS_LLM = ['LLM_INDISPONIVEL', 'LLM_RESPOSTA_INVALIDA'];
 
+// Suspensão do agente pelo operador (repositório v3.0.0): com SANTO_SUSPENSO=1
+// no .env do servidor, as rotas de IA recusam conversas e decisões — dá pra
+// desligar a IA sem mexer no código. O registro de cliques não usa IA e segue.
+function verificarSuspensao(req, res, next) {
+  if ((process.env.SANTO_SUSPENSO || '').trim() === '1') {
+    return res.status(503).json({ erro: 'O assistente está temporariamente fora do ar. Tente mais tarde.' });
+  }
+  return next();
+}
+
 // Resposta comum das duas rotas do agente de anúncio
 function respostaAgente(conversaId, resultado) {
   const e = resultado.estado;
@@ -18,6 +28,8 @@ function respostaAgente(conversaId, resultado) {
     conversa: e.conversa,
     anuncio: resultado.anuncio || null,
     indicio: resultado.indicio || null,
+    // Edições recusadas na aprovação (controle C3) — o chat mostra antes de sair
+    edicoes_ignoradas: resultado.edicoes_ignoradas || null,
     // Rascunho esperando a decisão do vendedor (aprovar / editar / desistir)
     pendencia: e.pendencia || null,
     // Anúncios comparáveis da consulta de preço — o chat mostra como cards clicáveis
@@ -45,7 +57,7 @@ async function salvarConversa(client, conversaId, resultado) {
 //  avaliador). O agente nunca publica: rascunho aprovado volta como
 //  `pendencia`, e quem decide é o vendedor (rota /decisao abaixo).
 // ============================================================
-router.post('/api/ia/agente-anuncio', autenticar, async (req, res) => {
+router.post('/api/ia/agente-anuncio', autenticar, verificarSuspensao, async (req, res) => {
   const { conversa_id, mensagem } = req.body;
   if (!mensagem || !String(mensagem).trim()) {
     return res.status(400).json({ erro: 'Escreva uma mensagem.' });
@@ -125,7 +137,7 @@ router.post('/api/ia/agente-anuncio', autenticar, async (req, res) => {
 //  estado_conservacao. As fotos vêm aqui (são exigidas pra publicar).
 //  Idempotente: aprovar duas vezes não cria dois anúncios.
 // ============================================================
-router.post('/api/ia/agente-anuncio/decisao', autenticar, async (req, res) => {
+router.post('/api/ia/agente-anuncio/decisao', autenticar, verificarSuspensao, async (req, res) => {
   const { conversa_id, acao, campos, imagens } = req.body;
   if (!conversa_id) return res.status(400).json({ erro: 'conversa_id é obrigatório.' });
 
@@ -174,7 +186,7 @@ router.post('/api/ia/agente-anuncio/decisao', autenticar, async (req, res) => {
 //  rascunho (reaproveita POST /api/anuncios e toda a validação de
 //  sempre) — por isso não precisa de transação nem de tabela nova.
 // ============================================================
-router.post('/api/ia/anuncio-rapido', autenticar, async (req, res) => {
+router.post('/api/ia/anuncio-rapido', autenticar, verificarSuspensao, async (req, res) => {
   try {
     const { mensagem } = req.body;
     if (!mensagem || !mensagem.trim()) {
@@ -247,7 +259,7 @@ async function responderSugestao(req, res, mensagens) {
   }
 }
 
-router.post('/api/ia/sugestao-compra', autenticar, (req, res) => {
+router.post('/api/ia/sugestao-compra', autenticar, verificarSuspensao, (req, res) => {
   const mensagens = (Array.isArray(req.body?.mensagens) ? req.body.mensagens : [])
     .filter((m) => typeof m === 'string' && m.trim())
     .slice(-6)
@@ -255,6 +267,6 @@ router.post('/api/ia/sugestao-compra', autenticar, (req, res) => {
   return responderSugestao(req, res, mensagens);
 });
 
-router.get('/api/ia/sugestao-compra', autenticar, (req, res) => responderSugestao(req, res, []));
+router.get('/api/ia/sugestao-compra', autenticar, verificarSuspensao, (req, res) => responderSugestao(req, res, []));
 
 module.exports = router;

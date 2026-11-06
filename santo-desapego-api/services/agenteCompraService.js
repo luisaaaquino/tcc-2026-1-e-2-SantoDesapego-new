@@ -178,6 +178,11 @@ async function gerarSugestaoCompra({ usuarioId, bairroPerfil, mensagens = [] }) 
     pedido = conteudo;
     // Só ids reais, sem repetição, no máximo 4
     pedido.categorias_ids = [...new Set(pedido.categorias_ids.filter((id) => porId.has(id)))].slice(0, MAX_CATEGORIAS);
+    // Achado do caso 08 (repositório v3.0.0): o modelo às vezes chuta uma
+    // categoria (ex.: "Diversos") e ao mesmo tempo diz que não sabe o que a
+    // pessoa procura. Nesse caso a categoria não vale: segue pros cliques ou
+    // pra pergunta, em vez de buscar algo que ninguém pediu.
+    if (pedido.faltando.includes('o_que_procura')) pedido.categorias_ids = [];
   }
 
   // 2. completar [código] — sem categoria, tenta os cliques; sem bairro dito, usa o do perfil

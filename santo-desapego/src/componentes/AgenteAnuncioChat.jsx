@@ -42,6 +42,9 @@ const AgenteAnuncioChat = ({ onPublicado }) => {
   const [observacaoPreco, setObservacaoPreco] = useState(null);
   const [pendencia, setPendencia] = useState(null);
   const [campos, setCampos] = useState(null);
+  // Publicou, mas alguma edição foi recusada (controle C3): segura a tela de
+  // sucesso até a pessoa ler o aviso no chat
+  const [publicadoComAviso, setPublicadoComAviso] = useState(null);
   const fimRef = useRef(null);
   const fileRef = useRef(null);
   const token = localStorage.getItem('sd_token');
@@ -67,7 +70,10 @@ const AgenteAnuncioChat = ({ onPublicado }) => {
       setPendencia(null);
     }
 
-    if (dados.status === 'publicado') onPublicado(dados.anuncio);
+    if (dados.status === 'publicado') {
+      if (dados.edicoes_ignoradas) setPublicadoComAviso(dados.anuncio);
+      else onPublicado(dados.anuncio);
+    }
     else if (AVISOS_FINAIS[dados.status]) setStatusFinal(dados.status);
   };
 
@@ -241,7 +247,16 @@ const AgenteAnuncioChat = ({ onPublicado }) => {
 
       {statusFinal && <div className="ia-chat-aviso">{AVISOS_FINAIS[statusFinal]}</div>}
 
-      {!statusFinal && !pendencia && (
+      {publicadoComAviso && (
+        <div className="ia-chat-aviso">
+          Seu anúncio foi publicado, mas algumas alterações não foram aplicadas — veja o motivo na última mensagem acima.
+          <div className="ia-chat-aprovacao-botoes">
+            <button type="button" onClick={() => onPublicado(publicadoComAviso)}>Ver meu anúncio publicado</button>
+          </div>
+        </div>
+      )}
+
+      {!statusFinal && !pendencia && !publicadoComAviso && (
         <form className="ia-chat-form" onSubmit={enviar}>
           <input
             value={texto}

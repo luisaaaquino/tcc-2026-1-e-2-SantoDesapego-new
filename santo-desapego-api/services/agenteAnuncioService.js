@@ -43,6 +43,8 @@ const PROMPT_ANUNCIO_RAPIDO = ler('anuncio-rapido.md');
 const ACOES = ['perguntar', 'consultar_preco', 'preencher_rascunho', 'registrar_indicio'];
 const ESTADOS_VALIDOS = ['novo', 'seminovo', 'usado', 'para-reparo'];
 const CAMPOS_EDITAVEIS = ['titulo', 'descricao', 'preco', 'estado_conservacao'];
+const PRECO_MAX = 50000;
+const ESTADOS_SEM_AVARIA = ['novo', 'seminovo'];
 
 /* ════════════════════════════════════════════════════════════
    Schemas (esquemas.py) + validação em código
@@ -544,6 +546,45 @@ async function rodarAgente({ estado, mensagemVendedor, vendedorId }) {
 }
 
 /* ════════════════════════════════════════════════════════════
+   Controle C3 (repositório v3.0.0, aplicar_edicoes): valida as
+   edições do vendedor na aprovação. A edição não passa de novo pelo
+   portão nem pelo avaliador, então as regras ficam aqui: estado da
+   lista, preço positivo e com teto, e o defeito declarado na conversa
+   não sai do anúncio (nem pelo estado, nem apagando da descrição).
+   Edição que não passa é ignorada e o motivo vai pro vendedor.
+   ════════════════════════════════════════════════════════════ */
+const NOMES_CAMPOS = { titulo: 'título', descricao: 'descrição', preco: 'preço', estado_conservacao: 'estado' };
+
+function aplicarEdicoes(rascunhoOriginal, campos) {
+  const rascunho = { ...rascunhoOriginal };
+  const ignoradas = {};
+  const avarias = (rascunhoOriginal.avarias_declaradas || []).filter(Boolean);
+  for (const [campo, valor] of Object.entries(campos)) {
+    if (!CAMPOS_EDITAVEIS.includes(campo) || valor === null || valor === '') {
+      ignoradas[campo] = 'campo não editável ou vazio';
+    } else if (campo === 'preco') {
+      const preco = Number(valor);
+      if (!Number.isFinite(preco)) ignoradas[campo] = `valor inválido: ${valor}`;
+      else if (!(preco > 0 && preco <= PRECO_MAX)) ignoradas[campo] = `precisa ser maior que zero e até ${reais(PRECO_MAX)}`;
+      else rascunho.preco = preco;
+    } else if (campo === 'estado_conservacao') {
+      if (!ESTADOS_VALIDOS.includes(valor)) ignoradas[campo] = `estado fora da lista: ${valor}`;
+      else if (avarias.length && ESTADOS_SEM_AVARIA.includes(valor)) ignoradas[campo] = `"${valor}" não combina com o defeito declarado (${avarias.join('; ')})`;
+      else rascunho.estado_conservacao = valor;
+    } else {
+      rascunho[campo] = String(valor);
+    }
+  }
+  // O defeito declarado fica no anúncio mesmo que a descrição editada o apague.
+  const editouDescricao = 'descricao' in campos && !('descricao' in ignoradas);
+  const faltam = editouDescricao
+    ? avarias.filter((a) => !rascunho.descricao.toLowerCase().includes(a.toLowerCase()))
+    : [];
+  if (faltam.length) rascunho.descricao = `${rascunho.descricao.trimEnd()} Defeito declarado: ${faltam.join('; ')}.`;
+  return { rascunho, ignoradas };
+}
+
+/* ════════════════════════════════════════════════════════════
    Decisão do vendedor sobre a pendência (aprovar / editar / rejeitar)
    Idempotente: se já publicou, devolve o mesmo anúncio.
    ════════════════════════════════════════════════════════════ */
@@ -560,15 +601,7 @@ async function decidirPendencia({ estado, acao, campos, imagens, vendedorId }) {
   }
   if (acao !== 'aprovar' && acao !== 'editar') return { erro: 'Ação inválida.' };
 
-  const rascunho = { ...estado.rascunho };
-  const ignoradas = {};
-  for (const [campo, valor] of Object.entries(campos || {})) {
-    if (CAMPOS_EDITAVEIS.includes(campo) && valor !== null && valor !== '') {
-      rascunho[campo] = campo === 'preco' ? Number(valor) : valor;
-    } else {
-      ignoradas[campo] = valor;
-    }
-  }
+  const { rascunho, ignoradas } = aplicarEdicoes(estado.rascunho, campos || {});
   const resultado = await publicarAnuncioNoBanco({ vendedorId, rascunho, imagens });
   if (resultado.erro) {
     // Ex.: falta foto — a pendência continua aberta pra pessoa corrigir.
@@ -578,9 +611,13 @@ async function decidirPendencia({ estado, acao, campos, imagens, vendedorId }) {
   estado.rascunho = rascunho;
   estado.anuncio_publicado = { id: resultado.anuncio.id, titulo: resultado.anuncio.titulo };
   passo(estado, 'aprovacao_vendedor', { decide: 'humano', acao, edicoes_ignoradas: ignoradas });
+  // Edição recusada não fica em silêncio: o vendedor fica sabendo o que não mudou e por quê
+  const avisoEdicoes = Object.keys(ignoradas).length
+    ? ` Algumas alterações não foram aplicadas: ${Object.entries(ignoradas).map(([c, m]) => `${NOMES_CAMPOS[c] || c} (${m})`).join('; ')}.`
+    : '';
   return finalizar(estado, 'publicado', 'aprovado pelo vendedor', {
-    mensagem: `Pronto! "${resultado.anuncio.titulo}" está no ar por ${reais(rascunho.preco)}.`,
-    retorno: { anuncio: resultado.anuncio },
+    mensagem: `Pronto! "${resultado.anuncio.titulo}" está no ar por ${reais(rascunho.preco)}.${avisoEdicoes}`,
+    retorno: { anuncio: resultado.anuncio, edicoes_ignoradas: avisoEdicoes ? ignoradas : null },
   });
 }
 
@@ -640,6 +677,7 @@ module.exports = {
   consultarPrecoComparaveis,
   gerarRascunhoRapido,
   // expostos pra teste
+  aplicarEdicoes,
   avariaDaConversa,
   checarPreco,
 };
