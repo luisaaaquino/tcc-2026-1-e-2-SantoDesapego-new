@@ -5,7 +5,7 @@ const crypto  = require('crypto');
 const pool = require('../db');
 const { enviarEmail } = require('../utils/email');
 const { montarEmail } = require('../utils/emailTemplate');
-const { validarSenhaForte, validarCPF } = require('../utils/validacao');
+const { validarSenhaForte, validarCPF, validarDataNascimento } = require('../utils/validacao');
 const { TERMOS_VERSAO_ATUAL } = require('../utils/termos');
 const { criarDesafio, verificarCodigo, reenviarCodigo } = require('../utils/verificacao');
 
@@ -63,6 +63,11 @@ router.post('/api/auth/cadastro', async (req, res) => {
     if (!validarCPF(cpf)) {
       return res.status(400).json({ erro: 'CPF inválido. Verifique os dígitos.' });
     }
+    // RF27 / RN11 — só quem já completou 18 anos
+    const erroIdade = validarDataNascimento(req.body.data_nascimento);
+    if (erroIdade) return res.status(400).json({ erro: erroIdade });
+    const dataNascimento = String(req.body.data_nascimento).trim(); // AAAA-MM-DD
+
     if (!aceita_termos) {
       return res.status(400).json({ erro: 'É necessário aceitar os Termos de Uso.' });
     }
@@ -77,13 +82,13 @@ router.post('/api/auth/cadastro', async (req, res) => {
       `INSERT INTO usuarios
         (nome, sobrenome, telefone, email, senha,
          cep, logradouro, numero, complemento, bairro,
-         cpf, aceita_termos, recebe_newsletter, termos_versao, termos_aceitos_em)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())
+         cpf, data_nascimento, aceita_termos, recebe_newsletter, termos_versao, termos_aceitos_em)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW())
        RETURNING id, nome, email`,
       [
         nome, sobrenome, telefone || null, emailNormalizado, senhaHash,
         cep || null, logradouro || null, numero || null,
-        complemento || null, bairro || null, cpf,
+        complemento || null, bairro || null, cpf, dataNascimento,
         aceita_termos === true, recebe_newsletter === true, TERMOS_VERSAO_ATUAL
       ]
     );

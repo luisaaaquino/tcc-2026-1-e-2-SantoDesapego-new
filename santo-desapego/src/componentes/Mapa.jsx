@@ -20,7 +20,6 @@ const ZOOM_INICIAL = 13;
 const CENTRO_BAIRRO = {
   'Santo Amaro Centro':    { lat: -23.6562, lng: -46.7191 },
   'Campo Belo':            { lat: -23.6299, lng: -46.6704 },
-  'Brooklin':              { lat: -23.6268, lng: -46.6881 },
   'Granja Julieta':        { lat: -23.6275, lng: -46.7120 },
   'Jardim Marajoara':      { lat: -23.6554, lng: -46.6849 },
   'Vila Cruzeiro':         { lat: -23.6352, lng: -46.7117 },

@@ -9,7 +9,6 @@
 const BAIRRO_COORDS = {
   'Santo Amaro Centro': { lat: -23.6574, lng: -46.7062 },
   'Campo Belo':          { lat: -23.6189, lng: -46.6823 },
-  'Brooklin':             { lat: -23.6270, lng: -46.6883 },
   'Granja Julieta':        { lat: -23.6608, lng: -46.7120 },
   'Jardim Marajoara':       { lat: -23.6534, lng: -46.6816 },
   'Vila Cruzeiro':           { lat: -23.6480, lng: -46.7010 },

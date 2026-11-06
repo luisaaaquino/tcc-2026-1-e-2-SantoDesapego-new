@@ -27,7 +27,7 @@ export const TERMOS_USO = [
   {
     titulo: '3. Elegibilidade e Cadastro',
     paragrafos: [
-      'O cadastro é permitido exclusivamente a pessoas físicas maiores de 18 (dezoito) anos e plenamente capazes. O Usuário deve fornecer: nome completo, e-mail válido, CPF e CEP. O usuário é responsável pela veracidade das informações fornecidas. Cadastros com dados falsos serão cancelados sem aviso prévio.',
+      'O cadastro é permitido exclusivamente a pessoas físicas maiores de 18 (dezoito) anos e plenamente capazes. O Usuário deve fornecer: nome completo, e-mail válido, CPF, data de nascimento e CEP. A maioridade é verificada pela data de nascimento informada no cadastro. O usuário é responsável pela veracidade das informações fornecidas. Cadastros com dados falsos serão cancelados sem aviso prévio.',
       'A senha deve respeitar a política de complexidade definida em: mínimo de 8 caracteres, letras maiúsculas e minúsculas, número e caractere especial. É vedado o uso de dados pessoais na senha.',
     ],
   },
@@ -114,6 +114,7 @@ export const POLITICA_PRIVACIDADE = [
     ],
     lista: [
       'Dados de Identificação: nome completo, CPF e endereço de e-mail, coletados para criação e autenticação da conta.',
+      'Data de nascimento: coletada para verificar a maioridade no cadastro.',
       'Dados de Localização: CEP, utilizado para validação geográfica e ordenação de anúncios por proximidade.',
       'Dados de Transação: histórico de compras e vendas, status de pagamentos e avaliações, para rastreabilidade e comprovantes.',
       'Dados de Navegação: logs de acesso e metadados de sessão, utilizados para segurança e auditoria.',

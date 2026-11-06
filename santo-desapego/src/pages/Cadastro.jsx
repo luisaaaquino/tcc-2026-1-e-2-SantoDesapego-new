@@ -10,6 +10,24 @@ import {
   IconChevron, IconEye, IconCheck, IconAlert, IconArrowRight,
 } from '../componentes/Icones';
 
+// RF27 / RN11 — só quem já completou 18 anos (mesma regra da API: utils/validacao.js)
+const IDADE_MINIMA = 18;
+const hojeISO = () => {
+  const h = new Date();
+  return `${h.getFullYear()}-${String(h.getMonth() + 1).padStart(2, '0')}-${String(h.getDate()).padStart(2, '0')}`;
+};
+const erroDataNascimento = (valor) => {
+  const partes = /^(\d{4})-(\d{2})-(\d{2})$/.exec(valor || '');
+  if (!partes) return 'Informe a data de nascimento completa (dia, mês e ano).';
+  const [ano, mes, dia] = partes.slice(1).map(Number);
+  const hoje = new Date();
+  const jaFezAniversario = hoje.getMonth() + 1 > mes || (hoje.getMonth() + 1 === mes && hoje.getDate() >= dia);
+  const idade = hoje.getFullYear() - ano - (jaFezAniversario ? 0 : 1);
+  if (ano < 1900 || idade < 0) return 'Data de nascimento inválida.';
+  if (idade < IDADE_MINIMA) return 'É preciso ter 18 anos ou mais para se cadastrar no Santo Desapego.';
+  return null;
+};
+
 // RN01 — mesma faixa de CEP de Santo Amaro validada no back-end
 const cepDentroDeSantoAmaro = (cepNumeros) => {
   const prefixo = parseInt(cepNumeros.slice(0, 5), 10);
@@ -47,7 +65,7 @@ const validarCPF = (cpf) => {
 
 const Cadastro = () => {
   const [form, setForm] = useState({
-    nome: '', sobrenome: '', cpf: '', email: '', confirmEmail: '',
+    nome: '', sobrenome: '', cpf: '', dataNascimento: '', email: '', confirmEmail: '',
     telefone: '', senha: '', confirmSenha: '',
     cep: '', logradouro: '', numero: '', complemento: '', bairro: '',
   });
@@ -182,6 +200,9 @@ const Cadastro = () => {
     if (!validarCPF(form.cpf))
       return 'CPF inválido. Verifique os dígitos.';
 
+    const erroIdade = erroDataNascimento(form.dataNascimento);
+    if (erroIdade) return erroIdade;
+
     const telefoneNumeros = form.telefone.replace(/\D/g, '');
     if (telefoneNumeros.length < 10)
       return 'Telefone inválido. Use o formato (XX) XXXXX-XXXX.';
@@ -235,6 +256,7 @@ const Cadastro = () => {
       nome:              form.nome.trim(),
       sobrenome:         form.sobrenome.trim(),
       cpf:               form.cpf.replace(/\D/g, ''),       // 52998224725 (11 dígitos)
+      data_nascimento:   form.dataNascimento,               // RF27: AAAA-MM-DD
       telefone:          form.telefone.replace(/\D/g, ''),  // 11976069928 (11 dígitos)
       email:             form.email.trim().toLowerCase(),
       senha:             form.senha,
@@ -274,6 +296,8 @@ const Cadastro = () => {
     }
   };
   const segClass = (i) => `strength-seg${i < passwordStrength.score ? ' ' + passwordStrength.cls : ''}`;
+  // Aviso da idade aparece assim que a data está completa
+  const dataErro = form.dataNascimento ? erroDataNascimento(form.dataNascimento) : null;
 
   /* ── Ícones reutilizáveis ── */
 
@@ -414,6 +438,25 @@ const Cadastro = () => {
                         autoComplete="tel" required />
                     </div>
                   </div>
+                </div>
+
+                {/* Data de nascimento [RF27] — para verificar a maioridade */}
+                <div className="field-group" style={{ marginTop: '1rem' }}>
+                  <label className="field-label" htmlFor="cad-data-nascimento">
+                    Data de nascimento <span className="required">*</span>
+                  </label>
+                  <div className="field-input-wrap">
+                    <IconUser />
+                    <input type="date" id="cad-data-nascimento"
+                      className={`field-input${dataErro ? ' error' : ''}`}
+                      name="dataNascimento" value={form.dataNascimento}
+                      min="1900-01-01" max={hojeISO()}
+                      autoComplete="bday" aria-describedby="cad-data-ajuda" required
+                      onChange={handleChange} />
+                  </div>
+                  {dataErro
+                    ? <span className="field-error" id="cad-data-ajuda"><IconAlert /> {dataErro}</span>
+                    : <span className="field-hint" id="cad-data-ajuda">O cadastro é só para maiores de 18 anos.</span>}
                 </div>
 
                 {/* E-mail e Confirmação */}

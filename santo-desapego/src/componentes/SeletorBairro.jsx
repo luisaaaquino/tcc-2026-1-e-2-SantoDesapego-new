@@ -8,7 +8,8 @@ import './SeletorBairro.css';
    ../../../santo-desapego-api/utils/geolocalizacao.js (backend) e
    ./Mapa.jsx (mapa) — mantenha as três listas em sincronia ao editar. */
 export const BAIRROS = [
-  'Santo Amaro Centro', 'Campo Belo', 'Brooklin', 'Granja Julieta',
+  // Brooklin saiu da lista: os CEPs dele (045xx) ficam fora da faixa da RN01
+  'Santo Amaro Centro', 'Campo Belo', 'Granja Julieta',
   'Jardim Marajoara', 'Vila Cruzeiro', 'Vila Mascote', 'Vila Sofia',
   'Alto da Boa Vista', 'Campo Grande', 'Chácara Flora', 'Chácara Monte Alegre',
   'Chácara Santo Antônio', 'Interlagos', 'Jardim Cordeiro', 'Jardim Petrópolis',

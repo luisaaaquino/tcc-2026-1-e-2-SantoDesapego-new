@@ -65,39 +65,33 @@ router.post('/api/avaliacoes', autenticar, async (req, res) => {
 });
 
 // ============================================================
-//  POST DENÚNCIA — usuário denuncia anúncio ou perfil [RF19]
+//  POST DENÚNCIA — feita a partir da página de um anúncio [RF19/RF21]
+//  Fica ligada ao anúncio e ao anunciante dele; não há denúncia
+//  direta de perfil.
 // ============================================================
 router.post('/api/denuncias', autenticar, async (req, res) => {
   try {
-    const { anuncio_id, usuario_denunciado_id, motivo, descricao } = req.body;
+    const { anuncio_id, motivo, descricao } = req.body;
 
     const motivosValidos = ['conteudo_inadequado', 'fraude', 'violacao_termos', 'outro'];
     if (!motivo || !motivosValidos.includes(motivo)) {
       return res.status(400).json({ erro: 'Selecione um motivo válido para a denúncia.' });
     }
-    if (!anuncio_id && !usuario_denunciado_id) {
-      return res.status(400).json({ erro: 'Informe o anúncio ou o usuário que está sendo denunciado.' });
+    if (!anuncio_id) {
+      return res.status(400).json({ erro: 'A denúncia é feita a partir da página de um anúncio. [RF19]' });
     }
     if (descricao && descricao.length > 1000) {
       return res.status(400).json({ erro: 'Descrição muito longa (máximo 1000 caracteres).' });
     }
 
-    let denunciadoId = usuario_denunciado_id || null;
-
-    if (anuncio_id) {
-      const anuncio = await pool.query('SELECT vendedor_id FROM anuncios WHERE id = $1', [anuncio_id]);
-      if (anuncio.rows.length === 0) {
-        return res.status(404).json({ erro: 'Anúncio não encontrado.' });
-      }
-      if (anuncio.rows[0].vendedor_id === req.userId) {
-        return res.status(400).json({ erro: 'Você não pode denunciar seu próprio anúncio.' });
-      }
-      denunciadoId = denunciadoId || anuncio.rows[0].vendedor_id;
+    const anuncio = await pool.query('SELECT vendedor_id FROM anuncios WHERE id = $1', [anuncio_id]);
+    if (anuncio.rows.length === 0) {
+      return res.status(404).json({ erro: 'Anúncio não encontrado.' });
     }
-
-    if (denunciadoId === req.userId) {
-      return res.status(400).json({ erro: 'Você não pode denunciar a si mesmo.' });
+    if (anuncio.rows[0].vendedor_id === req.userId) {
+      return res.status(400).json({ erro: 'Você não pode denunciar seu próprio anúncio.' });
     }
+    const denunciadoId = anuncio.rows[0].vendedor_id;
 
     const nova = await pool.query(
       `INSERT INTO denuncias (denunciante_id, anuncio_id, usuario_denunciado_id, motivo, descricao)

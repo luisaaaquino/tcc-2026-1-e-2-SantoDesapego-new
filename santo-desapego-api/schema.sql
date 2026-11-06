@@ -16,6 +16,8 @@ CREATE TABLE usuarios (
   complemento        VARCHAR(100),
   bairro             VARCHAR(100),
   cpf                CHAR(11)      NOT NULL UNIQUE,
+  -- [RF27] Verificação de maioridade. NULL em contas anteriores à migration 009
+  data_nascimento    DATE          CHECK (data_nascimento >= DATE '1900-01-01'),
   aceita_termos      BOOLEAN       NOT NULL DEFAULT FALSE,
   termos_versao      VARCHAR(20),
   termos_aceitos_em  TIMESTAMP,

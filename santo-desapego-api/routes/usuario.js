@@ -291,7 +291,7 @@ router.put('/api/usuario/senha', autenticar, async (req, res) => {
 router.get('/api/usuario/exportar', autenticar, async (req, res) => {
   try {
     const resultado = await pool.query(
-      `SELECT id, nome, sobrenome, cpf, telefone, email,
+      `SELECT id, nome, sobrenome, cpf, to_char(data_nascimento, 'YYYY-MM-DD') AS data_nascimento, telefone, email,
               cep, logradouro, numero, complemento, bairro,
               recebe_newsletter, aceita_termos, termos_versao, termos_aceitos_em
        FROM usuarios WHERE id = $1`, [req.userId]

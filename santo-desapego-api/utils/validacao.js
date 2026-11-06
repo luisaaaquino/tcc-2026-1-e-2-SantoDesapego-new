@@ -74,4 +74,37 @@ const validarCPF = (cpf) => {
   return true;
 };
 
-module.exports = { validarSenhaForte, validarCEPSantoAmaro, conteudoTemPalavrasProibidas, validarCPF };
+// ============================================================
+//  RF27 / RN11 — Verificação de maioridade
+//  Recebe a data no formato do campo de data do navegador (AAAA-MM-DD)
+//  e calcula a idade exata: só passa quem já completou 18 anos.
+//  Devolve a mensagem de erro ou null.
+// ============================================================
+const IDADE_MINIMA = 18;
+
+const idadeEm = (ano, mes, dia, hoje) => {
+  const [anoHoje, mesHoje, diaHoje] = [hoje.getFullYear(), hoje.getMonth() + 1, hoje.getDate()];
+  const jaFezAniversario = mesHoje > mes || (mesHoje === mes && diaHoje >= dia);
+  return anoHoje - ano - (jaFezAniversario ? 0 : 1);
+};
+
+const validarDataNascimento = (valor, hoje = new Date()) => {
+  const partes = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(valor ?? '').trim());
+  if (!partes) return 'Informe a data de nascimento completa (dia, mês e ano).';
+  const [ano, mes, dia] = partes.slice(1).map(Number);
+
+  // Data que existe no calendário (recusa 30/02, 31/04...)
+  const data = new Date(Date.UTC(ano, mes - 1, dia));
+  if (data.getUTCFullYear() !== ano || data.getUTCMonth() !== mes - 1 || data.getUTCDate() !== dia) {
+    return 'Data de nascimento inválida.';
+  }
+  const idade = idadeEm(ano, mes, dia, hoje);
+  if (ano < 1900 || idade < 0) return 'Data de nascimento inválida.';
+  if (idade < IDADE_MINIMA) return 'É preciso ter 18 anos ou mais para se cadastrar no Santo Desapego.';
+  return null;
+};
+
+module.exports = {
+  validarSenhaForte, validarCEPSantoAmaro, conteudoTemPalavrasProibidas, validarCPF,
+  validarDataNascimento, IDADE_MINIMA,
+};
