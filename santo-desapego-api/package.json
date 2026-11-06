@@ -60,5 +60,8 @@
     "jest": "^29.7.0",
     "nodemon": "^3.1.14",
     "supertest": "^7.1.4"
+  },
+  "allowScripts": {
+    "bcrypt@6.0.0": true
   }
 }
