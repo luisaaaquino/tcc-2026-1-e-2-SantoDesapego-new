@@ -1,2 +1,4 @@
-node_modules/
+﻿node_modules/
 .env
+tests/relatorio/cobertura/
+tests/relatorio/resultado.json

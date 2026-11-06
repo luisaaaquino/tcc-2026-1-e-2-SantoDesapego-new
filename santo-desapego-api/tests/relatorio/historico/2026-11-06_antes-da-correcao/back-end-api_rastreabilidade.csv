@@ -1,0 +1,44 @@
+﻿Código;Nome;Casos de teste;Aprovados;Reprovados;Situação;Testes que falharam
+RN01;Restrição Geográfica de Anúncios;9;9;0;Atendido;
+RN02;Verificação de Identidade (Compliance);6;4;2;Não atendido;cadastro com CPF de dígitos verificadores inválidos é recusado | cadastro com CPF de dígitos repetidos (111.111.111-11) é recusado
+RN03;Política de Senhas Robustas;16;16;0;Atendido;
+RN04;Confirmação de Pagamento via API;5;5;0;Atendido;
+RN05;Garantia de Recebimento (Escrow);3;3;0;Atendido;
+RN06;Taxa de Intermediação;5;5;0;Atendido;
+RN07;Ciclo de Vida do Anúncio;3;3;0;Atendido;
+RN08;Avaliação Obrigatória;5;5;0;Atendido;
+RN09;Moderação de Conteúdo;13;13;0;Atendido;
+RN10;Exclusão de Dados Pessoais;3;3;0;Atendido;
+RN11;Consentimento Livre e Esclarecido;2;2;0;Atendido;
+RN12;Minimização de Dados;2;2;0;Atendido;
+RN13;Validação de Raio de Atuação;4;4;0;Atendido;
+RN14;Bloqueio de Mensagens Externas;5;3;2;Não atendido;"não abre conversa nova em anúncio ""pausado"" | não abre conversa nova em anúncio ""expirado"""
+RN15;Classificação de Estado de Conservação;6;6;0;Atendido;
+RN16;Código de Entrega;5;5;0;Atendido;
+RN17;Verificação em Duas Etapas;9;9;0;Atendido;
+RN18;Condições de Compra;5;5;0;Atendido;
+RF01;Gestão de Perfil Geográfico;7;6;1;Não atendido;cadastro com CPF inválido é recusado
+RF02;Autenticação e Gestão de Sessão;25;25;0;Atendido;
+RF03;Aceite de Termos e Política de Privacidade;4;4;0;Atendido;
+RF04;Gestão de Dados Pessoais (LGPD);14;14;0;Atendido;
+RF05;Perfil Público do Usuário;5;5;0;Atendido;
+RF06;Anúncio de Produtos;42;41;1;Não atendido;IA: para quando o modelo repete a mesma ação 3 vezes seguidas (laço)
+RF07;Busca por Filtros;8;8;0;Atendido;
+RF08;Busca Geolocalizada por Proximidade;4;4;0;Atendido;
+RF09;Categorização Hierárquica de Produtos;3;3;0;Atendido;
+RF10;Favoritos e Itens Salvos;7;7;0;Atendido;
+RF11;Upload e Gestão de Imagens;7;7;0;Atendido;
+RF12;Gestão do Ciclo de Vida do Anúncio;16;15;1;Não atendido;edição sem CEP é recusada com mensagem de validação
+RF13;Painel do Vendedor;4;4;0;Atendido;
+RF14;Integração com Gateway de Pagamento;12;12;0;Atendido;
+RF15;Chat Interno;9;9;0;Atendido;
+RF16;Sistema de Reputação;9;9;0;Atendido;
+RF17;Histórico de Transações;12;12;0;Atendido;
+RF18;Notificações ao Usuário;11;11;0;Atendido;
+RF19;Denúncia de Anúncios e Usuários;3;3;0;Atendido;
+RF20;Módulo Administrativo;26;26;0;Atendido;
+RF21;Canal de Denúncias;13;13;0;Atendido;
+RF22;Newsletter;3;3;0;Atendido;
+RF23;Confirmação de Entrega por Código;5;5;0;Atendido;
+RF24;Assistente de Compra com IA;25;25;0;Atendido;
+RF25;Central de Ajuda;9;9;0;Atendido;
