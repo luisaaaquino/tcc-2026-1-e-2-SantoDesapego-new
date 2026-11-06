@@ -25,5 +25,5 @@ RF20;Módulo Administrativo;3;3;0;Atendido;
 RF23;Confirmação de Entrega por Código;1;1;0;Atendido;
 RNF04;Princípio do Menor Privilégio;1;1;0;Atendido;
 RNF11;Usabilidade e Responsividade;8;8;0;Atendido;
-RNF12;Acessibilidade WCAG 2.1 Nível AA;11;8;3;Não atendido;axe: página Explorar sem erros críticos de acessibilidade | axe: página Cadastro sem erros críticos de acessibilidade | axe: página Anunciar (logado) sem erros críticos de acessibilidade
+RNF12;Acessibilidade WCAG 2.1 Nível AA;11;11;0;Atendido;
 RNF20;Tolerância a Falhas da Inteligência Artificial;1;1;0;Atendido;

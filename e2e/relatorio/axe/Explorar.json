@@ -1,7 +1,7 @@
 {
   "pagina": "Explorar",
   "por_impacto": {
-    "critical": 2,
+    "critical": 0,
     "serious": 1,
     "moderate": 0,
     "minor": 0
@@ -12,18 +12,6 @@
       "impacto": "serious",
       "descricao": "Elements must meet minimum color contrast ratio thresholds",
       "elementos": 20
-    },
-    {
-      "regra": "label",
-      "impacto": "critical",
-      "descricao": "Form elements must have labels",
-      "elementos": 1
-    },
-    {
-      "regra": "select-name",
-      "impacto": "critical",
-      "descricao": "Select element must have an accessible name",
-      "elementos": 1
     }
   ]
 }

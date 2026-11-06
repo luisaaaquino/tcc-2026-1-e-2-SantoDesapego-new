@@ -1,0 +1,16 @@
+﻿Código;Nome;Casos de teste;Aprovados;Reprovados;Situação;Testes que falharam
+RN02;Verificação de Identidade (Compliance);5;5;0;Atendido;
+RN03;Política de Senhas Robustas;6;6;0;Atendido;
+RN11;Consentimento Livre e Esclarecido;3;3;0;Atendido;
+RN15;Classificação de Estado de Conservação;3;3;0;Atendido;
+RN17;Verificação em Duas Etapas;10;10;0;Atendido;
+RF01;Gestão de Perfil Geográfico;13;13;0;Atendido;
+RF02;Autenticação e Gestão de Sessão;7;7;0;Atendido;
+RF06;Anúncio de Produtos;12;12;0;Atendido;
+RF08;Busca Geolocalizada por Proximidade;5;5;0;Atendido;
+RF09;Categorização Hierárquica de Produtos;2;2;0;Atendido;
+RF18;Notificações ao Usuário;9;9;0;Atendido;
+RF22;Newsletter;2;2;0;Atendido;
+RF25;Central de Ajuda;3;3;0;Atendido;
+RNF12;Acessibilidade WCAG 2.1 Nível AA;27;27;0;Atendido;
+RNF19;Limites de Upload;13;13;0;Atendido;

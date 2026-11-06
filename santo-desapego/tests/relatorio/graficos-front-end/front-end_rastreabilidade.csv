@@ -12,5 +12,5 @@ RF09;Categorização Hierárquica de Produtos;2;2;0;Atendido;
 RF18;Notificações ao Usuário;9;9;0;Atendido;
 RF22;Newsletter;2;2;0;Atendido;
 RF25;Central de Ajuda;3;3;0;Atendido;
-RNF12;Acessibilidade WCAG 2.1 Nível AA;27;18;9;Não atendido;"o campo ""Título"" do anúncio tem rótulo ligado a ele | o estado de conservação pode ser escolhido pelo teclado | o campo ""Nome"" do cadastro tem rótulo ligado a ele | o campo ""CPF"" do cadastro tem rótulo ligado a ele | o campo ""E-mail"" do cadastro tem rótulo ligado a ele | o campo ""Senha"" do cadastro tem rótulo ligado a ele | o campo ""CEP"" do cadastro tem rótulo ligado a ele | o aceite dos Termos é uma caixa de seleção que funciona pelo teclado | os erros do formulário são anunciados ao leitor de tela"
+RNF12;Acessibilidade WCAG 2.1 Nível AA;27;27;0;Atendido;
 RNF19;Limites de Upload;13;13;0;Atendido;

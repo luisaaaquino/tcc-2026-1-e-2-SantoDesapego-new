@@ -1,7 +1,7 @@
 {
   "pagina": "Anunciar",
   "por_impacto": {
-    "critical": 1,
+    "critical": 0,
     "serious": 1,
     "moderate": 0,
     "minor": 0
@@ -12,12 +12,6 @@
       "impacto": "serious",
       "descricao": "Elements must meet minimum color contrast ratio thresholds",
       "elementos": 15
-    },
-    {
-      "regra": "select-name",
-      "impacto": "critical",
-      "descricao": "Select element must have an accessible name",
-      "elementos": 3
     }
   ]
 }
