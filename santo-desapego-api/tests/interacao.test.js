@@ -14,7 +14,10 @@ const { montarApp, tokenDe, linhas } = require('./helpers');
 const COMPRADOR = 1;
 const VENDEDOR = 2;
 
-beforeEach(() => jest.clearAllMocks());
+beforeEach(() => {
+  jest.clearAllMocks();
+  pool.query.mockReset(); // descarta respostas simuladas que sobraram do teste anterior
+});
 
 describe('RN14 - Bloqueio de Mensagens Externas', () => {
   const app = montarApp(require('../routes/conversas'));
@@ -40,13 +43,26 @@ describe('RN14 - Bloqueio de Mensagens Externas', () => {
     expect(res.status).toBe(401);
   });
 
-  // "vendido" fica de fora: o comprador ainda precisa do chat para combinar a entrega
   test.each(['pausado', 'expirado'])('não abre conversa nova em anúncio "%s"', async (status) => {
-    pool.query
-      .mockResolvedValueOnce(linhas({ id: 10, vendedor_id: VENDEDOR, status }))
-      .mockResolvedValueOnce(linhas({ id: 3 }));
+    pool.query.mockResolvedValueOnce(linhas({ id: 10, vendedor_id: VENDEDOR, status }));
     const res = await abrirConversa(COMPRADOR);
     expect(res.status).toBe(400);
+    expect(pool.query.mock.calls.some(([sql]) => /INSERT INTO conversas/.test(sql))).toBe(false);
+  });
+
+  test('anúncio vendido: quem comprou ainda abre a conversa para combinar a entrega', async () => {
+    pool.query
+      .mockResolvedValueOnce(linhas({ id: 10, vendedor_id: VENDEDOR, status: 'vendido' }))
+      .mockResolvedValueOnce(linhas({ 1: 1 })) // tem compra deste anúncio
+      .mockResolvedValueOnce(linhas({ id: 3 }));
+    expect((await abrirConversa(COMPRADOR)).status).toBe(201);
+  });
+
+  test('anúncio vendido: quem não comprou não abre conversa nova', async () => {
+    pool.query
+      .mockResolvedValueOnce(linhas({ id: 10, vendedor_id: VENDEDOR, status: 'vendido' }))
+      .mockResolvedValueOnce(linhas());
+    expect((await abrirConversa(COMPRADOR)).status).toBe(400);
   });
 });
 

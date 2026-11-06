@@ -376,8 +376,8 @@ const Explorar = () => {
             </div>
 
             <div className="explorar-sort">
-              <span>Ordenar por:</span>
-              <select value={ordenacao} onChange={(e) => setOrdenacao(e.target.value)}>
+              <label htmlFor="explorar-ordenacao">Ordenar por:</label>
+              <select id="explorar-ordenacao" value={ordenacao} onChange={(e) => setOrdenacao(e.target.value)}>
                 <option value="recentes">Mais recentes</option>
                 <option value="distancia">Mais próximos</option>
                 <option value="preco-menor">Menor preço</option>
@@ -456,6 +456,8 @@ const Explorar = () => {
                 </div>
                 <input
                   type="range"
+                  aria-label="Preço máximo"
+                  aria-valuetext={`até R$ ${precoMax}`}
                   min="0"
                   max="5000"
                   step="100"

@@ -33,6 +33,19 @@ router.post('/api/conversas', autenticar, async (req, res) => {
       return res.status(400).json({ erro: 'Você não pode conversar no seu próprio anúncio.' });
     }
 
+    // RN14 — conversa nova só a partir de anúncio ativo. Exceção: anúncio
+    // vendido, para quem comprou, que precisa combinar a entrega pelo chat.
+    const { status } = anuncio.rows[0];
+    if (status !== 'ativo') {
+      const comprouEsteAnuncio = status === 'vendido' && (await pool.query(
+        'SELECT 1 FROM compras WHERE anuncio_id = $1 AND comprador_id = $2 LIMIT 1',
+        [anuncio_id, req.userId]
+      )).rows.length > 0;
+      if (!comprouEsteAnuncio) {
+        return res.status(400).json({ erro: 'Este anúncio não está disponível para novas conversas. [RN14]' });
+      }
+    }
+
     // ON CONFLICT: se a conversa já existe, devolve ela em vez de duplicar
     const conversa = await pool.query(
       `INSERT INTO conversas (anuncio_id, comprador_id, vendedor_id)

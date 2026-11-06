@@ -293,17 +293,19 @@ function checarOrcamento(estado, inicioMs) {
   return null;
 }
 
-// A mesma ação com os mesmos argumentos N vezes seguidas = laço.
+// A mesma ação com os mesmos argumentos N (LACO_REPETICOES) vezes seguidas = laço.
 function assinatura(d) {
   const chave = { acao: d.acao, consulta: d.consulta || null, indicio: d.indicio || null };
   if (d.acao === 'preencher_rascunho') chave.rascunho = d.rascunho || null;
   return crypto.createHash('sha256').update(JSON.stringify(chave)).digest('hex').slice(0, 12);
 }
 
+// A decisão atual já está na trajetória quando isto é chamado (ver rodarAgente),
+// então as N últimas incluem ela. Antes contava N-1 e parava na 2ª repetição.
 function detectarLaco(estado, ass) {
-  const anteriores = estado.trajetoria.filter((p) => p.etapa === 'agente' && p.assinatura).map((p) => p.assinatura);
-  const ultimas = anteriores.slice(-(LACO_REPETICOES - 1));
-  return ultimas.length === LACO_REPETICOES - 1 && ultimas.every((a) => a === ass);
+  const decisoes = estado.trajetoria.filter((p) => p.etapa === 'agente' && p.assinatura).map((p) => p.assinatura);
+  const ultimas = decisoes.slice(-LACO_REPETICOES);
+  return ultimas.length === LACO_REPETICOES && ultimas.every((a) => a === ass);
 }
 
 /* ════════════════════════════════════════════════════════════

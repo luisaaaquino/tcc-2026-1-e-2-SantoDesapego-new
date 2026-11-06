@@ -54,4 +54,24 @@ const conteudoTemPalavrasProibidas = (texto) => {
   });
 };
 
-module.exports = { validarSenhaForte, validarCEPSantoAmaro, conteudoTemPalavrasProibidas };
+// ============================================================
+//  RN02 — CPF válido pelos dígitos verificadores
+//  Mesma conta da tela de cadastro (Cadastro.jsx): a API também
+//  precisa conferir, senão quem chama a API direto passa qualquer CPF.
+// ============================================================
+const validarCPF = (cpf) => {
+  const numeros = String(cpf || '').replace(/\D/g, '');
+  if (numeros.length !== 11) return false;
+  if (/^(\d)\1+$/.test(numeros)) return false; // 111.111.111-11 e parecidos
+
+  for (const tamanho of [9, 10]) {
+    let soma = 0;
+    for (let i = 0; i < tamanho; i++) soma += Number(numeros[i]) * (tamanho + 1 - i);
+    let digito = (soma * 10) % 11;
+    if (digito === 10) digito = 0;
+    if (digito !== Number(numeros[tamanho])) return false;
+  }
+  return true;
+};
+
+module.exports = { validarSenhaForte, validarCEPSantoAmaro, conteudoTemPalavrasProibidas, validarCPF };

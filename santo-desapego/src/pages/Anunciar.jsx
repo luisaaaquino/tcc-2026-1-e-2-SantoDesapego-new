@@ -462,10 +462,11 @@ const Anunciar = () => {
               </div>
 
               <div className="anunciar-field">
-                <label className="anunciar-field-label">
+                <label className="anunciar-field-label" htmlFor="anuncio-titulo">
                   Título <span className="required">*</span>
                 </label>
                 <input
+                  id="anuncio-titulo"
                   type="text"
                   className="anunciar-input"
                   placeholder="Ex: Sofá 3 lugares veludo verde, em ótimo estado"
@@ -480,10 +481,11 @@ const Anunciar = () => {
               </div>
 
               <div className="anunciar-field">
-                <label className="anunciar-field-label">
+                <label className="anunciar-field-label" htmlFor="anuncio-descricao">
                   Descrição <span className="required">*</span>
                 </label>
                 <textarea
+                  id="anuncio-descricao"
                   className="anunciar-textarea"
                   placeholder="Descreva o produto em detalhes: características, motivo da venda, possíveis defeitos. Quanto mais detalhe, melhor!"
                   value={form.descricao}
@@ -496,22 +498,26 @@ const Anunciar = () => {
                 </div>
               </div>
 
-              <div className="anunciar-field">
-                <label className="anunciar-field-label">
+              {/* Grupo de opções (radio): funciona pelo teclado (setas) e no leitor de tela */}
+              <fieldset className="anunciar-field anunciar-fieldset">
+                <legend className="anunciar-field-label">
                   Estado de conservação <span className="required">*</span>
-                </label>
+                </legend>
                 <div className="estado-grid">
                   {ESTADOS_CONSERVACAO.map((e) => (
-                    <div key={e.value}
-                      className={`estado-option${form.estado_conservacao === e.value ? ' selected' : ''}`}
-                      onClick={() => setForm({ ...form, estado_conservacao: e.value })}>
-                      <span className="estado-option-emoji">{e.emoji}</span>
+                    <label key={e.value}
+                      className={`estado-option${form.estado_conservacao === e.value ? ' selected' : ''}`}>
+                      <input type="radio" name="estado_conservacao" value={e.value}
+                        className="estado-option-radio"
+                        checked={form.estado_conservacao === e.value}
+                        onChange={() => setForm({ ...form, estado_conservacao: e.value })} />
+                      <span className="estado-option-emoji" aria-hidden="true">{e.emoji}</span>
                       <span className="estado-option-name">{e.name}</span>
                       <span className="estado-option-desc">{e.desc}</span>
-                    </div>
+                    </label>
                   ))}
                 </div>
-              </div>
+              </fieldset>
             </div>
 
             {/* ════ SEÇÃO 2 — Categoria ════ */}
@@ -523,11 +529,11 @@ const Anunciar = () => {
 
               <div className="anunciar-row">
                 <div className="anunciar-field">
-                  <label className="anunciar-field-label">
+                  <label className="anunciar-field-label" htmlFor="anuncio-categoria">
                     Categoria principal <span className="required">*</span>
                   </label>
                   <div className="anunciar-select-wrap">
-                    <select className="anunciar-select"
+                    <select id="anuncio-categoria" className="anunciar-select"
                       value={form.categoria_principal}
                       onChange={(e) => handleCategoriaPrincipal(e.target.value)}
                       required>
@@ -540,12 +546,12 @@ const Anunciar = () => {
                 </div>
 
                 <div className="anunciar-field">
-                  <label className="anunciar-field-label">
+                  <label className="anunciar-field-label" htmlFor="anuncio-subcategoria">
                     Subcategoria
                     {subcategorias.length > 0 && <span className="required">*</span>}
                   </label>
                   <div className="anunciar-select-wrap">
-                    <select className="anunciar-select"
+                    <select id="anuncio-subcategoria" className="anunciar-select"
                       value={form.categoria_id}
                       onChange={(e) => setForm({ ...form, categoria_id: e.target.value })}
                       disabled={subcategorias.length === 0}
@@ -573,12 +579,12 @@ const Anunciar = () => {
 
               <div className="anunciar-row">
                 <div className="anunciar-field">
-                  <label className="anunciar-field-label">
+                  <label className="anunciar-field-label" htmlFor="anuncio-preco">
                     Preço <span className="required">*</span>
                   </label>
                   <div className="anunciar-input-prefix-wrap">
                     <span className="anunciar-input-prefix">R$</span>
-                    <input type="text" className="anunciar-input"
+                    <input type="text" id="anuncio-preco" className="anunciar-input"
                       placeholder="0,00" value={form.preco}
                       onChange={(e) => formatPreco(e.target.value)}
                       required />
@@ -601,10 +607,10 @@ const Anunciar = () => {
 
               <div className="anunciar-row">
                 <div className="anunciar-field">
-                  <label className="anunciar-field-label">
+                  <label className="anunciar-field-label" htmlFor="anuncio-cep">
                     CEP <span className="required">*</span>
                   </label>
-                  <input type="text" className="anunciar-input"
+                  <input type="text" id="anuncio-cep" className="anunciar-input"
                     placeholder="04000-000" value={form.cep}
                     onChange={(e) => setForm({ ...form, cep: maskCEP(e.target.value) })}
                     maxLength={9} required />
@@ -612,11 +618,11 @@ const Anunciar = () => {
                 </div>
 
                 <div className="anunciar-field">
-                  <label className="anunciar-field-label">
+                  <label className="anunciar-field-label" htmlFor="anuncio-bairro">
                     Bairro <span className="required">*</span>
                   </label>
                   <div className="anunciar-select-wrap">
-                    <select className="anunciar-select"
+                    <select id="anuncio-bairro" className="anunciar-select"
                       value={form.bairro}
                       onChange={(e) => setForm({ ...form, bairro: e.target.value })}
                       required>

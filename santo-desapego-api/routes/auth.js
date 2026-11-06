@@ -5,7 +5,7 @@ const crypto  = require('crypto');
 const pool = require('../db');
 const { enviarEmail } = require('../utils/email');
 const { montarEmail } = require('../utils/emailTemplate');
-const { validarSenhaForte } = require('../utils/validacao');
+const { validarSenhaForte, validarCPF } = require('../utils/validacao');
 const { TERMOS_VERSAO_ATUAL } = require('../utils/termos');
 const { criarDesafio, verificarCodigo, reenviarCodigo } = require('../utils/verificacao');
 
@@ -48,14 +48,20 @@ router.post('/api/auth/cadastro', async (req, res) => {
     const {
       nome, sobrenome, telefone, email, senha,
       cep, logradouro, numero, complemento, bairro,
-      cpf, aceita_termos, recebe_newsletter
+      aceita_termos, recebe_newsletter
     } = req.body;
+    // Guarda só os números (a tela já manda assim; quem chama a API direto pode mandar com máscara)
+    const cpf = String(req.body.cpf || '').replace(/\D/g, '');
 
     const emailNormalizado = normalizarEmail(email);
     if (!nome || !sobrenome || !emailNormalizado || !senha || !cpf) {
       return res.status(400).json({
         erro: 'Nome, sobrenome, CPF, e-mail e senha são obrigatórios.'
       });
+    }
+    // RN02 — CPF válido pelos dígitos verificadores
+    if (!validarCPF(cpf)) {
+      return res.status(400).json({ erro: 'CPF inválido. Verifique os dígitos.' });
     }
     if (!aceita_termos) {
       return res.status(400).json({ erro: 'É necessário aceitar os Termos de Uso.' });

@@ -70,6 +70,8 @@ router.put('/api/anuncios/:id', autenticar, async (req, res) => {
     if (!categoria_id)
       return res.status(400).json({ erro: 'Selecione uma categoria.' });
 
+    // Sem CEP, validarCEPSantoAmaro quebraria (cep.replace) e a rota devolveria erro 500
+    if (!cep) return res.status(400).json({ erro: 'CEP não informado.' });
     if (!validarCEPSantoAmaro(cep)) {
       return res.status(400).json({
         erro: 'Anúncios só podem ser publicados em CEPs de Santo Amaro e regiões limítrofes (zona sul de SP). [RN01]'

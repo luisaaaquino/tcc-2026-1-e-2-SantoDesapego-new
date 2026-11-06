@@ -356,7 +356,7 @@ const Cadastro = () => {
 
                 {/* Mensagem de erro global */}
                 {globalError && (
-                  <div style={{
+                  <div role="alert" style={{
                     background: 'var(--erro-fundo)',
                     border: '1.5px solid var(--terracotta)',
                     color: 'var(--terracotta)',
@@ -380,10 +380,10 @@ const Cadastro = () => {
                     { label: 'Sobrenome', name: 'sobrenome', placeholder: 'Ex: Costa',   ac: 'family-name' },
                   ].map((f) => (
                     <div className="field-group no-mb" key={f.name}>
-                      <label className="field-label">{f.label} <span className="required">*</span></label>
+                      <label className="field-label" htmlFor={`cad-${f.name}`}>{f.label} <span className="required">*</span></label>
                       <div className="field-input-wrap">
                         <IconUser />
-                        <input type="text" className="field-input" placeholder={f.placeholder}
+                        <input type="text" id={`cad-${f.name}`} className="field-input" placeholder={f.placeholder}
                           name={f.name} value={form[f.name]} onChange={handleChange} autoComplete={f.ac} required />
                       </div>
                     </div>
@@ -393,10 +393,10 @@ const Cadastro = () => {
                 {/* CPF + Telefone (lado a lado) */}
                 <div className="form-row" style={{ marginTop: '1rem' }}>
                   <div className="field-group no-mb">
-                    <label className="field-label">CPF <span className="required">*</span></label>
+                    <label className="field-label" htmlFor="cad-cpf">CPF <span className="required">*</span></label>
                     <div className="field-input-wrap">
                       <IconID />
-                      <input type="text" className={`field-input${cpfError ? ' error' : ''}`}
+                      <input type="text" id="cad-cpf" className={`field-input${cpfError ? ' error' : ''}`}
                         placeholder="000.000.000-00" name="cpf" value={form.cpf}
                         onChange={(e) => formatCPF(e.target.value)}
                         maxLength={14} required />
@@ -405,10 +405,10 @@ const Cadastro = () => {
                   </div>
 
                   <div className="field-group no-mb">
-                    <label className="field-label">Telefone / WhatsApp <span className="required">*</span></label>
+                    <label className="field-label" htmlFor="cad-telefone">Telefone / WhatsApp <span className="required">*</span></label>
                     <div className="field-input-wrap">
                       <IconPhone />
-                      <input type="tel" className="field-input" placeholder="(11) 99999-9999"
+                      <input type="tel" id="cad-telefone" className="field-input" placeholder="(11) 99999-9999"
                         name="telefone" value={form.telefone}
                         onChange={(e) => formatPhone(e.target.value)}
                         autoComplete="tel" required />
@@ -418,10 +418,10 @@ const Cadastro = () => {
 
                 {/* E-mail e Confirmação */}
                 <div className="field-group" style={{ marginTop: '1rem' }}>
-                  <label className="field-label">E-mail <span className="required">*</span></label>
+                  <label className="field-label" htmlFor="cad-email">E-mail <span className="required">*</span></label>
                   <div className="field-input-wrap">
                     <IconMail />
-                    <input type="email" className={`field-input${emailError ? ' error' : ''}`}
+                    <input type="email" id="cad-email" className={`field-input${emailError ? ' error' : ''}`}
                       placeholder="voce@email.com" name="email" value={form.email}
                       onChange={(e) => { handleChange(e); validateEmail(e.target.value); }}
                       autoComplete="email" required />
@@ -430,10 +430,10 @@ const Cadastro = () => {
                 </div>
 
                 <div className="field-group">
-                  <label className="field-label">Confirmar e-mail <span className="required">*</span></label>
+                  <label className="field-label" htmlFor="cad-confirm-email">Confirmar e-mail <span className="required">*</span></label>
                   <div className="field-input-wrap">
                     <IconMail />
-                    <input type="email" className={`field-input${confirmEmailError ? ' error' : ''}`}
+                    <input type="email" id="cad-confirm-email" className={`field-input${confirmEmailError ? ' error' : ''}`}
                       placeholder="repita seu e-mail" name="confirmEmail" value={form.confirmEmail}
                       onChange={(e) => { handleChange(e); validateConfirmEmail(e.target.value); }}
                       autoComplete="email" required />
@@ -443,14 +443,15 @@ const Cadastro = () => {
 
                 {/* Senha e Confirmação */}
                 <div className="field-group">
-                  <label className="field-label">Senha <span className="required">*</span></label>
+                  <label className="field-label" htmlFor="cad-senha">Senha <span className="required">*</span></label>
                   <div className="field-input-wrap">
                     <IconLock />
-                    <input type={showSenha ? 'text' : 'password'} className="field-input"
+                    <input type={showSenha ? 'text' : 'password'} id="cad-senha" className="field-input"
                       placeholder="Mínimo 8 caracteres" name="senha" value={form.senha}
                       onChange={(e) => { handleChange(e); checkPasswordStrength(e.target.value); }}
                       autoComplete="new-password" required minLength={8} />
-                    <button type="button" className="password-toggle" onClick={() => setShowSenha(!showSenha)}>
+                    <button type="button" className="password-toggle" onClick={() => setShowSenha(!showSenha)}
+                      aria-label={showSenha ? 'Esconder senha' : 'Mostrar senha'}>
                       {IconEye(showSenha)}
                     </button>
                   </div>
@@ -465,15 +466,16 @@ const Cadastro = () => {
                 </div>
 
                 <div className="field-group">
-                  <label className="field-label">Confirmar senha <span className="required">*</span></label>
+                  <label className="field-label" htmlFor="cad-confirm-senha">Confirmar senha <span className="required">*</span></label>
                   <div className="field-input-wrap">
                     <IconLock />
-                    <input type={showConfirmSenha ? 'text' : 'password'}
+                    <input type={showConfirmSenha ? 'text' : 'password'} id="cad-confirm-senha"
                       className={`field-input${confirmSenhaError ? ' error' : ''}`}
                       placeholder="repita sua senha" name="confirmSenha" value={form.confirmSenha}
                       onChange={(e) => { handleChange(e); validateConfirmSenha(e.target.value); }}
                       autoComplete="new-password" required />
-                    <button type="button" className="password-toggle" onClick={() => setShowConfirmSenha(!showConfirmSenha)}>
+                    <button type="button" className="password-toggle" onClick={() => setShowConfirmSenha(!showConfirmSenha)}
+                      aria-label={showConfirmSenha ? 'Esconder senha' : 'Mostrar senha'}>
                       {IconEye(showConfirmSenha)}
                     </button>
                   </div>
@@ -485,10 +487,10 @@ const Cadastro = () => {
 
                 <div className="form-row">
                   <div className="field-group no-mb">
-                    <label className="field-label">CEP <span className="required">*</span></label>
+                    <label className="field-label" htmlFor="cad-cep">CEP <span className="required">*</span></label>
                     <div className="field-input-wrap cep-wrap">
                       <IconPin />
-                      <input type="text" className={`field-input${cepOk ? ' success' : ''}`}
+                      <input type="text" id="cad-cep" className={`field-input${cepOk ? ' success' : ''}`}
                         placeholder="04000-000" name="cep" value={form.cep}
                         onChange={(e) => formatCEP(e.target.value)} maxLength={9} autoComplete="postal-code" required />
                       {cepLoading && <div className="cep-loader visible"><span /></div>}
@@ -500,12 +502,12 @@ const Cadastro = () => {
                   </div>
 
                   <div className="field-group no-mb">
-                    <label className="field-label">Bairro <span className="required">*</span></label>
+                    <label className="field-label" htmlFor="cad-bairro">Bairro <span className="required">*</span></label>
                     <div className="select-wrap field-input-wrap">
                       <svg className="select-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
                       </svg>
-                      <select className="field-select" name="bairro" value={form.bairro} onChange={handleChange} required>
+                      <select id="cad-bairro" className="field-select" name="bairro" value={form.bairro} onChange={handleChange} required>
                         <option value="" disabled>Selecione...</option>
                         {BAIRROS.map((b) => (
                           <option key={b}>{b}</option>
@@ -530,10 +532,10 @@ const Cadastro = () => {
 
                 <div className="form-row" style={{ marginTop: '1rem' }}>
                   <div className="field-group no-mb" style={{ gridColumn: '1 / -1' }}>
-                    <label className="field-label">Logradouro <span className="required">*</span></label>
+                    <label className="field-label" htmlFor="cad-logradouro">Logradouro <span className="required">*</span></label>
                     <div className="field-input-wrap">
                       <IconHome />
-                      <input type="text" className="field-input" placeholder="Rua, Av., Travessa..."
+                      <input type="text" id="cad-logradouro" className="field-input" placeholder="Rua, Av., Travessa..."
                         name="logradouro" value={form.logradouro} onChange={handleChange}
                         autoComplete="street-address" required />
                     </div>
@@ -542,18 +544,18 @@ const Cadastro = () => {
 
                 <div className="form-row" style={{ marginTop: '1rem' }}>
                   <div className="field-group no-mb">
-                    <label className="field-label">Número <span className="required">*</span></label>
+                    <label className="field-label" htmlFor="cad-numero">Número <span className="required">*</span></label>
                     <div className="field-input-wrap">
                       <IconHome />
-                      <input type="text" className="field-input" placeholder="Ex: 123"
+                      <input type="text" id="cad-numero" className="field-input" placeholder="Ex: 123"
                         name="numero" value={form.numero} onChange={handleChange} required />
                     </div>
                   </div>
                   <div className="field-group no-mb">
-                    <label className="field-label">Complemento <span style={{ color: 'var(--ink-muted)', fontWeight: 400 }}>(opcional)</span></label>
+                    <label className="field-label" htmlFor="cad-complemento">Complemento <span style={{ color: 'var(--ink-muted)', fontWeight: 400 }}>(opcional)</span></label>
                     <div className="field-input-wrap">
                       <IconHome />
-                      <input type="text" className="field-input" placeholder="Apto, Bloco..."
+                      <input type="text" id="cad-complemento" className="field-input" placeholder="Apto, Bloco..."
                         name="complemento" value={form.complemento} onChange={handleChange} />
                     </div>
                   </div>
@@ -561,17 +563,25 @@ const Cadastro = () => {
 
                 {/* Checkboxes */}
                 <div style={{ marginTop: '1.25rem' }}>
+                  {/* Caixa de seleção de verdade (teclado e leitor de tela), escondida
+                      atrás do quadradinho desenhado (.checkbox-custom) */}
                   <div className="checkbox-group">
-                    <div className={`checkbox-custom${termsChecked ? ' checked' : ''}`} onClick={() => setTermsChecked(!termsChecked)} />
-                    <label className="checkbox-label" onClick={() => setTermsChecked(!termsChecked)}>
+                    <input type="checkbox" id="cad-termos" className="checkbox-nativo"
+                      checked={termsChecked} onChange={(e) => setTermsChecked(e.target.checked)} />
+                    <div className={`checkbox-custom${termsChecked ? ' checked' : ''}`} aria-hidden="true"
+                      onClick={() => setTermsChecked(!termsChecked)} />
+                    <label className="checkbox-label" htmlFor="cad-termos">
                       Li e aceito os <a href="#termos" onClick={abrirLegal('termos')}>Termos de Uso</a> e a{' '}
                       <a href="#termos" onClick={abrirLegal('privacidade')}>Política de Privacidade (LGPD)</a>.{' '}
                       <span className="required" style={{ color: 'var(--terracotta)' }}>*</span>
                     </label>
                   </div>
                   <div className="checkbox-group">
-                    <div className={`checkbox-custom${newsChecked ? ' checked' : ''}`} onClick={() => setNewsChecked(!newsChecked)} />
-                    <label className="checkbox-label" onClick={() => setNewsChecked(!newsChecked)}>
+                    <input type="checkbox" id="cad-newsletter" className="checkbox-nativo"
+                      checked={newsChecked} onChange={(e) => setNewsChecked(e.target.checked)} />
+                    <div className={`checkbox-custom${newsChecked ? ' checked' : ''}`} aria-hidden="true"
+                      onClick={() => setNewsChecked(!newsChecked)} />
+                    <label className="checkbox-label" htmlFor="cad-newsletter">
                       Quero receber novidades e alertas de desapegos perto de mim por e-mail.
                     </label>
                   </div>

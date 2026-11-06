@@ -488,3 +488,16 @@
   .anunciar-actions { flex-direction: column; }
   .anunciar-actions button { width: 100%; }
 }
+/* Acessibilidade (RNF12): estado de conservação como grupo de opções (radio).
+   O fieldset não muda o visual; o radio fica invisível atrás do cartão. */
+.anunciar-fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.anunciar-fieldset > legend { padding: 0; }
+.estado-option { display: block; position: relative; }
+.estado-option-radio {
+  position: absolute; inset: 0; margin: 0;
+  opacity: 0; pointer-events: none;
+}
+.estado-option:focus-within {
+  outline: 2px solid var(--terracotta);
+  outline-offset: 2px;
+}
