@@ -4,6 +4,7 @@ import './CentralAjuda.css';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import SiteHeader from '../componentes/SiteHeader';
 import DicasSeguranca from '../componentes/DicasSeguranca';
+import DuvidaRegrasIA from '../componentes/DuvidaRegrasIA';
 
 import { API_URL, EMAILS } from '../config';
 
@@ -124,6 +125,9 @@ const CentralAjuda = () => {
           Encontre respostas rápidas abaixo ou fale diretamente com a nossa equipe de suporte.
           Toda mensagem enviada por aqui vai direto para os administradores da plataforma.
         </p>
+
+        {/* ── Dúvidas sobre as regras: assistente com RAG, responde citando a regra ── */}
+        <DuvidaRegrasIA logado={Boolean(usuario)} />
 
         {/* ── Dicas de segurança (link "ver todas" das outras telas cai aqui) ── */}
         <section className="ajuda-bloco ajuda-seguranca" id="seguranca">

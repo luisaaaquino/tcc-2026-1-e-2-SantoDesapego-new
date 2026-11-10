@@ -26,6 +26,7 @@ const pool = require('../db');
 const { validarDadosAnuncio, inserirAnuncio } = require('./anuncioService');
 const { chamadaEstruturada, estimarCustoUsd, anulavel, LLM_MODELO_AVALIADOR } = require('./llmClient');
 const { categoriasDisponiveis } = require('./categoriasCache');
+const rag = require('./ragService');
 
 // Limites por anúncio (config.py do repositório)
 const MAX_PASSOS = Number(process.env.AGENTE_MAX_PASSOS || 12);
@@ -40,7 +41,7 @@ const PROMPT_AGENTE = ler('agente-anuncio.md');
 const PROMPT_AVALIADOR = ler('avaliador-anuncio.md');
 const PROMPT_ANUNCIO_RAPIDO = ler('anuncio-rapido.md');
 
-const ACOES = ['perguntar', 'consultar_preco', 'preencher_rascunho', 'registrar_indicio'];
+const ACOES = ['perguntar', 'consultar_preco', 'consultar_regras', 'preencher_rascunho', 'registrar_indicio', 'recusar_item'];
 const ESTADOS_VALIDOS = ['novo', 'seminovo', 'usado', 'para-reparo'];
 const CAMPOS_EDITAVEIS = ['titulo', 'descricao', 'preco', 'estado_conservacao'];
 const PRECO_MAX = 50000;
@@ -75,8 +76,10 @@ const SCHEMA_DECISAO = {
     }),
     rascunho: anulavel(SCHEMA_RASCUNHO),
     indicio: anulavel({ type: 'string' }),
+    duvida_regra: anulavel({ type: 'string' }),
+    regra_citada: anulavel({ type: 'string' }),
   },
-  required: ['motivo', 'acao', 'pergunta', 'consulta', 'rascunho', 'indicio'],
+  required: ['motivo', 'acao', 'pergunta', 'consulta', 'rascunho', 'indicio', 'duvida_regra', 'regra_citada'],
 };
 
 const SCHEMA_AVALIACAO = {
@@ -112,6 +115,8 @@ function validarDecisao(d) {
   if (d.acao === 'perguntar' && !d.pergunta) return '"pergunta" é obrigatória quando acao="perguntar"';
   if (d.acao === 'consultar_preco' && !d.consulta?.categoria_id) return '"consulta.categoria_id" é obrigatório quando acao="consultar_preco"';
   if (d.acao === 'registrar_indicio' && !d.indicio) return '"indicio" é obrigatório quando acao="registrar_indicio"';
+  if (d.acao === 'consultar_regras' && !d.duvida_regra) return '"duvida_regra" é obrigatório quando acao="consultar_regras"';
+  if (d.acao === 'recusar_item' && !d.regra_citada) return '"regra_citada" é obrigatório quando acao="recusar_item"';
   if (d.rascunho?.estado_conservacao && !ESTADOS_VALIDOS.includes(d.rascunho.estado_conservacao)) return '"rascunho.estado_conservacao" inválido';
   return null;
 }
@@ -264,6 +269,7 @@ async function estadoInicial({ cep, bairro }) {
     faixa_preco: null,
     avaliacao: null,
     indicio: null,           // { texto, fala_literal } — o vendedor recusou declarar
+    regras_consultadas: null, // trechos do RAG trazidos por consultar_regras
     rodadas_avaliador: 0,
     pergunta_portao: null,
     pendencia: null,         // aprovação do vendedor (rascunho aprovado pelo avaliador)
@@ -295,7 +301,8 @@ function checarOrcamento(estado, inicioMs) {
 
 // A mesma ação com os mesmos argumentos N (LACO_REPETICOES) vezes seguidas = laço.
 function assinatura(d) {
-  const chave = { acao: d.acao, consulta: d.consulta || null, indicio: d.indicio || null };
+  const chave = { acao: d.acao, consulta: d.consulta || null, indicio: d.indicio || null,
+    duvida_regra: d.duvida_regra || null, regra_citada: d.regra_citada || null };
   if (d.acao === 'preencher_rascunho') chave.rascunho = d.rascunho || null;
   return crypto.createHash('sha256').update(JSON.stringify(chave)).digest('hex').slice(0, 12);
 }
@@ -323,6 +330,7 @@ async function decidir(estado, categorias) {
       faixa_de_preco: estado.faixa_preco
         ? (({ comparaveis, ...resto }) => resto)(estado.faixa_preco) : null,
       ultima_avaliacao: estado.avaliacao,
+      regras_consultadas: estado.regras_consultadas,
       indicio_registrado: estado.indicio
         ? { ...estado.indicio, situacao: 'JÁ REGISTRADO para a moderação — não registre de novo; monte o rascunho sem esse defeito' }
         : null,
@@ -410,6 +418,7 @@ const MENSAGENS_FINAIS = {
   avaliador_reprovou: 'O rascunho não passou na checagem depois de 3 tentativas. Você pode completar pelo formulário manual.',
   laco: 'Fiquei repetindo o mesmo passo sem avançar, então parei. Você pode completar pelo formulário manual.',
   rejeitado: 'Tudo bem, não publiquei. Se mudar de ideia, é só começar de novo.',
+  item_proibido: 'Esse produto não pode ser anunciado no Santo Desapego.',
 };
 
 function finalizar(estado, desfecho, motivo, extra = {}) {
@@ -492,6 +501,37 @@ async function rodarAgente({ estado, mensagemVendedor, vendedorId }) {
       }
       estado.faixa_preco = await consultarPrecoComparaveis({ ...args, bairro: estado.perfil.bairro });
       passo(estado, 'ferramenta_preco', { argumentos: args, resultado: estado.faixa_preco.erro || `${estado.faixa_preco.n} comparáveis` });
+      continue;
+    }
+
+    if (d.acao === 'consultar_regras') {
+      // Ferramenta RAG: busca nas regras do site; só roda quando o modelo pede.
+      const r = await rag.buscar(d.duvida_regra);
+      estado.regras_consultadas = [
+        ...(estado.regras_consultadas || []).filter((t) => t.id),
+        ...(r.suficiente
+          ? r.trechos.map((t) => ({ id: t.id, texto: t.texto }))
+          : [{ id: null, texto: 'nenhuma regra do Santo Desapego responde esta dúvida' }]),
+      ];
+      passo(estado, 'ferramenta_regras', { consulta: d.duvida_regra, suficiente: r.suficiente,
+        recuperados: r.trechos.map((t) => [t.id, t.similaridade]) });
+      continue;
+    }
+
+    if (d.acao === 'recusar_item') {
+      // Recusa só vale citando uma regra que foi de fato consultada nesta
+      // conversa — a política tem exceções (ex.: arma de brinquedo).
+      const consultadas = new Set((estado.regras_consultadas || []).filter((t) => t.id).map((t) => t.id));
+      if (consultadas.has(d.regra_citada)) {
+        passo(estado, 'recusar_item', { regra: d.regra_citada, valida: true });
+        return finalizar(estado, 'item_proibido', `produto proibido pela regra ${d.regra_citada}`, {
+          mensagem: d.pergunta || MENSAGENS_FINAIS.item_proibido,
+          retorno: { regra_citada: d.regra_citada },
+        });
+      }
+      estado.regras_consultadas = [...(estado.regras_consultadas || []), { id: null,
+        texto: `recusar_item recusado pelo código: a regra '${d.regra_citada}' não foi consultada nesta conversa — use consultar_regras antes de recusar` }];
+      passo(estado, 'recusar_item', { regra: d.regra_citada, valida: false });
       continue;
     }
 

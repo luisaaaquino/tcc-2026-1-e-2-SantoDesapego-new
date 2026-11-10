@@ -1,0 +1,83 @@
+/* ============================================================
+   DUVIDAREGRASIA.CSS — Dúvidas sobre as regras (RAG), na Central
+   de Ajuda. Usa .ajuda-bloco / .btn-ajuda / .ajuda-alerta da página.
+   ============================================================ */
+.duvida-regras { margin-bottom: 1.5rem; scroll-margin-top: 6rem; }
+.duvida-regras-intro {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin: -0.4rem 0 1rem;
+  max-width: 60rem;
+}
+
+.duvida-regras-form { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.duvida-regras-form input {
+  flex: 1 1 16rem;
+  min-width: 0;
+  padding: 0.7rem 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--cream);
+  font-family: inherit;
+  font-size: 0.92rem;
+  color: var(--ink);
+}
+.duvida-regras-form input:focus { outline: 2px solid var(--terracotta); outline-offset: 1px; }
+.duvida-regras-form button {
+  padding: 0.7rem 1.4rem;
+  border-radius: var(--radius-pill);
+  background: var(--ink);
+  color: var(--cream);
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: background 0.18s;
+}
+.duvida-regras-form button:hover:not(:disabled) { background: var(--terracotta); }
+.duvida-regras-form button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.duvida-regras-exemplos { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+.duvida-regras-exemplos button {
+  padding: 0.35rem 0.8rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  text-align: left;
+  transition: border-color 0.15s, color 0.15s;
+}
+.duvida-regras-exemplos button:hover:not(:disabled) { border-color: var(--ink); color: var(--ink); }
+.duvida-regras-exemplos button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.duvida-regras-status { margin-top: 1rem; font-size: 0.88rem; color: var(--ink-muted); }
+
+.duvida-regras-resposta {
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border);
+  background: var(--paper);
+}
+.duvida-regras-resposta > p { font-size: 0.95rem; line-height: 1.55; color: var(--ink); }
+.duvida-regras-resposta.resposta { border-color: var(--forest); background: var(--sucesso-fundo); }
+.duvida-regras-resposta.recusa { border-color: var(--mustard); background: var(--aviso-fundo); }
+
+.duvida-regras-fontes {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.duvida-regras-fontes > span { font-size: 0.78rem; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.04em; }
+.duvida-regras-fontes summary { cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--forest); }
+.duvida-regras-fontes details p {
+  margin-top: 0.35rem;
+  font-size: 0.83rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--border);
+}

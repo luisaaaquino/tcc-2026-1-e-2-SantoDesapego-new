@@ -20,6 +20,8 @@ const AVISOS_FINAIS = {
   laco: 'Não consegui concluir o anúncio automaticamente dessa vez. Prefira preencher manualmente a partir daqui.',
   avaliador_reprovou: 'O rascunho não passou na checagem automática. Prefira preencher manualmente a partir daqui.',
   rejeitado: 'Tudo bem, nada foi publicado. Se mudar de ideia, recarregue a página para começar de novo.',
+  item_proibido: 'Esse tipo de produto não pode ser anunciado, conforme a política de itens proibidos. '
+    + 'Se tiver dúvida, pergunte na Central de Ajuda.',
 };
 
 /* ── Chat do Agente de Anúncio (IA) ──────────────────────────────

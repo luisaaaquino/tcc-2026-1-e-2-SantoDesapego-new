@@ -13,15 +13,25 @@ A cada passo, escolha UMA ação:
                          palavra do produto, ex.: "geladeira"). Uma única vez
                          por anúncio: o primeiro resultado (mesmo
                          `sem_comparaveis`) já é a resposta final.
+- `consultar_regras`   — o produto pode ser proibido (arma, réplica, simulacro,
+                         droga, animal, conteúdo adulto, documento), ou surgiu
+                         dúvida de regra que muda o anúncio (a avaria exige
+                         foto? que estado usar?). Escreva a dúvida em
+                         `duvida_regra`.
 - `preencher_rascunho` — tem o essencial; monte o rascunho completo.
 - `registrar_indicio`  — o vendedor RECUSOU declarar um defeito físico que
                          apareceu na conversa. Escreva o defeito em `indicio`.
+- `recusar_item`       — a regra consultada proíbe o produto. Cite em
+                         `regra_citada` o id da regra (veio em
+                         `regras_consultadas`) e explique em `pergunta` ao
+                         vendedor, em uma frase, por que não dá para anunciar.
 
 Regras:
 - Essencial = produto, preço, estado e a resposta sobre defeito. O bairro já
   é conhecido (vem do perfil do vendedor, em `bairro_do_vendedor`): não
   pergunte. As fotos o vendedor anexa na tela: não pergunte por elas.
   Detalhe cosmético (cor exata, litragem, ano) não vale mais uma pergunta.
+- Nunca recuse um item sem antes consultar a regra: a política tem exceções.
 - Nunca escreva no rascunho um defeito, marca ou detalhe que o vendedor não
   disse nesta conversa.
 - Defeito que o vendedor aceitou declarar vai em `avarias_declaradas` e na

@@ -3,6 +3,7 @@ const pool = require('../db');
 const { autenticar } = require('../middleware/auth');
 const { rodarAgente, decidirPendencia, estadoInicial, gerarRascunhoRapido } = require('../services/agenteAnuncioService');
 const { registrarClique, gerarSugestaoCompra } = require('../services/agenteCompraService');
+const { responderDuvida } = require('../services/ragService');
 
 const router = express.Router();
 
@@ -268,5 +269,26 @@ router.post('/api/ia/sugestao-compra', autenticar, verificarSuspensao, (req, res
 });
 
 router.get('/api/ia/sugestao-compra', autenticar, verificarSuspensao, (req, res) => responderSugestao(req, res, []));
+
+// ============================================================
+//  POST /api/ia/duvida-regras — Dúvidas sobre as regras (RAG)
+//  Busca nas regras do site (rag/corpus) e responde citando o
+//  trecho; sem regra que sustente, recusa e indica o suporte em
+//  vez de inventar (ver services/ragService.js).
+// ============================================================
+router.post('/api/ia/duvida-regras', autenticar, verificarSuspensao, async (req, res) => {
+  const pergunta = String(req.body?.pergunta || '').trim();
+  if (!pergunta) return res.status(400).json({ erro: 'Escreva sua dúvida.' });
+  try {
+    const resultado = await responderDuvida(pergunta.slice(0, 500));
+    return res.json(resultado);
+  } catch (erro) {
+    console.error('Erro na dúvida sobre as regras (RAG):', erro);
+    if (ERROS_LLM.includes(erro.codigo)) {
+      return res.status(503).json({ erro: 'O assistente está indisponível no momento. Tente de novo em instantes.' });
+    }
+    return res.status(500).json({ erro: 'Erro ao responder sua dúvida.' });
+  }
+});
 
 module.exports = router;

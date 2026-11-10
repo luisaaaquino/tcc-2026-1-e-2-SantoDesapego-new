@@ -144,6 +144,46 @@ async function chamadaEstruturada({ sistema, usuario, schema, nomeSchema = 'resp
   throw ultimoErro;
 }
 
+/* ── Embeddings (vetores dos textos) — usados pelo RAG das regras ──
+   Mesmo modelo e dimensão do repositório (config.py): gemini-embedding-001
+   com 768 dimensões (o padrão dele é 3072). Passa pela mesma fila e pelas
+   mesmas regras de nova tentativa das chamadas de chat. */
+const LLM_MODELO_EMBEDDING = process.env.LLM_MODELO_EMBEDDING || 'gemini-embedding-001';
+const EMBEDDING_DIMENSOES = 768;
+
+async function embeddings(textos) {
+  if (!LLM_API_KEY) throw erroLLM('Chave do LLM não configurada no .env (LLM_API_KEY ou OPENAI_API_KEY).', 'LLM_INDISPONIVEL');
+  let ultimoErro = null;
+  for (let tentativa = 1; tentativa <= LLM_RETRIES_RECUPERAVEIS + 1; tentativa++) {
+    await aguardarVez();
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), LLM_TIMEOUT_MS);
+    try {
+      const resp = await fetch(`${LLM_BASE_URL}/embeddings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${LLM_API_KEY}` },
+        body: JSON.stringify({ model: LLM_MODELO_EMBEDDING, input: textos, dimensions: EMBEDDING_DIMENSOES }),
+        signal: controller.signal,
+      });
+      if (!resp.ok) {
+        const texto = await resp.text().catch(() => '');
+        throw erroLLM(`Falha nos embeddings (${resp.status}): ${texto.slice(0, 300)}`, 'LLM_INDISPONIVEL',
+          { status: resp.status, recuperavel: [429, 500, 502, 503, 504].includes(resp.status) });
+      }
+      const json = await resp.json();
+      return json.data.sort((a, b) => a.index - b.index).map((d) => d.embedding);
+    } catch (erro) {
+      ultimoErro = erro.codigo ? erro
+        : erroLLM(`Falha de rede nos embeddings: ${erro.message}`, 'LLM_INDISPONIVEL', { recuperavel: true });
+      if (!ultimoErro.recuperavel) throw ultimoErro;
+      if (tentativa <= LLM_RETRIES_RECUPERAVEIS) await new Promise((r) => setTimeout(r, Math.min(2 ** tentativa, 20) * 1000));
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+  throw ultimoErro;
+}
+
 // ── Preço estimado por token (só pra monitorar o teto de custo — não é
 //    cobrança real; no plano gratuito o custo é zero). Tabela paga do
 //    gemini-3.5-flash-lite, como no config.py do repositório. ──────────
@@ -160,6 +200,6 @@ function estimarCustoUsd(uso) {
 const anulavel = (schema) => ({ anyOf: [schema, { type: 'null' }] });
 
 module.exports = {
-  chamadaEstruturada, extrairJSON, estimarCustoUsd, anulavel,
+  chamadaEstruturada, embeddings, extrairJSON, estimarCustoUsd, anulavel,
   LLM_MODELO, LLM_MODELO_AVALIADOR,
 };
