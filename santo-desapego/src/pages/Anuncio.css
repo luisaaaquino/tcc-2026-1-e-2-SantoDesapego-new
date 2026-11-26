@@ -327,7 +327,6 @@
 .denuncia-email a { color: var(--terracotta); font-weight: 600; overflow-wrap: anywhere; }
 .denuncia-modal-actions { display: flex; justify-content: flex-end; gap: 0.6rem; }
 .denuncia-sucesso { text-align: center; padding: 1rem 0; }
-.denuncia-sucesso .emoji { font-size: 2.2rem; display: block; margin-bottom: 0.6rem; }
 
 /* ── Descrição ──────────────────────────────────────────── */
 .anuncio-descricao {

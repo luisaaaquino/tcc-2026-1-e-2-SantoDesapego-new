@@ -361,22 +361,6 @@
   color: var(--ink-muted);
   background: var(--cream-soft);
 }
-.ecard-favorito {
-  position: absolute;
-  top: 0.6rem;
-  right: 0.6rem;
-  width: 32px;
-  height: 32px;
-  display: grid;
-  place-items: center;
-  background: rgba(251, 248, 241, 0.9);
-  border-radius: 50%;
-  color: var(--ink-soft);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
-  transition: transform 0.15s, color 0.15s;
-}
-.ecard-favorito:hover { transform: scale(1.1); color: var(--terracotta); }
-.ecard-favorito.ativo { color: var(--terracotta); }
 
 .ecard-info {
   display: flex;
@@ -408,34 +392,6 @@
   color: var(--ink-muted);
   margin-bottom: 0.75rem;
 }
-.ecard-distancia { color: var(--forest); font-weight: 600; }
-.ecard-selo-pagamento {
-  font-size: 0.74rem;
-  font-weight: 600;
-  color: var(--forest);
-  margin-bottom: 0.6rem;
-}
-.ecard-selo-pagamento.indisponivel { color: var(--ink-muted); font-weight: 500; }
-.ecard-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding-top: 0.7rem;
-  margin-top: auto;
-  border-top: 1px solid var(--border-soft);
-  font-size: 0.74rem;
-  color: var(--ink-muted);
-}
-.ecard-condicao {
-  font-weight: 600;
-  color: var(--ink-soft);
-  background: var(--cream-soft);
-  padding: 0.2rem 0.55rem;
-  border-radius: var(--radius-pill);
-  white-space: nowrap;
-}
-.ecard-tempo { white-space: nowrap; }
 
 /* Estado vazio */
 .explorar-empty {
@@ -445,11 +401,6 @@
   border-radius: var(--radius-lg);
   padding: 4rem 2rem;
   text-align: center;
-}
-.explorar-empty-icon {
-  font-size: 3.5rem;
-  margin-bottom: 1rem;
-  opacity: 0.6;
 }
 .explorar-empty h3 {
   font-family: var(--font-display);
@@ -479,41 +430,6 @@
   transition: transform 0.15s;
 }
 .explorar-empty a:hover { transform: none; }
-
-/* ── Paginação ──────────────────────────────────────────── */
-.explorar-pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 3rem;
-}
-.pagination-btn {
-  width: calc(40px * var(--escala-fonte, 1));
-  height: calc(40px * var(--escala-fonte, 1));
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  background: var(--paper);
-  color: var(--ink-soft);
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
-  transition-property: background-color, border-color, color, opacity; transition-duration: 0.15s;
-}
-.pagination-btn:hover {
-  border-color: var(--terracotta);
-  color: var(--terracotta);
-}
-.pagination-btn.active {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--cream);
-}
-.pagination-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
 
 
 

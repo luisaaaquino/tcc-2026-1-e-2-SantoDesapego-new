@@ -28,20 +28,6 @@
 }
 
 /* marca d'água vazada, mesmo recurso do "DESAPEGO" da página Sobre */
-.compra-hero__marca {
-  position: absolute;
-  top: clamp(1rem, 4vw, 2.5rem);
-  left: -0.06em;
-  z-index: -1;
-  font-size: clamp(6rem, 22vw, 16rem);
-  font-weight: 600;
-  letter-spacing: -0.04em;
-  line-height: 0.8;
-  color: transparent;
-  -webkit-text-stroke: 2px color-mix(in srgb, var(--terracotta) 32%, transparent);
-  user-select: none;
-  pointer-events: none;
-}
 
 .compra-hero__selo {
   display: inline-block;
@@ -95,14 +81,6 @@
   letter-spacing: 0;
   text-transform: none;
   color: var(--forest);
-}
-
-.compra-codigo__valor {
-  display: block;
-  margin: 0.25rem 0 0.5rem;
-  font-size: clamp(2rem, 6vw, 2.6rem);
-  letter-spacing: 0;
-  line-height: 1.1;
 }
 
 .compra-codigo p {
@@ -349,7 +327,6 @@
    marca-texto, título curto, filetes finos, passos menores e
    bloco de ajuda em superfície neutra.
    ========================================================== */
-.compra-hero__marca { display: none; }
 .compra-hero__titulo { font-size: clamp(1.9rem, 3.4vw, 2.5rem); font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; }
 .compra-hero__titulo em { background: none !important; padding: 0 !important; }
 .compra-hero__selo { background: var(--cream-soft); color: var(--ink-soft); border: 1px solid var(--border); border-radius: var(--radius-sm); }

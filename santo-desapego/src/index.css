@@ -66,12 +66,6 @@
 /* Números alinhados (preços, contagens) */
 body { font-variant-numeric: tabular-nums; }
 
-/* ── Paletas para daltonismo ─────────────────────────────────
-   Ativadas pelo seletor flutuante (AcessibilidadeCores), que põe
-   data-daltonismo no <html>. Cores escolhidas simulando cada tipo
-   de daltonismo (Machado et al., 2009) até sucesso × erro ficarem
-   bem distintos, mantendo contraste ≥ 4.5:1 sobre o creme. ── */
-
 /* Vermelho-verde (protanopia/deuteranopia): verde vira azul e
    terracota vira laranja queimado — par azul × laranja. */
 :root[data-daltonismo="protan-deutan"] {
@@ -128,9 +122,6 @@ body {
 a    { color: inherit; text-decoration: none; }
 img  { max-width: 100%; display: block; }
 button { font-family: inherit; cursor: pointer; border: none; background: none; }
-
-/* ── Faixa de slogan no topo: removida (enfeite sem informação) ── */
-.announcement { display: none; }
 
 /* ── Site header ────────────────────────────────────────── */
 .site-header {
@@ -214,8 +205,6 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .nav-btn svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--ink-muted); }
 .nav-btn:hover { background: var(--cream-soft); border-color: var(--cream-deep); }
-
-/* ── Botões globais ─────────────────────────────────────── */
 /* Ação principal (terracota) — "Anunciar", "Comprar" */
 .btn-sell,
 .btn-primary {
@@ -304,36 +293,11 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   border-radius: var(--radius-md);
   padding: 0.3rem 0.3rem 0.3rem 0.9rem;
   flex: 1;
-  max-width: 36rem; /* em rem pra acompanhar o texto ampliado */
+  max-width: 36rem;
 }
 .search-bar svg   { color: var(--ink-muted); }
 .search-bar input { flex: 1; border: none; background: transparent; padding: 0.5rem 0.8rem; outline: none; }
-.search-location  {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0 0.8rem;
-  border-left: 1px solid var(--border);
-  font-size: 0.88rem;
-  color: var(--ink-soft);
-}
-
-/* ── Nav categories (home / listagem) ──────────────────── */
-.nav-categories {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0.5rem 2rem 0.8rem;
-  display: flex;
-  gap: 1.8rem;
-  overflow-x: auto;
-  font-size: 0.88rem;
-  color: var(--ink-soft);
-}
-.nav-categories a.active { color: var(--ink); font-weight: 700; }
-
-/* ── Layout base das telas de auth (login / cadastro) ──── */
 /* O CSS de cada página sobrescreve o que precisar */
-.auth-split,
 .auth-container {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
@@ -344,8 +308,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .auth-container { grid-template-columns: 1fr 1fr; }
 
-.auth-visual,
-.auth-left {
+.auth-visual {
   background: var(--forest);
   padding: 4rem;
   display: flex;
@@ -356,8 +319,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   overflow: hidden;
 }
 
-.auth-form-side,
-.auth-right {
+.auth-form-side {
   background: var(--paper);
   display: flex;
   align-items: center;
@@ -365,8 +327,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   padding: 4rem;
 }
 
-.login-card,
-.form-wrapper {
+.login-card {
   width: 100%;
   max-width: 480px;
 }
@@ -389,30 +350,6 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .site-footer a { color: var(--ink-soft); margin: 0 0.2rem; }
 .site-footer a:hover { color: var(--ink); }
-
-/* ── Feature items (painéis laterais de auth) ───────────── */
-.feature-list  { display: flex; flex-direction: column; gap: 1.5rem; }
-.feature-item  { display: flex; gap: 1rem; align-items: flex-start; }
-.feature-icon  {
-  width: 36px; height: 36px;
-  background: color-mix(in srgb, var(--paper) 10%, transparent);
-  border-radius: var(--radius-sm);
-  display: grid; place-items: center;
-  flex-shrink: 0;
-}
-.feature-text h4 { font-size: 1rem; margin-bottom: 0.2rem; }
-.feature-text p  { font-size: 0.85rem; color: color-mix(in srgb, var(--cream) 70%, transparent); }
-
-/* ── Badge pill (painéis laterais) ─────────────────────── */
-.badge {
-  display: inline-flex;
-  background: color-mix(in srgb, var(--paper) 10%, transparent);
-  padding: 0.4rem 1rem;
-  border-radius: var(--radius-pill);
-  font-size: 0.85rem;
-  font-weight: 600;
-  border: 1px solid color-mix(in srgb, var(--paper) 20%, transparent);
-}
 
 /* ── Animações compartilhadas ───────────────────────────── */
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }

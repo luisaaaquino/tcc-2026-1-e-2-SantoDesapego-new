@@ -67,16 +67,6 @@
 .admin-tab:hover { background: var(--cream-soft); color: var(--ink); }
 .admin-tab.active { background: var(--ink); color: var(--cream); }
 .admin-tab svg { flex-shrink: 0; }
-.admin-tab .tab-count {
-  margin-left: auto;
-  background: var(--terracotta);
-  color: var(--cream);
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 0.1rem 0.45rem;
-  border-radius: var(--radius-pill);
-}
-.admin-tab.active .tab-count { background: var(--terracotta); }
 
 /* ── Conteúdo ────────────────────────────────────────────── */
 .admin-content {
@@ -277,7 +267,6 @@
   text-align: center;
   color: var(--ink-muted);
 }
-.admin-vazio .emoji { font-size: 2.2rem; display: block; margin-bottom: 0.6rem; }
 
 /* ── Paginação ───────────────────────────────────────────── */
 .admin-paginacao {
@@ -367,9 +356,6 @@
   text-align: center;
   color: var(--ink-soft);
 }
-.admin-negado .emoji { font-size: 3rem; }
-
-/* ── Responsivo ──────────────────────────────────────────── */
 /* Botão que abre/fecha a lista de abas — só existe no mobile */
 .admin-abas-toggle { display: none; }
 

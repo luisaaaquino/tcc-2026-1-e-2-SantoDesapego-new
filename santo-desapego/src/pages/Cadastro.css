@@ -1,8 +1,3 @@
-/* ============================================================
-   CADASTRO.CSS — Estilos exclusivos da tela de cadastro
-   Depende de: globals.css
-   ============================================================ */
-
 /* ── Wrapper da página ──────────────────────────────────── */
 .cadastro-wrapper {
   display: flex;
@@ -91,43 +86,8 @@
   color: rgba(244, 239, 228, 0.85);
   font-size: 0.9rem;
 }
-.benefit-icon {
-  width: calc(34px * var(--escala-fonte, 1)); height: calc(34px * var(--escala-fonte, 1));
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 10px;
-  display: grid; place-items: center;
-  flex-shrink: 0;
-  font-size: 0.95rem;
-}
 .benefit-text strong { display: block; color: var(--cream); font-weight: 600; margin-bottom: 0.1rem; font-size: 0.9rem; }
 .benefit-text span   { font-size: 0.82rem; color: rgba(244, 239, 228, 0.6); }
-
-/* Depoimento */
-.left-testimonial {
-  margin-top: 2.5rem;
-  padding: 1.2rem;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: var(--radius-lg);
-  position: relative;
-  z-index: 1;
-}
-.left-testimonial p { color: rgba(244, 239, 228, 0.85); font-style: normal; font-size: 0.88rem; margin-bottom: 1rem; }
-
-.testimonial-author { display: flex; align-items: center; gap: 0.8rem; }
-.testimonial-avatar {
-  width: calc(34px * var(--escala-fonte, 1)); height: calc(34px * var(--escala-fonte, 1));
-  border-radius: 50%;
-  background: var(--terracotta);
-  display: grid; place-items: center;
-  color: var(--cream);
-  font-weight: 600;
-  font-size: 0.82rem;
-  flex-shrink: 0;
-}
-.testimonial-name strong { display: block; color: var(--cream); font-size: 0.85rem; font-weight: 600; }
-.testimonial-name span   { font-size: 0.76rem; color: rgba(244, 239, 228, 0.5); }
 
 /* ============================================================
    PAINEL DIREITO (formulário)
@@ -154,32 +114,6 @@
 }
 .form-header h1 em { font-style: normal; color: var(--terracotta); font-weight: 400; }
 .form-header p     { color: var(--ink-muted); font-size: 0.93rem; }
-
-/* ── OAuth ──────────────────────────────────────────────── */
-.oauth-buttons { display: flex; gap: 0.8rem; margin-bottom: 1.5rem; }
-.oauth-btn {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  padding: 0.7rem 1rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--cream);
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--ink-soft);
-  transition: border-color 0.2s, color 0.2s, background 0.2s;
-  cursor: pointer;
-}
-.oauth-btn:hover { border-color: var(--ink); color: var(--ink); background: var(--cream-soft); }
-
-/* ── Divisor ────────────────────────────────────────────── */
-.divider { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
-.divider::before,
-.divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
-.divider span   { font-size: 0.8rem; color: var(--ink-muted); font-weight: 500; white-space: nowrap; }
 
 /* ── Formulário ─────────────────────────────────────────── */
 .signup-form { display: flex; flex-direction: column; }
@@ -394,7 +328,6 @@
      quebrando mal) com o formulário do lado — melhor empilhar. */
   .cadastro-page { grid-template-columns: 1fr; }
   .left-panel { padding: 2.5rem 1.5rem; }
-  .left-testimonial { display: none; }
   .right-panel { padding: 2rem 1.5rem; }
 }
 
@@ -415,7 +348,6 @@
     gap: 0.7rem 0.8rem;
   }
   .benefits-list li { align-items: center; }
-  .benefit-icon { width: calc(26px * var(--escala-fonte, 1)); height: calc(26px * var(--escala-fonte, 1)); font-size: 0.8rem; }
   .benefit-text strong { font-size: 0.8rem; line-height: 1.25; }
   /* Descrição de cada item some no celular — fica só ícone + título,
      compacto o bastante pra caber 2 por linha */
@@ -426,7 +358,6 @@
 
 @media (max-width: 540px) {
   .form-row       { grid-template-columns: 1fr; }
-  .oauth-buttons  { flex-direction: column; }
   .right-panel    { padding: 1.5rem 1.2rem; }
   .form-header h1 { font-size: 1.5rem; }
 }

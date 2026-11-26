@@ -239,7 +239,6 @@
   background: color-mix(in srgb, var(--terracotta) 6%, transparent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--terracotta) 6%, transparent);
 }
-.estado-option-emoji { font-size: 1.4rem; display: block; margin-bottom: 0.25rem; }
 .estado-option-name {
   display: block;
   font-size: 0.85rem;
@@ -372,15 +371,6 @@
   color: var(--aviso-texto);
 }
 
-.anunciar-field-error {
-  font-size: 0.76rem;
-  color: var(--terracotta);
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  margin-top: 0.2rem;
-}
-
 .anunciar-field-hint {
   font-size: 0.76rem;
   color: var(--ink-muted);
@@ -452,10 +442,6 @@
   align-items: center;
   text-align: center;
   padding: 3rem 1.5rem;
-}
-.success-state .success-emoji {
-  font-size: 4rem;
-  margin-bottom: 1rem;
 }
 .success-state h2 {
   font-family: var(--font-display);

@@ -197,45 +197,6 @@
 }
 .checkout-nota a { color: var(--terracotta); }
 
-/* ── Métodos de pagamento ───────────────────────────────── */
-.checkout-metodos {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.checkout-metodos li {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  padding: 0.85rem 1rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--cream);
-}
-
-.checkout-metodos li.indisponivel {
-  opacity: 0.55;
-  border-style: dashed;
-}
-
-.checkout-metodo-icone { font-size: 1.3rem; flex-shrink: 0; }
-
-.checkout-metodos strong {
-  display: block;
-  font-size: 0.92rem;
-  color: var(--ink);
-}
-
-.checkout-metodos em {
-  font-style: normal;
-  font-size: 0.78rem;
-  color: var(--ink-muted);
-}
-
 /* ── Resumo (coluna direita) ────────────────────────────── */
 .checkout-resumo {
   position: sticky;
