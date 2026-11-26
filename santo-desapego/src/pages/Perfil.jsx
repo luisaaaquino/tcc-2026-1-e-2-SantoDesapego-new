@@ -860,8 +860,11 @@ const FiltroHistorico = ({ status, setStatus, dataInicio, setDataInicio, dataFim
       <select value={status} onChange={(e) => setStatus(e.target.value)}>
         <option value="">Todos</option>
         <option value="approved">Aprovado</option>
-        <option value="pending">Pendente</option>
-        <option value="rejected">Recusado</option>
+        {/* O Mercado Pago tem dois status de "ainda não aprovado" (pending e
+            in_process, o mais comum no cartão) e dois de recusa (rejected e
+            cancelled); cada opção busca os dois — a API aceita a lista. */}
+        <option value="pending,in_process">Pendente</option>
+        <option value="rejected,cancelled">Recusado</option>
       </select>
     </div>
     <div className="filtro-historico-campo">
