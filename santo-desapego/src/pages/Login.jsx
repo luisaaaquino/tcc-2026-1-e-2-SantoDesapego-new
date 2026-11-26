@@ -149,8 +149,8 @@ const LoginContent = () => {
               <p className="auth-recentes-titulo">Anunciados recentemente</p>
               <div className="auth-recentes-grade">
                 {recentes.map((a) => (
-                  <Link key={a.id} to={`/anuncio/${a.id}`} className="auth-recente">
-                    <span className="auth-recente-foto">
+                  <Link key={a.id} to={`/anuncio/${a.id}`} className="auth-recente card">
+                    <span className="auth-recente-foto m-zoom">
                       {a.imagem_principal && <img src={a.imagem_principal} alt="" />}
                     </span>
                     <strong>{formatarPreco(a.preco)}</strong>

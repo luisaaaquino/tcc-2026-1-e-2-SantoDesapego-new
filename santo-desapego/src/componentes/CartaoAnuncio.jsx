@@ -28,8 +28,8 @@ const CartaoAnuncio = ({ anuncio, onFavoritar, prioridade = false }) => {
     : null;
 
   return (
-    <Link to={`/anuncio/${anuncio.id}`} className="cartao-anuncio">
-      <div className="cartao-anuncio-foto">
+    <Link to={`/anuncio/${anuncio.id}`} className="cartao-anuncio card">
+      <div className="cartao-anuncio-foto m-zoom">
         {anuncio.imagem_principal
           ? <img src={anuncio.imagem_principal} alt={anuncio.titulo} loading={prioridade ? 'eager' : 'lazy'} />
           : <span className="cartao-anuncio-sem-foto">Sem foto</span>}

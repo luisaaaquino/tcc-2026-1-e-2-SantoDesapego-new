@@ -369,7 +369,7 @@ const Anuncio = () => {
 
             <DicasSeguranca dicas={['pague-no-site', 'codigo-entrega', 'local-publico']} />
 
-            <Link to={`/usuario/${anuncio.vendedor_id}`} className="anuncio-vendedor">
+            <Link to={`/usuario/${anuncio.vendedor_id}`} className="anuncio-vendedor card">
               <span className="vendedor-avatar">{vendedor[0]?.toUpperCase()}</span>
               <div>
                 <strong>{vendedor}</strong>

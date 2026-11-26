@@ -100,8 +100,8 @@ const PerfilPublico = () => {
           {dados.anuncios_ativos.length > 0 ? (
             <div className="explorar-grid">
               {dados.anuncios_ativos.map((a) => (
-                <Link key={a.id} to={`/anuncio/${a.id}`} className="ecard">
-                  <div className="ecard-imagem">
+                <Link key={a.id} to={`/anuncio/${a.id}`} className="ecard card">
+                  <div className="ecard-imagem m-zoom">
                     {a.imagem_principal
                       ? <img src={a.imagem_principal} alt={a.titulo} loading="lazy" />
                       : <div className="ecard-imagem-vazia">Sem foto</div>}

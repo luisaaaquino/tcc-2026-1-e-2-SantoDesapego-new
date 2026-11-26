@@ -421,3 +421,9 @@
 .admin-stat,
 .admin-chart-card { background: var(--paper); border: 1px solid var(--border); }
 .admin-stat-label { font-weight: 500; }
+
+/* ── Abas: indicador que desliza (motion.js da skill design-taste-frontend) ── */
+.admin-tabs.m-has-ind { position: relative; isolation: isolate; }
+.admin-tabs.m-has-ind .admin-tab { position: relative; z-index: 1; }
+.admin-tabs.m-has-ind .admin-tab.active { background: transparent; }
+.admin-tabs .m-tab-ind { background: var(--ink); }

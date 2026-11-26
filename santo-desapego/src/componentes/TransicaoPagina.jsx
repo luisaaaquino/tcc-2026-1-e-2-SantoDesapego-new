@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { atualizarMovimento } from '../utils/camadaMovimento';
 import './TransicaoPagina.css';
 
 /* ── Transição suave entre telas ──
@@ -10,6 +12,14 @@ import './TransicaoPagina.css';
    não devem piscar a cada clique. ── */
 const TransicaoPagina = ({ children }) => {
   const { pathname } = useLocation();
+
+  // A camada de movimento (skill design-taste-frontend) procura a abertura
+  // e as abas da tela nova depois que ela aparece. Telas que só montam as
+  // abas depois de carregar dados chamam atualizarMovimento() por conta própria.
+  useEffect(() => {
+    const id = requestAnimationFrame(atualizarMovimento);
+    return () => cancelAnimationFrame(id);
+  }, [pathname]);
 
   return (
     <div key={pathname} className="transicao-pagina">

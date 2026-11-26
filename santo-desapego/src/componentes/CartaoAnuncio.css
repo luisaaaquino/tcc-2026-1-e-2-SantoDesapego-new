@@ -7,9 +7,9 @@
   border-radius: var(--radius-lg);
   overflow: hidden;
   color: var(--ink);
-  transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
 }
-.cartao-anuncio:hover { border-color: var(--cream-deep); box-shadow: var(--sombra-2); }
+/* Hover: classe .card (kit da skill, motion.css) — o cartão sobe 2px, a
+   borda escurece e ganha sombra; a foto (.m-zoom) cresce 3% dentro da moldura. */
 
 .cartao-anuncio-foto {
   position: relative;

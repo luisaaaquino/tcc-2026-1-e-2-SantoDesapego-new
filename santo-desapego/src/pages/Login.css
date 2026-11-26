@@ -348,7 +348,7 @@
   font-size: 0.85rem;
   transition: border-color 0.15s var(--ease);
 }
-.auth-recente:hover { border-color: var(--cream-deep); }
+/* hover do cartão: classe .card (camada de movimento da skill) */
 .auth-recente-foto {
   position: relative;
   aspect-ratio: 1 / 1;

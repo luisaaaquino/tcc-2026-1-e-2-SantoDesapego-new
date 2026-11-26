@@ -6,6 +6,7 @@ import { IconUser, IconShield, IconTag, IconFlag, IconPlus, IconAlert, IconChevr
 import { iconeDaCategoria } from '../utils/categorias';
 
 import { API_URL } from '../config';
+import { atualizarMovimento } from '../utils/camadaMovimento';
 
 /* ── Ícones SVG ───────────────────────────────────────────── */
 const I = {
@@ -239,6 +240,10 @@ const Admin = () => {
   // topo — viram um menu que abre/fecha, mesmo padrão do Perfil.
   const [abaMenuAberto, setAbaMenuAberto] = useState(false);
 
+  // As abas só aparecem depois de carregar: avisa a camada de movimento
+  // (indicador que desliza entre as abas, skill design-taste-frontend)
+  useEffect(() => { if (!carregando) atualizarMovimento(); }, [carregando]);
+
   useEffect(() => {
     const token = localStorage.getItem('sd_token');
     const armazenado = localStorage.getItem('sd_usuario');
@@ -300,28 +305,30 @@ const Admin = () => {
           </button>
 
           <nav
-            className={`admin-tabs${abaMenuAberto ? ' mobile-aberto' : ''}`}
+            className={`admin-tabs m-tabs${abaMenuAberto ? ' mobile-aberto' : ''}`}
+            role="tablist"
+            aria-label="Seções do painel"
             onClick={(e) => { if (e.target.closest('.admin-tab')) setAbaMenuAberto(false); }}
           >
-            <button className={`admin-tab${aba === 'dashboard' ? ' active' : ''}`} onClick={() => setAba('dashboard')}>
+            <button className={`admin-tab${aba === 'dashboard' ? ' active' : ''}`} onClick={() => setAba('dashboard')} role="tab" aria-selected={aba === 'dashboard'}>
               <I.dashboard /> Visão geral
             </button>
-            <button className={`admin-tab${aba === 'usuarios' ? ' active' : ''}`} onClick={() => setAba('usuarios')}>
+            <button className={`admin-tab${aba === 'usuarios' ? ' active' : ''}`} onClick={() => setAba('usuarios')} role="tab" aria-selected={aba === 'usuarios'}>
               <I.users /> Usuários
             </button>
-            <button className={`admin-tab${aba === 'anuncios' ? ' active' : ''}`} onClick={() => setAba('anuncios')}>
+            <button className={`admin-tab${aba === 'anuncios' ? ' active' : ''}`} onClick={() => setAba('anuncios')} role="tab" aria-selected={aba === 'anuncios'}>
               <IconTag size={16} /> Anúncios
             </button>
-            <button className={`admin-tab${aba === 'categorias' ? ' active' : ''}`} onClick={() => setAba('categorias')}>
+            <button className={`admin-tab${aba === 'categorias' ? ' active' : ''}`} onClick={() => setAba('categorias')} role="tab" aria-selected={aba === 'categorias'}>
               <I.layers /> Categorias
             </button>
-            <button className={`admin-tab${aba === 'denuncias' ? ' active' : ''}`} onClick={() => setAba('denuncias')}>
+            <button className={`admin-tab${aba === 'denuncias' ? ' active' : ''}`} onClick={() => setAba('denuncias')} role="tab" aria-selected={aba === 'denuncias'}>
               <IconFlag size={16} /> Denúncias
             </button>
-            <button className={`admin-tab${aba === 'suporte' ? ' active' : ''}`} onClick={() => setAba('suporte')}>
+            <button className={`admin-tab${aba === 'suporte' ? ' active' : ''}`} onClick={() => setAba('suporte')} role="tab" aria-selected={aba === 'suporte'}>
               <I.help /> Central de ajuda
             </button>
-            <button className={`admin-tab${aba === 'logs' ? ' active' : ''}`} onClick={() => setAba('logs')}>
+            <button className={`admin-tab${aba === 'logs' ? ' active' : ''}`} onClick={() => setAba('logs')} role="tab" aria-selected={aba === 'logs'}>
               <I.clock /> Logs de auditoria
             </button>
           </nav>

@@ -391,7 +391,7 @@
   color: inherit;
   transition: border-color 0.18s, transform 0.15s;
 }
-.anuncio-card-perfil:hover { border-color: var(--terracotta); transform: none; }
+/* hover do cartão: classe .card (camada de movimento da skill) */
 .anuncio-card-perfil-img {
   width: 64px;
   height: 64px;
@@ -1145,3 +1145,13 @@
 @media (max-width: 600px) {
   .painel-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* ── Abas: indicador que desliza (motion.js da skill design-taste-frontend) ──
+   O kit põe um <span class="m-tab-ind"> na lista e o move só com transform
+   até a aba com aria-selected. A aba ativa fica transparente e o
+   indicador faz o fundo (verde; vermelho na aba de exclusão). */
+.perfil-tabs.m-has-ind { position: relative; isolation: isolate; }
+.perfil-tabs.m-has-ind .perfil-tab { position: relative; z-index: 1; }
+.perfil-tabs.m-has-ind .perfil-tab.active { background: transparent; }
+.perfil-tabs .m-tab-ind { background: var(--forest); }
+.perfil-tabs:has(.perfil-tab.danger.active) .m-tab-ind { background: var(--terracotta); }

@@ -54,6 +54,45 @@
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* ── Ponte com o kit da skill design-taste-frontend ─────────
+   A camada de movimento, o moment e o fundo da skill (arquivos em
+   public/assets/taste-skill, sem edição) leem os tokens do sistema
+   dela. Aqui cada um aponta para uma cor ou medida que o site já
+   tem — nenhuma cor nova; as variações saem de color-mix. Por serem
+   referências, acompanham sozinhas os modos para daltonismo. ── */
+:root {
+  /* cores */
+  --bg:          var(--cream);
+  --card:        var(--paper);
+  --surface:     var(--cream-soft);
+  --action:      var(--terracotta);
+  --action-ink:  var(--paper);
+  --accent:      var(--terracotta);
+  --muted:       var(--ink-muted);
+  --line:        var(--border);
+  --line-strong: color-mix(in srgb, var(--ink-muted) 55%, var(--paper));
+  --ground-bg:   var(--cream-soft);
+  /* paleta lida pelo fundo topglow */
+  --p-bg:      var(--cream);
+  --p-surface: var(--cream-soft);
+  --p-ink:     var(--ink);
+  --p-muted:   var(--ink-muted);
+  --p-accent:  var(--terracotta);
+  --p-accent-ink: var(--paper);
+  --p-action:  var(--terracotta);
+  --p-action-ink: var(--paper);
+  --g-kp: 0.55;  /* força do brilho do topo: baixa, para o texto manter o contraste */
+  /* medidas */
+  --font-text: var(--font-body);
+  --t-lead: 1.15rem;
+  --r-btn: var(--radius-md);
+  --r-md:  var(--radius-lg);
+  --s-2: 0.5rem; --s-4: 1rem; --s-5: 1.5rem; --s-6: 2rem; --s-7: 3rem;
+  --gutter: clamp(1.5rem, 4vw, 4rem);
+  --nav-h: 5.5rem;  /* altura do cabeçalho fixo (88px no computador; o moment fica embaixo dele) */
+  --nav: var(--nav-h);
+}
+
 /* Títulos: sem o trecho em itálico colorido. O <em> continua no HTML
    (semântica), mas visualmente o título é uma frase só. */
 :is(h1, h2, h3, h4) em {
@@ -263,6 +302,73 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .btn-dark:hover { background: var(--terracotta-dark); }
 .btn-dark:active { transform: scale(0.98); }
 .btn-dark:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+/* ── Camada de hover (números da skill design-taste-frontend) ──
+   O kit (motion.css) age sobre as classes dele (.btn, .card, .m-zoom,
+   .m-link). Os botões do site têm nomes próprios, então os mesmos
+   números ficam aqui: no hover o botão sobe 1px, no clique afunda 1px
+   e encolhe 1,5%; só com mouse (no toque não fica "preso"). As cores
+   de hover continuam as de cada página. Botões dos chats de IA e do
+   painel de acessibilidade ficam de fora. */
+:is(.btn-primary, .btn-sell, .btn-dark, .btn-login, .nav-btn, .btn-home-primary,
+    .btn-perfil-primary, .btn-perfil-secondary, .btn-perfil-danger, .btn-admin-mini, .btn-admin-add,
+    .painel-cta-btn, .painel-empty-btn, .btn-anuncio-mini, .btn-anuncio-comprar, .btn-anuncio-proposta,
+    .btn-modal-cancel, .btn-modal-confirm, .avaliar-btn, .verificacao-btn, .search-btn,
+    .nao-encontrada-btn, .btn-anunciar-publish, .btn-anunciar-cancel, .explorar-carregar-mais,
+    .btn-success, .btn-submit, .btn-checkout, .checkout-cancelar, .msg-btn-explorar) {
+  transition: background-color var(--m-out, 120ms) var(--m-ease, ease), color var(--m-out, 120ms) var(--m-ease, ease),
+              border-color var(--m-out, 120ms) var(--m-ease, ease), box-shadow var(--m-out, 120ms) var(--m-ease, ease),
+              transform var(--m-press, 90ms) var(--m-ease, ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  :is(.btn-primary, .btn-sell, .btn-dark, .btn-login, .nav-btn, .btn-home-primary,
+      .btn-perfil-primary, .btn-perfil-secondary, .btn-perfil-danger, .btn-admin-mini, .btn-admin-add,
+      .painel-cta-btn, .painel-empty-btn, .btn-anuncio-mini, .btn-anuncio-comprar, .btn-anuncio-proposta,
+      .btn-modal-cancel, .btn-modal-confirm, .avaliar-btn, .verificacao-btn, .search-btn,
+      .nao-encontrada-btn, .btn-anunciar-publish, .btn-anunciar-cancel, .explorar-carregar-mais,
+      .btn-success, .btn-submit, .btn-checkout, .checkout-cancelar, .msg-btn-explorar):not(:disabled):hover {
+    transform: translateY(-1px);
+    transition-duration: var(--m-in, 150ms);
+  }
+}
+:is(.btn-primary, .btn-sell, .btn-dark, .btn-login, .nav-btn, .btn-home-primary,
+    .btn-perfil-primary, .btn-perfil-secondary, .btn-perfil-danger, .btn-admin-mini, .btn-admin-add,
+    .painel-cta-btn, .painel-empty-btn, .btn-anuncio-mini, .btn-anuncio-comprar, .btn-anuncio-proposta,
+    .btn-modal-cancel, .btn-modal-confirm, .avaliar-btn, .verificacao-btn, .search-btn,
+    .nao-encontrada-btn, .btn-anunciar-publish, .btn-anunciar-cancel, .explorar-carregar-mais,
+    .btn-success, .btn-submit, .btn-checkout, .checkout-cancelar, .msg-btn-explorar):not(:disabled):active {
+  transform: translateY(1px) scale(0.985);
+  transition-duration: var(--m-press, 90ms);
+}
+
+/* Palavras do menu: ficam sem linha e, no hover/foco, escurecem e
+   desenham uma linha de 1px 4px abaixo, da esquerda para a direita
+   (sai pela direita). Mesmo desenho do kit para nav e rodapé. */
+:is(.nav-actions .nav-link, .footer-col-links a) {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-size: 0% 1px;
+  background-position: right 0 bottom 0;
+  padding-bottom: 4px;
+  transition: background-size var(--m-out, 120ms) var(--m-ease, ease), color var(--m-out, 120ms) var(--m-ease, ease);
+}
+:is(.nav-actions .nav-link, .footer-col-links a):is(:hover, :focus-visible) {
+  background-size: 100% 1px;
+  background-position: left 0 bottom 0;
+  transition-duration: var(--m-in, 150ms);
+}
+
+/* "Reduzir movimento": nada se desloca; a mudança de cor continua */
+@media (prefers-reduced-motion: reduce) {
+  :is(.btn-primary, .btn-sell, .btn-dark, .btn-login, .nav-btn, .btn-home-primary,
+      .btn-perfil-primary, .btn-perfil-secondary, .btn-perfil-danger, .btn-admin-mini, .btn-admin-add,
+      .painel-cta-btn, .painel-empty-btn, .btn-anuncio-mini, .btn-anuncio-comprar, .btn-anuncio-proposta,
+      .btn-modal-cancel, .btn-modal-confirm, .avaliar-btn, .verificacao-btn, .search-btn,
+      .nao-encontrada-btn, .btn-anunciar-publish, .btn-anunciar-cancel, .explorar-carregar-mais,
+      .btn-success, .btn-submit, .btn-checkout, .checkout-cancelar, .msg-btn-explorar):is(:hover, :active) {
+    transform: none !important;
+  }
+}
 
 /* Foco visível para quem navega pelo teclado */
 :is(a, button, input, select, textarea, [tabindex], summary):focus-visible {

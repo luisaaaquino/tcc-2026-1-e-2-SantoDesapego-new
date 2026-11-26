@@ -11,6 +11,14 @@
          Institute para leitura por pessoas com baixa visão. Fraunces só no logo. -->
     <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,900;1,9..144,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Camada de movimento da skill design-taste-frontend (arquivos do kit,
+         sem edição, em public/assets/taste-skill). Os tokens que ela lê são
+         ligados às cores do site em src/index.css ("Ponte com o kit"). -->
+    <link rel="stylesheet" href="/assets/taste-skill/backgrounds/backgrounds.css" />
+    <link rel="stylesheet" href="/assets/taste-skill/motion/motion.css" />
+    <!-- Entrada da abertura: o título espera o motion.js (no máximo 700 ms)
+         em vez de piscar. Sem script ou com "reduzir movimento", aparece direto. -->
+    <script>document.documentElement.classList.add('m-enter');setTimeout(()=>document.documentElement.classList.add('m-enter-done'),700);window.__momentsManual=true</script>
     <title>Santo Desapego</title>
   </head>
   <body>

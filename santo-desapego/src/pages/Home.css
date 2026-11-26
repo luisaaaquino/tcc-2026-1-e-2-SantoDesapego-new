@@ -546,55 +546,87 @@
 .footer-col a:hover { color: var(--ink); }
 .cc-license { border-top-style: solid; }
 
-/* ── Abertura ── */
+/* ── Abertura ─────────────────────────────────────────────────
+   Skill design-taste-frontend: a abertura ocupa a primeira tela
+   sozinha (no computador), com o texto à esquerda e as fotos reais
+   dos anúncios recentes à direita. Fundo "topglow" da skill: uma luz
+   suave de terracota logo abaixo do cabeçalho (só color-mix da
+   paleta, força baixa em --g-kp). Entra uma vez ao carregar. */
 .inicio-abertura {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 2rem;
-  padding: 3rem 0 2rem;
+  --nav-h: 0px;  /* o brilho do topglow começa na borda de cima da seção */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(2rem, 5vw, 4.5rem);
+  align-items: center;
+  min-height: min(calc(100svh - 5.5rem), 54rem);  /* a primeira tela inteira, abaixo do cabeçalho */
+  padding: 3rem 0;
 }
+.inicio-abertura.sem-vitrine { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+/* a luz do topglow vai de ponta a ponta da tela, não só na largura do conteúdo */
+.inicio-abertura.bg-topglow::before { left: calc(50% - 50vw); right: calc(50% - 50vw); }
 .inicio-abertura h1 {
-  font-size: clamp(1.75rem, 3.2vw, 2.4rem);
+  font-size: clamp(2.1rem, 4.4vw, 3.6rem);
   font-weight: 600;
-  line-height: 1.15;
-  max-width: 22ch;
-  margin-bottom: 0.75rem;
+  line-height: 1.06;
+  letter-spacing: -0.025em;
+  max-width: 15ch;
+  margin-bottom: 1.1rem;
 }
-.inicio-abertura p { color: var(--ink-soft); font-size: 1.05rem; max-width: 36rem; }
-.inicio-acoes { display: flex; gap: 0.75rem; flex-shrink: 0; }
-.inicio-acoes .btn-primary { padding: 0.7rem 1.2rem; font-size: 0.98rem; }
-.inicio-acoes .nav-btn { padding: 0.7rem 1.1rem; }
+.inicio-abertura p { color: var(--ink-soft); font-size: 1.1rem; max-width: 34rem; }
+.inicio-acoes { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.75rem; }
+.inicio-acoes .btn-primary { padding: 0.8rem 1.3rem; font-size: 1rem; }
+.inicio-acoes .nav-btn { padding: 0.8rem 1.2rem; font-size: 1rem !important; }
 
-/* ── Categorias: links de texto, sem pílulas ── */
+/* Categorias: palavras soltas, a linha se desenha no hover (m-link--bare) */
 .inicio-categorias {
   display: flex;
-  gap: 0.25rem 1.5rem;
   flex-wrap: wrap;
-  padding: 0.9rem 0;
+  gap: 0.35rem 1.4rem;
+  margin-top: 2.25rem;
+  padding-top: 1.25rem;
   border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
   font-size: 0.95rem;
 }
-.inicio-categorias a { color: var(--ink-soft); padding: 0.15rem 0; }
-.inicio-categorias a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
+.inicio-categorias a { color: var(--ink-soft); }
+.inicio-categorias a:hover { color: var(--ink); }
+
+/* Vitrine: três fotos de anúncios, uma alta à esquerda e duas à direita,
+   nas mesmas bordas da grade (nada inclinado ou desencontrado) */
+.inicio-vitrine {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 0.75rem;
+  aspect-ratio: 1 / 1;
+  max-height: calc(100svh - 10rem);
+  width: 100%;
+  justify-self: end;
+}
+.inicio-vitrine-foto {
+  position: relative;
+  display: block;
+  border-radius: var(--radius-lg);
+  background: var(--cream-soft);
+  overflow: hidden;
+}
+.inicio-vitrine-foto:first-child { grid-row: 1 / span 2; }
+.inicio-vitrine-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
 /* ── Anúncios recentes ── */
-.inicio-recentes { padding: 2.5rem 0 3.5rem; }
+.inicio-recentes { padding: 3.5rem 0 4.5rem; }
 .inicio-titulo-linha {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
 }
-.inicio h2 { font-size: 1.4rem; font-weight: 600; line-height: 1.25; }
+.inicio h2 { font-size: clamp(1.5rem, 2.4vw, 2rem); font-weight: 600; line-height: 1.2; letter-spacing: -0.02em; }
 .inicio-ver-todos { color: var(--terracotta-dark); font-weight: 500; font-size: 0.95rem; }
-.inicio-ver-todos:hover { text-decoration: underline; text-underline-offset: 4px; }
 .inicio-grade {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(13.5rem, 1fr));
-  gap: 1rem;
+  gap: 1.25rem 1rem;
 }
 .inicio-vazio {
   display: flex;
@@ -607,39 +639,118 @@
   color: var(--ink-soft);
 }
 
-/* ── Como funciona: lista numerada de verdade (é uma sequência) ── */
-.inicio-como { padding: 3rem 0; border-top: 1px solid var(--border); }
-.inicio-como h2 { margin-bottom: 1.5rem; }
-.inicio-passos {
-  list-style: none;
-  counter-reset: passo;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
+/* ── Como funciona: moment "pinned-chapters" da skill ─────────────
+   Faixa de fundo liso (--cream-soft, o "g-alt" do site) de ponta a
+   ponta da tela: a sombra larga pinta as laterais e o clip-path corta
+   o excesso, sem criar rolagem lateral nem quebrar o position: sticky
+   do moment. O moment.css do kit cuida do resto (parado, vivo, celular). */
+.inicio-como {
+  background: var(--cream-soft);
+  box-shadow: 0 0 0 100vmax var(--cream-soft);
+  clip-path: inset(0 -100vmax);
+  padding: 4.5rem 0;
 }
-.inicio-passos li { counter-increment: passo; }
-.inicio-passos h3 {
-  display: flex;
-  align-items: baseline;
-  gap: 0.6rem;
-  font-size: 1.05rem;
-  font-weight: 600;
-  margin-bottom: 0.4rem;
-}
-.inicio-passos h3::before {
-  content: counter(passo);
+.inicio-como h2 { margin-bottom: 0.25rem; }
+.inicio-como .mo-pc__step h3 { display: flex; align-items: center; gap: 0.65rem; font-weight: 600; }
+.inicio-passo-num {
   display: inline-grid;
   place-items: center;
-  width: 1.6rem;
-  height: 1.6rem;
+  width: 1.75rem;
+  height: 1.75rem;
   border-radius: 50%;
-  border: 1px solid var(--cream-deep);
+  background: var(--paper);
+  border: 1px solid var(--border);
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--ink-soft);
   flex-shrink: 0;
 }
-.inicio-passos p { color: var(--ink-soft); font-size: 0.95rem; padding-left: 2.2rem; }
+.inicio-como .mo-pc__step.is-on .inicio-passo-num { background: var(--terracotta); border-color: var(--terracotta); color: var(--paper); }
+.inicio-como .mo-pc__step p { color: var(--ink-soft); }
+/* o quadro das janelas: papel sobre a faixa, cantos de cartão */
+.inicio-como .mo-pc__visual.mo-pc__visual--lit { background: color-mix(in srgb, var(--paper) 55%, var(--cream-soft)); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+/* parado (celular, tablet, "reduzir movimento"): o quadro tem a altura da janela */
+.inicio-como:not(.is-live) .mo-pc__visual.mo-pc__visual--lit { aspect-ratio: auto; padding: clamp(1rem, 3vw, 1.75rem); }
+.inicio-como.is-live .mo-pc__visuals { border-radius: var(--radius-lg); overflow: hidden; }
+.inicio-como.is-live .mo-pc__visual.mo-pc__visual--lit { border: 0; border-radius: 0; }
+
+/* As janelas: pedaços da interface do site, desenhados em HTML */
+.janela {
+  width: min(100%, 23rem);
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--sombra-2);
+  overflow: hidden;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+.janela-foto {
+  aspect-ratio: 21 / 9;
+  display: grid;
+  place-items: center;
+  background: var(--cream-soft);
+  color: var(--ink-muted);
+  overflow: hidden;
+}
+.janela-foto img { width: 100%; height: 100%; object-fit: cover; }
+.janela-corpo { display: flex; flex-direction: column; gap: 0.4rem; padding: 1.1rem 1.2rem 1.2rem; }
+.janela-rotulo { font-size: 0.78rem; color: var(--ink-muted); }
+.janela-campo {
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--paper);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.janela-linha { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 0.5rem; }
+.janela-botao {
+  display: inline-flex;
+  justify-content: center;
+  padding: 0.55rem 0.9rem;
+  border-radius: var(--radius-md);
+  background: var(--terracotta);
+  color: var(--paper);
+  font-weight: 600;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+.janela-botao--largo { margin-top: 0.4rem; }
+.janela-resumo {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--border-soft);
+}
+.janela-miniatura {
+  width: 3rem;
+  height: 3rem;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  background: var(--cream-soft);
+  color: var(--ink-muted);
+  overflow: hidden;
+}
+.janela-miniatura img { width: 100%; height: 100%; object-fit: cover; }
+.janela-resumo-titulo { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.janela-aviso, .janela-ok { display: flex; align-items: center; gap: 0.45rem; font-size: 0.85rem; margin-top: 0.4rem; }
+.janela-aviso { color: var(--forest); }
+.janela-ok { color: var(--success); font-weight: 600; justify-content: center; }
+.janela-codigo { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.4rem; }
+.janela-codigo span {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 5;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  font-size: 1.3rem;
+  font-weight: 600;
+}
 
 /* ── Bairros atendidos ── */
 .inicio-bairros {
@@ -647,8 +758,7 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
   gap: 2.5rem;
   align-items: start;
-  padding: 3rem 0 0;
-  border-top: 1px solid var(--border);
+  padding: 4.5rem 0 0;
 }
 .inicio-bairros-texto p { color: var(--ink-soft); margin: 0.75rem 0 1.25rem; max-width: 34rem; }
 .inicio-bairros-lista { display: flex; flex-wrap: wrap; gap: 0.4rem; }
@@ -659,25 +769,28 @@
   background: var(--paper);
   font-size: 0.85rem;
   color: var(--ink-soft);
-  transition: background-color 0.15s var(--ease), color 0.15s var(--ease), border-color 0.15s var(--ease);
+  transition: background-color var(--m-out, 120ms) var(--ease), color var(--m-out, 120ms) var(--ease), border-color var(--m-out, 120ms) var(--ease);
 }
-.inicio-bairro:hover { border-color: var(--cream-deep); color: var(--ink); }
+.inicio-bairro:hover { border-color: var(--line-strong); color: var(--ink); transition-duration: var(--m-in, 150ms); }
 .inicio-bairro.ativo { background: var(--forest); border-color: var(--forest); color: #fff; }
 
 @media (max-width: 1024px) {
-  .inicio-abertura { flex-direction: column; align-items: flex-start; }
+  .inicio-abertura { grid-template-columns: minmax(0, 1fr); min-height: 0; padding: 2.5rem 0; }
+  .inicio-vitrine { aspect-ratio: 16 / 10; max-height: none; justify-self: stretch; }
   .inicio-bairros { grid-template-columns: 1fr; }
 }
 @media (max-width: 768px) {
   .inicio { padding: 0 1rem 3rem; }
-  .inicio-abertura { padding: 2rem 0 1.5rem; }
-  .inicio-acoes { width: 100%; }
+  .inicio-abertura { padding: 2rem 0 2.5rem; gap: 1.75rem; }
   .inicio-acoes > * { flex: 1; justify-content: center; }
-  .inicio-categorias { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .inicio-categorias { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-top: 1.75rem; }
   .inicio-categorias a { white-space: nowrap; }
+  .inicio-vitrine { aspect-ratio: 4 / 3; gap: 0.5rem; }
   .inicio-grade { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
-  .inicio-passos { grid-template-columns: 1fr; gap: 1.25rem; }
   .inicio-titulo-linha { flex-wrap: wrap; }
+  .inicio-como { padding: 3rem 0; }
+  .inicio-recentes { padding: 2.5rem 0 3.5rem; }
+  .inicio-bairros { padding-top: 3rem; }
 }
 
 /* Rodapé alinhado à mesma largura do conteúdo da página */

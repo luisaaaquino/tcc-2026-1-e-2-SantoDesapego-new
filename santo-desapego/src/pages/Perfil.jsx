@@ -11,6 +11,7 @@ import {
 } from '../componentes/Icones';
 
 import { API_URL } from '../config';
+import { atualizarMovimento } from '../utils/camadaMovimento';
 
 /* ── Ícones SVG ───────────────────────────────────────────── */
 const I = {
@@ -104,6 +105,10 @@ const Perfil = () => {
   );
   const [carregando, setCarregando] = useState(true);
 
+  // As abas só aparecem depois de carregar: avisa a camada de movimento
+  // (indicador que desliza entre as abas, skill design-taste-frontend)
+  useEffect(() => { if (!carregando) atualizarMovimento(); }, [carregando]);
+
   // Clicar numa notificação estando já no Perfil só muda a query string
   // (a página não remonta) — então acompanha o ?aba= aqui também.
   useEffect(() => {
@@ -186,56 +191,56 @@ const Perfil = () => {
           </button>
 
           <nav
-            className={`perfil-tabs${abaMenuAberto ? ' mobile-aberto' : ''}`}
+            className={`perfil-tabs m-tabs${abaMenuAberto ? ' mobile-aberto' : ''}`}
             role="tablist"
             onClick={(e) => { if (e.target.closest('.perfil-tab')) setAbaMenuAberto(false); }}
           >
             <button className={`perfil-tab${aba === 'painel' ? ' active' : ''}`}
-              onClick={() => setAba('painel')} role="tab">
+              onClick={() => setAba('painel')} role="tab" aria-selected={aba === 'painel'}>
               <I.layout /> Visão geral
             </button>
             <button className={`perfil-tab${aba === 'anuncios' ? ' active' : ''}`}
-              onClick={() => setAba('anuncios')} role="tab">
+              onClick={() => setAba('anuncios')} role="tab" aria-selected={aba === 'anuncios'}>
               <IconTag /> Meus anúncios
             </button>
             <button className={`perfil-tab${aba === 'favoritos' ? ' active' : ''}`}
-              onClick={() => setAba('favoritos')} role="tab">
+              onClick={() => setAba('favoritos')} role="tab" aria-selected={aba === 'favoritos'}>
               <IconHeart size={16} /> Favoritos
             </button>
             <button className={`perfil-tab${aba === 'compras' ? ' active' : ''}`}
-              onClick={() => setAba('compras')} role="tab">
+              onClick={() => setAba('compras')} role="tab" aria-selected={aba === 'compras'}>
               <I.bag /> Compras realizadas
             </button>
             <button className={`perfil-tab${aba === 'vendas' ? ' active' : ''}`}
-              onClick={() => setAba('vendas')} role="tab">
+              onClick={() => setAba('vendas')} role="tab" aria-selected={aba === 'vendas'}>
               <IconTag /> Vendas realizadas
             </button>
             <button className={`perfil-tab${aba === 'pagamentos' ? ' active' : ''}`}
-              onClick={() => setAba('pagamentos')} role="tab">
+              onClick={() => setAba('pagamentos')} role="tab" aria-selected={aba === 'pagamentos'}>
               <I.wallet /> Recebimentos
             </button>
             <button className={`perfil-tab${aba === 'avaliacoes' ? ' active' : ''}`}
-              onClick={() => setAba('avaliacoes')} role="tab">
+              onClick={() => setAba('avaliacoes')} role="tab" aria-selected={aba === 'avaliacoes'}>
               <I.star /> Avaliações
             </button>
             <button className={`perfil-tab${aba === 'denuncias' ? ' active' : ''}`}
-              onClick={() => setAba('denuncias')} role="tab">
+              onClick={() => setAba('denuncias')} role="tab" aria-selected={aba === 'denuncias'}>
               <IconFlag /> Minhas denúncias
             </button>
             <button className={`perfil-tab${aba === 'dados' ? ' active' : ''}`}
-              onClick={() => setAba('dados')} role="tab">
+              onClick={() => setAba('dados')} role="tab" aria-selected={aba === 'dados'}>
               <IconUser /> Dados pessoais
             </button>
             <button className={`perfil-tab${aba === 'endereco' ? ' active' : ''}`}
-              onClick={() => setAba('endereco')} role="tab">
+              onClick={() => setAba('endereco')} role="tab" aria-selected={aba === 'endereco'}>
               <IconPin /> Endereço
             </button>
             <button className={`perfil-tab${aba === 'seguranca' ? ' active' : ''}`}
-              onClick={() => setAba('seguranca')} role="tab">
+              onClick={() => setAba('seguranca')} role="tab" aria-selected={aba === 'seguranca'}>
               <IconShield /> Segurança
             </button>
             <button className={`perfil-tab danger${aba === 'lgpd' ? ' active' : ''}`}
-              onClick={() => setAba('lgpd')} role="tab">
+              onClick={() => setAba('lgpd')} role="tab" aria-selected={aba === 'lgpd'}>
               <I.data /> Privacidade (LGPD)
             </button>
             {usuario.papel === 'administrador' && (
@@ -515,8 +520,8 @@ const SecaoAnuncios = () => {
             const status = STATUS_ANUNCIO[a.status] || { label: a.status, cls: '' };
             const emAcao = processando === a.id;
             return (
-              <Link to={`/anuncio/${a.id}`} key={a.id} className="anuncio-card-perfil">
-                <div className="anuncio-card-perfil-img">
+              <Link to={`/anuncio/${a.id}`} key={a.id} className="anuncio-card-perfil card">
+                <div className="anuncio-card-perfil-img m-zoom">
                   {a.imagem_principal
                     ? <img src={a.imagem_principal} alt={a.titulo} />
                     : <span className="sem-foto-texto">Sem foto</span>}
@@ -623,8 +628,8 @@ const SecaoFavoritos = () => {
       {!carregando && favoritos?.length > 0 && (
         <div className="lista-anuncios">
           {favoritos.map((f) => (
-            <Link to={`/anuncio/${f.id}`} key={f.id} className="anuncio-card-perfil">
-              <div className="anuncio-card-perfil-img">
+            <Link to={`/anuncio/${f.id}`} key={f.id} className="anuncio-card-perfil card">
+              <div className="anuncio-card-perfil-img m-zoom">
                 {f.imagem_principal
                   ? <img src={f.imagem_principal} alt={f.titulo} />
                   : <span className="sem-foto-texto">Sem foto</span>}
@@ -930,7 +935,7 @@ const SecaoCompras = () => {
         <div className="lista-compras">
           {compras.map((c) => (
             <div className="compra-card-perfil" key={c.id}>
-              <Link to={`/anuncio/${c.anuncio_id}`} className="compra-card-perfil-img">
+              <Link to={`/anuncio/${c.anuncio_id}`} className="compra-card-perfil-img m-zoom">
                 {c.anuncio_imagem
                   ? <img src={c.anuncio_imagem} alt={c.anuncio_titulo} />
                   : <span className="sem-foto-texto">Sem foto</span>}
@@ -1034,7 +1039,7 @@ const SecaoVendas = () => {
         <div className="lista-compras">
           {vendas.map((v) => (
             <div className="compra-card-perfil" key={v.id}>
-              <Link to={`/anuncio/${v.anuncio_id}`} className="compra-card-perfil-img">
+              <Link to={`/anuncio/${v.anuncio_id}`} className="compra-card-perfil-img m-zoom">
                 {v.anuncio_imagem
                   ? <img src={v.anuncio_imagem} alt={v.anuncio_titulo} />
                   : <span className="sem-foto-texto">Sem foto</span>}
