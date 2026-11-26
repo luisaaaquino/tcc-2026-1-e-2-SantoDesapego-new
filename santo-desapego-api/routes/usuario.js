@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt  = require('bcrypt');
 const pool = require('../db');
 const { autenticar } = require('../middleware/auth');
-const { validarSenhaForte } = require('../utils/validacao');
+const { validarSenhaForte, validarCEP } = require('../utils/validacao');
 const { TERMOS_VERSAO_ATUAL } = require('../utils/termos');
 const { excluirOuAnonimizarUsuario } = require('../utils/usuarios');
 const { MARKETPLACE_FEE_PERCENT } = require('../services/mercadoPagoService');
@@ -119,6 +119,16 @@ router.get('/api/usuario/perfil', autenticar, async (req, res) => {
        FROM avaliacoes WHERE avaliado_id = $1`, [req.userId]
     );
 
+    // [RF13] Mensagens recebidas e ainda não lidas, em todas as conversas
+    const naoLidas = await pool.query(
+      `SELECT COUNT(*) AS total
+         FROM mensagens m
+         JOIN conversas c ON c.id = m.conversa_id
+        WHERE (c.comprador_id = $1 OR c.vendedor_id = $1)
+          AND m.remetente_id <> $1
+          AND m.lida = FALSE`, [req.userId]
+    );
+
     const estatisticas = {
       anuncios_ativos:    parseInt(stats.rows[0]?.anuncios_ativos)   || 0,
       anuncios_vendidos:  parseInt(stats.rows[0]?.anuncios_vendidos) || 0,
@@ -126,7 +136,7 @@ router.get('/api/usuario/perfil', autenticar, async (req, res) => {
       compras_realizadas: parseInt(compras.rows[0]?.total) || 0,
       reputacao_media:    avaliacoes.rows[0]?.media ?? null,
       total_avaliacoes:   parseInt(avaliacoes.rows[0]?.total) || 0,
-      mensagens_nao_lidas: 0,
+      mensagens_nao_lidas: parseInt(naoLidas.rows[0]?.total) || 0,
     };
 
     return res.json({ usuario, estatisticas });
@@ -176,6 +186,10 @@ router.put('/api/usuario/perfil', autenticar, async (req, res) => {
     if (!nome || !sobrenome) {
       return res.status(400).json({ erro: 'Nome e sobrenome são obrigatórios.' });
     }
+    // [RF01] CEP é opcional aqui, mas se vier precisa ser válido
+    if (cep && !validarCEP(cep)) {
+      return res.status(400).json({ erro: 'CEP inválido. Use o formato 00000-000.' });
+    }
 
     const resultado = await pool.query(
       `UPDATE usuarios SET
@@ -187,7 +201,7 @@ router.put('/api/usuario/perfil', autenticar, async (req, res) => {
        RETURNING id, nome, sobrenome, email, bairro, foto_perfil`,
       [
         nome.trim(), sobrenome.trim(), telefone || null,
-        cep || null, logradouro || null, numero || null,
+        cep ? String(cep).replace(/\D/g, '') : null, logradouro || null, numero || null,
         complemento || null, bairro || null,
         recebe_newsletter === true,
         req.userId
@@ -480,7 +494,8 @@ router.get('/api/usuario/vendas', autenticar, async (req, res) => {
          (SELECT imagem FROM anuncio_imagens
            WHERE anuncio_id = a.id AND is_principal = TRUE LIMIT 1) AS anuncio_imagem,
          -- O código só aparece pro vendedor (esta rota) e some depois da entrega
-         CASE WHEN co.entrega_confirmada_em IS NULL THEN co.codigo_entrega END AS codigo_entrega,
+         CASE WHEN co.entrega_confirmada_em IS NULL AND co.status = 'approved'
+              THEN co.codigo_entrega END AS codigo_entrega,
          co.entrega_confirmada_em,
          (co.tentativas_codigo >= 5) AS entrega_bloqueada,
          -- Valor que o vendedor recebe: liberado quando o comprador confirma a entrega

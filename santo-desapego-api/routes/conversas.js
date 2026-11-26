@@ -1,7 +1,7 @@
 const express = require('express');
 const pool = require('../db');
 const { autenticar } = require('../middleware/auth');
-const { conteudoTemPalavrasProibidas } = require('../utils/validacao');
+const { conteudoTemPalavrasProibidas, contemContatoPessoal } = require('../utils/validacao');
 const { criarNotificacao } = require('../utils/notificacoes');
 
 const router = express.Router();
@@ -38,7 +38,7 @@ router.post('/api/conversas', autenticar, async (req, res) => {
     const { status } = anuncio.rows[0];
     if (status !== 'ativo') {
       const comprouEsteAnuncio = status === 'vendido' && (await pool.query(
-        'SELECT 1 FROM compras WHERE anuncio_id = $1 AND comprador_id = $2 LIMIT 1',
+        `SELECT 1 FROM compras WHERE anuncio_id = $1 AND comprador_id = $2 AND status = 'approved' LIMIT 1`,
         [anuncio_id, req.userId]
       )).rows.length > 0;
       if (!comprouEsteAnuncio) {
@@ -234,7 +234,7 @@ router.post('/api/conversas/:id/mensagens', autenticar, async (req, res) => {
     }
 
     const conversa = await pool.query(
-      `SELECT c.comprador_id, c.vendedor_id, a.titulo AS anuncio_titulo, r.nome AS remetente_nome
+      `SELECT c.comprador_id, c.vendedor_id, c.anuncio_id, a.titulo AS anuncio_titulo, r.nome AS remetente_nome
          FROM conversas c
          JOIN anuncios a ON a.id = c.anuncio_id
          JOIN usuarios r ON r.id = $2
@@ -246,9 +246,27 @@ router.post('/api/conversas/:id/mensagens', autenticar, async (req, res) => {
       return res.status(404).json({ erro: 'Conversa não encontrada.' });
     }
 
-    const { comprador_id, vendedor_id, anuncio_titulo, remetente_nome } = conversa.rows[0];
+    const { comprador_id, vendedor_id, anuncio_id, anuncio_titulo, remetente_nome } = conversa.rows[0];
     if (comprador_id !== req.userId && vendedor_id !== req.userId) {
       return res.status(403).json({ erro: 'Esta conversa não é sua.' });
+    }
+
+    // Bloqueio de contato antes da compra (Fluxo de Operação: Visão da
+    // Administração): telefone e e-mail só depois do pagamento aprovado,
+    // pra negociação não sair da plataforma e perder a proteção do pagamento.
+    const contato = contemContatoPessoal(conteudo);
+    if (contato) {
+      const compraAprovada = await pool.query(
+        `SELECT 1 FROM compras
+          WHERE anuncio_id = $1 AND comprador_id = $2 AND status = 'approved' LIMIT 1`,
+        [anuncio_id, comprador_id]
+      );
+      if (compraAprovada.rows.length === 0) {
+        return res.status(400).json({
+          erro: `Por segurança, não é permitido enviar ${contato === 'email' ? 'e-mail' : 'telefone'} no chat antes da compra. Combine tudo por aqui: depois do pagamento aprovado, vocês podem trocar contatos para a entrega.`,
+          contato_bloqueado: contato,
+        });
+      }
     }
 
     const nova = await pool.query(

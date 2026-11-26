@@ -61,7 +61,7 @@ describe('RF01 - Gestão de Perfil Geográfico', () => {
     await user.type(campo('04000-000'), '01310100');
 
     expect(await screen.findByText(/fora da área de Santo Amaro/)).toBeInTheDocument();
-    expect(screen.getByText(/Você pode concluir o cadastro normalmente/)).toBeInTheDocument();
+    expect(screen.getByText(/Você pode concluir o cadastro e comprar normalmente/)).toBeInTheDocument();
     expect(screen.getByRole('combobox')).toHaveValue('Outro bairro');
   });
 

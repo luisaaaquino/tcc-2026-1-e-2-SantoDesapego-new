@@ -19,6 +19,8 @@ export default function CompraRealizada() {
   const [anuncio, setAnuncio]     = useState(state?.anuncio || null);
   const [pagamento, setPagamento] = useState(null);
   const [carregando, setCarregando] = useState(Boolean(anuncioId || paymentId));
+  // [RNF09] Outra pessoa comprou a peça antes: o pagamento foi reembolsado
+  const [jaVendida, setJaVendida] = useState(null);
 
   // Busca o anúncio comprado
   useEffect(() => {
@@ -44,9 +46,10 @@ export default function CompraRealizada() {
       .finally(() => setCarregando(false));
   }, [paymentId, anuncioId]);
 
-  // Grava a compra no banco assim que o pagamento é confirmado como aprovado
+  // [RF17] Grava o pagamento no histórico com o status que vier
+  // (aprovado, pendente ou recusado), não só quando é aprovado
   useEffect(() => {
-    if (!paymentId || !anuncioId || pagamento?.status !== 'approved') return;
+    if (!paymentId || !anuncioId || !pagamento?.status) return;
 
     const token = localStorage.getItem('sd_token');
     if (!token) return;
@@ -59,11 +62,13 @@ export default function CompraRealizada() {
       },
       body: JSON.stringify({ payment_id: paymentId, anuncio_id: anuncioId }),
     })
+      .then((r) => r.json())
+      .then((dados) => { if (dados.conflito) setJaVendida(dados.erro); })
       .catch((e) => console.error('[compra] confirmar', e));
   }, [paymentId, anuncioId, pagamento]);
 
   const status = pagamento?.status || statusUrl || 'approved';
-  const aprovado = status === 'approved';
+  const aprovado = status === 'approved' && !jaVendida;
 
   const etapas = [
     {
@@ -103,6 +108,21 @@ export default function CompraRealizada() {
           <div className="compra-hero__acoes">
             <Link to="/perfil?aba=compras" className="btn btn--solido">Ver minhas compras</Link>
             <Link to="/explorar" className="btn btn--vazado">Continuar garimpando</Link>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (jaVendida) {
+    return (
+      <main className="compra">
+        <section className="compra-hero">
+          <h1 className="compra-hero__titulo">Esta peça <em>já foi vendida</em>.</h1>
+          <p className="compra-hero__texto" role="alert">{jaVendida}</p>
+          <div className="compra-hero__acoes">
+            <Link to="/explorar" className="btn btn--solido">Continuar garimpando</Link>
+            <Link to="/perfil?aba=compras" className="btn btn--vazado">Ver minhas compras</Link>
           </div>
         </section>
       </main>

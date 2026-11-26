@@ -194,10 +194,22 @@ describe('RF02 - Autenticação e Gestão de Sessão', () => {
   // ── Login com Google ──
   describe('login com Google', () => {
     const respostaFetch = (ok, corpo) => ({ ok, json: async () => corpo });
-    const GOOGLE_ID = '113184048014-ramhhojnofdd511oh1nl3h2ibono7581.apps.googleusercontent.com';
+    const GOOGLE_ID = process.env.GOOGLE_CLIENT_ID; // definido em tests/setup.js
     const loginGoogle = () => request(appAuth).post('/api/auth/google').send({ credential: 'tok' });
 
     beforeEach(() => { global.fetch = jest.fn(); });
+
+    test('[RNF16] sem GOOGLE_CLIENT_ID no .env, o login com Google fica desligado', async () => {
+      const antes = process.env.GOOGLE_CLIENT_ID;
+      delete process.env.GOOGLE_CLIENT_ID;
+      let appSemGoogle;
+      jest.isolateModules(() => { appSemGoogle = montarApp(require('../routes/auth')); });
+      process.env.GOOGLE_CLIENT_ID = antes;
+
+      const res = await request(appSemGoogle).post('/api/auth/google').send({ credential: 'tok' });
+      expect(res.status).toBe(503);
+      expect(fetch).not.toHaveBeenCalled();
+    });
 
     test('conta Google verificada e cadastrada entra direto', async () => {
       fetch.mockResolvedValueOnce(respostaFetch(true, { aud: GOOGLE_ID }))
@@ -322,6 +334,52 @@ describe('RF15 - Chat Interno', () => {
 
   test('mensagem com mais de 1000 caracteres é recusada', async () => {
     expect((await enviar(COMPRADOR, 'a'.repeat(1001))).status).toBe(400);
+  });
+
+  describe('bloqueio de telefone e e-mail antes da compra', () => {
+    const conversa = linhas({ comprador_id: COMPRADOR, vendedor_id: VENDEDOR, anuncio_id: 10, anuncio_titulo: 'Bicicleta', remetente_nome: 'Ana' });
+
+    test.each([
+      ['telefone', 'me chama no zap (11) 98765-4321'],
+      ['telefone', 'liga 11987654321'],
+      ['e-mail', 'meu email é ana.lima@gmail.com'],
+      ['e-mail', 'ana arroba gmail ponto com'],
+    ])('antes da compra, mensagem com %s é bloqueada: "%s"', async (tipo, texto) => {
+      pool.query.mockResolvedValueOnce(conversa).mockResolvedValueOnce(linhas()); // sem compra aprovada
+      const res = await enviar(VENDEDOR, texto);
+      expect(res.status).toBe(400);
+      expect(res.body.erro).toMatch(new RegExp(`${tipo} no chat antes da compra`));
+      expect(pool.query.mock.calls.some(([sql]) => /INSERT INTO mensagens/.test(sql))).toBe(false);
+    });
+
+    test('a compra conferida é a aprovada deste anúncio e deste comprador', async () => {
+      pool.query.mockResolvedValueOnce(conversa).mockResolvedValueOnce(linhas());
+      await enviar(COMPRADOR, '(11) 98765-4321');
+      const [sql, params] = pool.query.mock.calls[1];
+      expect(sql).toMatch(/status = 'approved'/);
+      expect(params).toEqual([10, COMPRADOR]);
+    });
+
+    test('depois do pagamento aprovado, os dois podem trocar contato', async () => {
+      pool.query
+        .mockResolvedValueOnce(conversa)
+        .mockResolvedValueOnce(linhas({ 1: 1 }))           // compra aprovada
+        .mockResolvedValueOnce(linhas({ id: 21 }))
+        .mockResolvedValueOnce(linhas());
+      const res = await enviar(VENDEDOR, 'meu número é (11) 98765-4321');
+      expect(res.status).toBe(201);
+    });
+
+    test.each([
+      'faço por R$ 1.200,00',
+      'pode ser às 14:30 do dia 12/11?',
+      'fica perto do CEP 04746-085',
+      'tem 2 unidades de 40 cm',
+    ])('mensagem sem contato passa normalmente: "%s"', async (texto) => {
+      pool.query.mockResolvedValueOnce(conversa).mockResolvedValueOnce(linhas({ id: 22 })).mockResolvedValueOnce(linhas());
+      const res = await enviar(COMPRADOR, texto);
+      expect(res.status).toBe(201);
+    });
   });
 
   test('quem não participa da conversa não envia mensagem', async () => {

@@ -3,6 +3,7 @@
 // são substituídos por mocks em cada arquivo.
 process.env.JWT_SECRET = 'segredo-de-teste';
 process.env.MP_MARKETPLACE_FEE_PERCENT = '5';
+process.env.GOOGLE_CLIENT_ID = 'client-id-de-teste.apps.googleusercontent.com';
 
 jest.spyOn(console, 'log').mockImplementation(() => {});
 jest.spyOn(console, 'error').mockImplementation(() => {});

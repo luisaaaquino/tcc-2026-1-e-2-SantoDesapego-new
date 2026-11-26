@@ -8,6 +8,15 @@ const MP_REDIRECT_URI = process.env.MP_REDIRECT_URI;
 const MARKETPLACE_FEE_PERCENT = Number(process.env.MP_MARKETPLACE_FEE_PERCENT || 5);
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
+// [RNF09] Endereço público da API para o aviso automático (webhook) do
+// Mercado Pago. Usa API_URL ou, se não tiver, o domínio do MP_REDIRECT_URI
+// (que já aponta para a API). O Mercado Pago só aceita endereço HTTPS público.
+const urlPublicaDaApi = () => {
+  const base = process.env.API_URL
+    || (MP_REDIRECT_URI ? new URL(MP_REDIRECT_URI).origin : '');
+  return base.startsWith('https://') ? base.replace(/\/$/, '') : null;
+};
+
 const oauth = new OAuth(mp);
 
 // ============================================================
@@ -132,7 +141,15 @@ const createSplitPreference = async ({ sellerAccessToken, anuncio, comprador }) 
 
     external_reference: String(anuncio.id),
     statement_descriptor: 'SANTO DESAPEGO',
+
+    // Volta no pagamento: o webhook sabe quem comprou sem o comprador voltar ao site
+    metadata: { comprador_id: comprador.id },
   };
+
+  const apiUrl = urlPublicaDaApi();
+  if (apiUrl) {
+    body.notification_url = `${apiUrl}/api/pagamentos/webhook?anuncio_id=${anuncio.id}`;
+  }
 
   // auto_return exige que back_url.success seja uma URL pública HTTPS — não
   // funciona com FRONTEND_URL apontando pra localhost (mesma limitação que

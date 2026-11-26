@@ -26,7 +26,7 @@ const request = require('supertest');
 const pool = require('../db');
 const { garantirTokenVendedorValido } = require('../services/mercadoPagoService');
 const { validarDadosAnuncio } = require('../services/anuncioService');
-const { montarApp, tokenDe, linhas } = require('./helpers');
+const { montarApp, tokenDe, linhas, transacaoNoPool } = require('./helpers');
 
 const appAuth = montarApp(require('../routes/auth'));
 const appPagamentos = montarApp(require('../routes/pagamentos'));
@@ -47,6 +47,7 @@ const anuncio = (extra = {}) => ({
 beforeEach(() => {
   jest.clearAllMocks();
   pool.query.mockReset();
+  pool.connect.mockImplementation(async () => transacaoNoPool(pool));
   mockPreferenceCreate.mockResolvedValue({ id: 'pref-1', init_point: 'https://mercadopago/checkout' });
 });
 
@@ -67,7 +68,7 @@ describe('RF01 - Gestão de Perfil Geográfico', () => {
     const res = await cadastrar(cadastro());
     expect(res.status).toBe(201);
     const params = insert()[1];
-    expect(params).toEqual(expect.arrayContaining(['04710-150', 'Rua Padre José', 'Santo Amaro Centro', '52998224725']));
+    expect(params).toEqual(expect.arrayContaining(['04710150', 'Rua Padre José', 'Santo Amaro Centro', '52998224725']));
   });
 
   test('cadastro aceita CEP de outra região (a restrição vale só para anunciar)', async () => {
@@ -82,6 +83,22 @@ describe('RF01 - Gestão de Perfil Geográfico', () => {
       estado_conservacao: 'usado', categoria_id: 3, cep: '01310-100', imagens: ['data:image/png;base64,AA'],
     });
     expect(erro).toMatch(/Santo Amaro/);
+  });
+
+  test.each([
+    ['sem CEP', undefined],
+    ['CEP com menos dígitos', '0471-150'],
+    ['CEP com letras', 'abcde-fgh'],
+    ['CEP repetido', '00000-000'],
+  ])('cadastro %s é recusado', async (_caso, cep) => {
+    const res = await cadastrar(cadastro({ cep }));
+    expect(res.status).toBe(400);
+    expect(res.body.erro).toMatch(/CEP/);
+  });
+
+  test('o CEP é gravado só com os números', async () => {
+    await cadastrar(cadastro({ cep: '04710-150' }));
+    expect(insert()[1][5]).toBe('04710150');
   });
 
   test('cadastro com CPF inválido é recusado', async () => {
@@ -331,7 +348,7 @@ describe('RF23 - Confirmação de Entrega por Código', () => {
       query: jest.fn(async (sql) => {
         if (/FROM compras co/.test(sql)) {
           return linhas({ vendedor_id: VENDEDOR, comprador_id: COMPRADOR, codigo_entrega: '482913',
-            entrega_confirmada_em: null, tentativas_codigo: 0, preco: '800.00', titulo: 'Bicicleta' });
+            entrega_confirmada_em: null, tentativas_codigo: 0, preco: '800.00', titulo: 'Bicicleta', status: 'approved' });
         }
         return linhas({ id: 7, entrega_confirmada_em: new Date().toISOString() });
       }),

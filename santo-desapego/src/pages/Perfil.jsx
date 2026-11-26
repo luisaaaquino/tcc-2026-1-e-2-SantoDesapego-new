@@ -27,6 +27,12 @@ const I = {
 
 const BAIRROS = [...BAIRROS_SANTO_AMARO, 'Outro bairro'];
 
+// RN01 — mesma faixa de CEP de Santo Amaro validada no back-end (anúncios)
+const cepDentroDeSantoAmaro = (cepNumeros) => {
+  const prefixo = parseInt(cepNumeros.slice(0, 5), 10);
+  return prefixo >= 4600 && prefixo <= 4799;
+};
+
 // Rótulo de cada aba — usado no botão que abre/fecha o menu no mobile
 const ABA_LABEL = {
   painel: 'Visão geral',
@@ -842,6 +848,7 @@ const STATUS_PAGAMENTO_LABEL = {
   rejected: 'Recusado',
   cancelled: 'Cancelado',
   refunded: 'Reembolsado',
+  reembolso_pendente: 'Reembolso pendente',
   charged_back: 'Estornado',
 };
 
@@ -936,17 +943,19 @@ const SecaoCompras = () => {
                 <p>Vendido por {c.vendedor_nome} {c.vendedor_sobrenome} · {dataBR(c.criada_em)} · {STATUS_PAGAMENTO_LABEL[c.status] || c.status}</p>
                 <strong>{brl(c.preco)}</strong>
 
+                {c.status === 'approved' && (
                 <span className={`repasse-status${c.entrega_confirmada_em ? ' liberado' : ''}`}>
                   {c.entrega_confirmada_em
                     ? `Recebimento confirmado em ${dataBR(c.entrega_confirmada_em)} · valor liberado ao vendedor`
                     : 'Pagamento retido até você confirmar o recebimento'}
                 </span>
+                )}
 
                 <div className="compra-card-perfil-acoes">
                   <button type="button" className="btn-perfil-secondary avaliar-btn" onClick={() => baixarComprovante(c.id)}>
                     <I.download /> Comprovante (PDF)
                   </button>
-                  {!c.entrega_confirmada_em ? (
+                  {c.status !== 'approved' ? null : !c.entrega_confirmada_em ? (
                     <span className="entrega-pendente-badge">Avaliação liberada após a entrega</span>
                   ) : c.ja_avaliei ? (
                     <span className="avaliei-badge"><IconCheck /> Você avaliou esta compra</span>
@@ -958,7 +967,7 @@ const SecaoCompras = () => {
                   )}
                 </div>
 
-                {!c.entrega_confirmada_em && (
+                {c.status === 'approved' && !c.entrega_confirmada_em && (
                   <ConfirmarEntrega compra={c} aoConfirmar={carregar} />
                 )}
 
@@ -1038,11 +1047,13 @@ const SecaoVendas = () => {
                 <Link to={`/anuncio/${v.anuncio_id}`}><h3>{v.anuncio_titulo}</h3></Link>
                 <p>Comprado por {v.comprador_nome} {v.comprador_sobrenome} · {dataBR(v.criada_em)} · {STATUS_PAGAMENTO_LABEL[v.status] || v.status}</p>
                 <strong>{brl(v.preco)}</strong>
+                {v.status === 'approved' && (
                 <span className={`repasse-status${v.entrega_confirmada_em ? ' liberado' : ''}`}>
                   {v.entrega_confirmada_em
                     ? `Valor liberado: ${brl(v.valor_liquido)} (descontada a taxa de 5%)`
                     : `Valor retido: ${brl(v.valor_liquido)} será liberado quando o comprador confirmar o recebimento`}
                 </span>
+                )}
 
                 {!v.entrega_confirmada_em && v.codigo_entrega && (
                   <div className="entrega-codigo">
@@ -1505,15 +1516,55 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
   const [salvando, setSalvando] = useState(false);
   const [feedback, setFeedback] = useState(null);
 
+  // [RF01] CEP consultado no ViaCEP, igual ao cadastro: confere se existe
+  // e já preenche logradouro e bairro
+  const [cepStatus, setCepStatus] = useState({ estado: '', msg: '' });
+
   const formatCEP = (value) => {
     let v = value.replace(/\D/g, '').slice(0, 8);
+    const numeros = v;
     if (v.length > 5) v = `${v.slice(0, 5)}-${v.slice(5)}`;
-    setForm({ ...form, cep: v });
+    setForm((prev) => ({ ...prev, cep: v }));
+
+    if (numeros.length !== 8) { setCepStatus({ estado: '', msg: '' }); return; }
+
+    setCepStatus({ estado: 'carregando', msg: 'Consultando CEP...' });
+    fetch(`https://viacep.com.br/ws/${numeros}/json/`)
+      .then((r) => r.json())
+      .then((dados) => {
+        if (dados.erro) {
+          setCepStatus({ estado: 'erro', msg: 'CEP não encontrado. Verifique o número digitado.' });
+          return;
+        }
+        const foraDeArea = !cepDentroDeSantoAmaro(numeros);
+        setForm((prev) => ({
+          ...prev,
+          logradouro: dados.logradouro || prev.logradouro,
+          bairro: foraDeArea
+            ? 'Outro bairro'
+            : (BAIRROS_SANTO_AMARO.includes(dados.bairro) ? dados.bairro : prev.bairro),
+        }));
+        setCepStatus(foraDeArea
+          ? { estado: 'fora', msg: 'CEP fora de Santo Amaro: você pode comprar normalmente, mas não pode publicar anúncios.' }
+          : { estado: 'ok', msg: '' });
+      })
+      // ViaCEP fora do ar: não trava o usuário (a API ainda confere o formato)
+      .catch(() => setCepStatus({ estado: '', msg: '' }));
   };
 
   const salvar = async (e) => {
     e.preventDefault();
     setFeedback(null);
+
+    const cepNumeros = form.cep.replace(/\D/g, '');
+    if (cepNumeros && cepNumeros.length !== 8) {
+      setFeedback({ tipo: 'error', msg: 'CEP inválido. Use o formato 00000-000.' });
+      return;
+    }
+    if (cepStatus.estado === 'erro') {
+      setFeedback({ tipo: 'error', msg: cepStatus.msg });
+      return;
+    }
     setSalvando(true);
 
     try {
@@ -1575,8 +1626,14 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
             <div className="perfil-input-wrap">
               <IconPin />
               <input className="perfil-input" type="text" placeholder="00000-000"
-                value={form.cep} onChange={(e) => formatCEP(e.target.value)} maxLength={9} />
+                value={form.cep} onChange={(e) => formatCEP(e.target.value)} maxLength={9}
+                aria-invalid={cepStatus.estado === 'erro'} aria-describedby="perfil-cep-status" />
             </div>
+            {cepStatus.msg && (
+              <span id="perfil-cep-status" className="perfil-field-hint" role={cepStatus.estado === 'erro' ? 'alert' : 'status'}>
+                {cepStatus.msg}
+              </span>
+            )}
           </div>
           <div className="perfil-field">
             <label className="perfil-field-label">Bairro</label>

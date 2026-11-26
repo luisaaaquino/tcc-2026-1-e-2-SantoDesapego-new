@@ -568,7 +568,7 @@ const Cadastro = () => {
                     <IconAlert />
                     <div>
                       <strong>Esse CEP fica fora da área de Santo Amaro atendida pela plataforma.</strong>
-                      <span> Você pode concluir o cadastro normalmente, mas anunciar e comprar itens fica limitado aos vizinhos de Santo Amaro e região.</span>
+                      <span> Você pode concluir o cadastro e comprar normalmente, mas publicar anúncios é só para quem mora em Santo Amaro e região.</span>
                     </div>
                   </div>
                 )}

@@ -1,5 +1,6 @@
 const {
   validarCEPSantoAmaro, validarSenhaForte, conteudoTemPalavrasProibidas, validarCPF, validarDataNascimento,
+  validarCEP, contemContatoPessoal,
 } = require('../utils/validacao');
 
 describe('RN02 - Verificação de Identidade (Compliance)', () => {
@@ -114,6 +115,57 @@ describe('RN03 - Política de Senhas Robustas', () => {
   test('recusa senha com sequência óbvia (123456)', () => {
     expect(validarSenhaForte('Casa@123456', usuario)).toMatch(/sequências/);
   });
+
+  test.each(['Ana', 'Rui'])('recusa senha com nome curto de 3 letras (%s)', (nome) => {
+    expect(validarSenhaForte(`${nome}#Vizinha9`, { nome, sobrenome: 'Lima' })).toMatch(/nome/);
+  });
+
+  test('confere cada parte do nome, sem diferenciar acento', () => {
+    expect(validarSenhaForte('Clara#2026x', { nome: 'Ana Clara', sobrenome: 'Souza' })).toMatch(/nome/);
+    expect(validarSenhaForte('Julia@2026x', { nome: 'Júlia', sobrenome: 'Souza' })).toMatch(/nome/);
+  });
+
+  test('ignora partes do nome com 1 ou 2 letras ("de", "da")', () => {
+    expect(validarSenhaForte('Vizinho#de2026', { nome: 'Ana', sobrenome: 'de Souza' })).toBeNull();
+  });
+
+  test.each(['Casa@1234x', 'Casa@9876x', 'Casa@abcd9', 'Casa@1111x', 'Qwerty@20x', 'Casa@asdf9'])(
+    'recusa qualquer sequência óbvia de 4 caracteres (%s)', (senha) => {
+      expect(validarSenhaForte(senha, usuario)).toMatch(/sequências/);
+    });
+
+  test('aceita números que não formam sequência', () => {
+    expect(validarSenhaForte('Feira#2468x', usuario)).toBeNull();
+  });
+});
+
+describe('RF01 - Validação de CEP', () => {
+  test.each(['04746-085', '04746085', '01310-100'])('aceita CEP válido de qualquer região (%s)', (cep) => {
+    expect(validarCEP(cep)).toBe(true);
+  });
+
+  test.each(['0474-6085', '0474608', '047460855', 'abcde-fgh', '00000-000', '11111111', '', null])(
+    'recusa CEP inválido (%s)', (cep) => {
+      expect(validarCEP(cep)).toBe(false);
+    });
+});
+
+describe('Chat - Detecção de contato pessoal', () => {
+  test.each([
+    '(11) 98765-4321', '11987654321', '+55 11 98765-4321', '11 9 8765 4321', '98765-4321', '3333-4444',
+  ])('detecta telefone: %s', (texto) => {
+    expect(contemContatoPessoal(texto)).toBe('telefone');
+  });
+
+  test.each(['ana.lima@gmail.com', 'bia @ hotmail . com', 'ana arroba gmail ponto com', 'ana(at)gmail.com'])(
+    'detecta e-mail: %s', (texto) => {
+      expect(contemContatoPessoal(texto)).toBe('email');
+    });
+
+  test.each(['R$ 1.200,00', '14:30 do dia 12/11/2026', 'CEP 04746-085', 'vou ao ponto de ônibus', 'Ainda está disponível?'])(
+    'não confunde com contato: %s', (texto) => {
+      expect(contemContatoPessoal(texto)).toBeNull();
+    });
 });
 
 describe('RN09 - Moderação de Conteúdo', () => {

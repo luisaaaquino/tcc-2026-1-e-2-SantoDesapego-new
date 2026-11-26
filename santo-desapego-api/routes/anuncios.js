@@ -255,7 +255,10 @@ router.delete('/api/anuncios/:id', autenticar, async (req, res) => {
       return res.status(403).json({ erro: 'Você só pode excluir os seus próprios anúncios.' });
     }
 
-    const compras = await pool.query('SELECT COUNT(*) FROM compras WHERE anuncio_id = $1', [id]);
+    const compras = await pool.query(
+      // Tentativas recusadas/canceladas não contam como compra
+      `SELECT COUNT(*) FROM compras WHERE anuncio_id = $1 AND status NOT IN ('rejected', 'cancelled')`, [id]
+    );
     if (parseInt(compras.rows[0].count) > 0) {
       return res.status(409).json({
         erro: 'Este anúncio possui compras registradas e não pode ser removido. Use "Pausar" para tirá-lo de circulação.',

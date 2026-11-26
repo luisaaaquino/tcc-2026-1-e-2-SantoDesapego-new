@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 const request = require('supertest');
 const pool = require('../db');
 const { TERMOS_VERSAO_ATUAL } = require('../utils/termos');
-const { montarApp, tokenDe, linhas } = require('./helpers');
+const { montarApp, tokenDe, linhas, transacaoNoPool } = require('./helpers');
 
 const appUsuario = montarApp(require('../routes/usuario'));
 const appFavoritos = montarApp(require('../routes/favoritos'));
@@ -30,6 +30,7 @@ const chamadaCom = (padrao) => pool.query.mock.calls.find(([sql]) => new RegExp(
 beforeEach(() => {
   jest.clearAllMocks();
   pool.query.mockReset();
+  pool.connect.mockImplementation(async () => transacaoNoPool(pool));
 });
 
 /* ─────────────────────────────────────────────────────────── */
@@ -142,6 +143,22 @@ describe('RF04 - Gestão de Dados Pessoais (LGPD)', () => {
       .send({ nome: ' Ana ', sobrenome: 'Lima', bairro: 'Campo Belo' });
     expect(res.status).toBe(200);
     expect(pool.query.mock.calls[0][1].slice(0, 2)).toEqual(['Ana', 'Lima']);
+  });
+
+  test('[RF01] CEP inválido na edição do endereço é recusado', async () => {
+    const res = await request(appUsuario).put('/api/usuario/perfil').set('Authorization', tokenDe(USUARIO))
+      .send({ nome: 'Ana', sobrenome: 'Lima', cep: '1234' });
+    expect(res.status).toBe(400);
+    expect(res.body.erro).toMatch(/CEP inválido/);
+    expect(pool.query).not.toHaveBeenCalled();
+  });
+
+  test('[RF01] CEP válido na edição do endereço é gravado só com os números', async () => {
+    pool.query.mockResolvedValueOnce(linhas({ id: USUARIO, nome: 'Ana' }));
+    const res = await request(appUsuario).put('/api/usuario/perfil').set('Authorization', tokenDe(USUARIO))
+      .send({ nome: 'Ana', sobrenome: 'Lima', cep: '04710-150' });
+    expect(res.status).toBe(200);
+    expect(pool.query.mock.calls[0][1][3]).toBe('04710150');
   });
 
   test('perfil sem nome ou sobrenome é recusado', async () => {
@@ -320,6 +337,18 @@ describe('RF13 - Painel do Vendedor', () => {
       anuncios_ativos: 4, anuncios_vendidos: 2, anuncios_pausados: 1,
       compras_realizadas: 3, reputacao_media: 4.8, total_avaliacoes: 5,
     });
+  });
+
+  test('[RF13] o painel conta as mensagens recebidas ainda não lidas', async () => {
+    responderPorSql([
+      ['FROM usuarios WHERE id', linhas({ id: USUARIO })],
+      ['FROM mensagens', linhas({ total: '7' })],
+    ]);
+    const res = await request(appUsuario).get('/api/usuario/perfil').set('Authorization', tokenDe(USUARIO));
+    expect(res.body.estatisticas.mensagens_nao_lidas).toBe(7);
+    const sql = pool.query.mock.calls.map(([s]) => s).find((s) => /FROM mensagens/.test(s));
+    expect(sql).toMatch(/remetente_id <> \$1/);
+    expect(sql).toMatch(/lida = FALSE/);
   });
 
   test('vendedor sem avaliações fica sem média (não aparece nota zero)', async () => {

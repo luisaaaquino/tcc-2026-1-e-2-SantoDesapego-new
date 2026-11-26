@@ -5,9 +5,7 @@ import './Login.css';
 import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
 import VerificacaoCodigo from '../componentes/VerificacaoCodigo';
 
-import { API_URL } from '../config';
-
-const GOOGLE_CLIENT_ID = '113184048014-ramhhojnofdd511oh1nl3h2ibono7581.apps.googleusercontent.com';
+import { API_URL, GOOGLE_CLIENT_ID } from '../config';
 
 // ============================================================
 //  Componente interno (precisa ficar dentro do Provider)
@@ -301,9 +299,10 @@ const LoginContent = () => {
                 )}
               </button>
 
+              {/* ── BOTÃO GOOGLE (largura total) — só com VITE_GOOGLE_CLIENT_ID configurado ── */}
+              {GOOGLE_CLIENT_ID && (<>
               <div className="auth-divider"><span>ou continue com</span></div>
 
-              {/* ── BOTÃO GOOGLE (largura total) ── */}
               <button
                 type="button"
                 className="btn-social"
@@ -319,6 +318,7 @@ const LoginContent = () => {
                 </svg>
                 Entrar com Google
               </button>
+              </>)}
 
             </form>
 

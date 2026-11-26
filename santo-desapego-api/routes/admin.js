@@ -293,7 +293,10 @@ router.delete('/api/admin/anuncios/:id', autenticarAdmin, async (req, res) => {
       return res.status(404).json({ erro: 'Anúncio não encontrado.' });
     }
 
-    const compras = await pool.query('SELECT COUNT(*) FROM compras WHERE anuncio_id = $1', [id]);
+    const compras = await pool.query(
+      // Tentativas recusadas/canceladas não contam como compra
+      `SELECT COUNT(*) FROM compras WHERE anuncio_id = $1 AND status NOT IN ('rejected', 'cancelled')`, [id]
+    );
     if (parseInt(compras.rows[0].count) > 0) {
       return res.status(409).json({
         erro: 'Este anúncio possui compras registradas e não pode ser removido. Use "pausar" para tirá-lo de circulação.',

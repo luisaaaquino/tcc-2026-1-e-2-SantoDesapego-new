@@ -29,17 +29,42 @@ const excluirOuAnonimizarUsuario = async (id) => {
   // CPF é CHAR(11) NOT NULL UNIQUE — mantém 11 caracteres e unicidade por id
   const cpfAnonimizado = 'ANON' + String(id).padStart(7, '0');
 
-  await pool.query(
-    `UPDATE usuarios SET
-       nome = 'Usuário removido', sobrenome = '',
-       email = $1, senha = $2, cpf = $3,
-       telefone = NULL, cep = NULL, logradouro = NULL, numero = NULL,
-       complemento = NULL, bairro = NULL, foto_perfil = NULL,
-       reset_senha_token = NULL, reset_senha_expira = NULL,
-       anonimizada_em = NOW()
-     WHERE id = $4`,
-    [`removido+${id}@santodesapego.invalid`, senhaInvalidada, cpfAnonimizado, id]
-  );
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // Apaga todos os dados pessoais, inclusive data de nascimento e a
+    // conexão com o Mercado Pago (tokens de acesso da conta do vendedor)
+    await client.query(
+      `UPDATE usuarios SET
+         nome = 'Usuário removido', sobrenome = '',
+         email = $1, senha = $2, cpf = $3,
+         telefone = NULL, cep = NULL, logradouro = NULL, numero = NULL,
+         complemento = NULL, bairro = NULL, foto_perfil = NULL,
+         data_nascimento = NULL,
+         reset_senha_token = NULL, reset_senha_expira = NULL,
+         mp_user_id = NULL, mp_access_token = NULL, mp_refresh_token = NULL,
+         mp_public_key = NULL, mp_token_expira_em = NULL, mp_conectado = FALSE,
+         anonimizada_em = NOW()
+       WHERE id = $4`,
+      [`removido+${id}@santodesapego.invalid`, senhaInvalidada, cpfAnonimizado, id]
+    );
+
+    // Anúncios que ainda estavam à venda saem de circulação: ninguém pode
+    // mais comprar de uma conta excluída. Os vendidos ficam (histórico).
+    await client.query(
+      `UPDATE anuncios SET status = 'pausado', data_atualizacao = NOW()
+        WHERE vendedor_id = $1 AND status IN ('ativo', 'reservado', 'em-negociacao')`,
+      [id]
+    );
+
+    await client.query('COMMIT');
+  } catch (erro) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw erro;
+  } finally {
+    client.release();
+  }
 
   return { anonimizada: true };
 };

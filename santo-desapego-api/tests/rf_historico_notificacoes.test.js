@@ -15,7 +15,7 @@ const request = require('supertest');
 const pool = require('../db');
 const { enviarEmail } = require('../utils/email');
 const { criarNotificacao } = require('../utils/notificacoes');
-const { montarApp, tokenDe, linhas } = require('./helpers');
+const { montarApp, tokenDe, linhas, transacaoNoPool } = require('./helpers');
 
 const appUsuario = montarApp(require('../routes/usuario'));
 const appPagamentos = montarApp(require('../routes/pagamentos'));
@@ -36,6 +36,7 @@ const notificacoesGravadas = () => pool.query.mock.calls
 beforeEach(() => {
   jest.clearAllMocks();
   pool.query.mockReset();
+  pool.connect.mockImplementation(async () => transacaoNoPool(pool));
 });
 
 /* ─────────────────────────────────────────────────────────── */
@@ -89,7 +90,7 @@ describe('RF17 - Histórico de Transações', () => {
 
   test('nas vendas, o código de entrega some depois da entrega confirmada', async () => {
     await buscar('/api/usuario/vendas', {}, VENDEDOR);
-    expect(pool.query.mock.calls[0][0]).toMatch(/CASE WHEN co\.entrega_confirmada_em IS NULL THEN co\.codigo_entrega END/);
+    expect(pool.query.mock.calls[0][0]).toMatch(/CASE WHEN co\.entrega_confirmada_em IS NULL AND co\.status = 'approved'\s+THEN co\.codigo_entrega END/);
   });
 
   test('histórico exige login', async () => {
@@ -222,6 +223,8 @@ describe('RF18 - Notificações ao Usuário', () => {
   });
 
   test('confirmar a mesma compra de novo não duplica as notificações', async () => {
+    // A compra já estava gravada como aprovada
+    pool.connect.mockImplementation(async () => transacaoNoPool(pool, { compraExistente: { id: 7, status: 'approved' } }));
     mockPaymentGet.mockResolvedValue({ status: 'approved', external_reference: '10' });
     pool.query.mockImplementation(async (sql) => {
       if (/FROM anuncios a/.test(sql)) return linhas(anuncio);
@@ -240,7 +243,7 @@ describe('RF18 - Notificações ao Usuário', () => {
       query: jest.fn(async (sql) => {
         if (/FROM compras co/.test(sql)) {
           return linhas({ vendedor_id: VENDEDOR, comprador_id: COMPRADOR, codigo_entrega: '482913',
-            entrega_confirmada_em: null, tentativas_codigo: 0, preco: '100.00', titulo: 'Bicicleta' });
+            entrega_confirmada_em: null, tentativas_codigo: 0, preco: '100.00', titulo: 'Bicicleta', status: 'approved' });
         }
         return linhas({ id: 7 });
       }),

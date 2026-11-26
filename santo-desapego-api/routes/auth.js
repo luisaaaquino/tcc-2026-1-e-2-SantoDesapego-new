@@ -5,17 +5,18 @@ const crypto  = require('crypto');
 const pool = require('../db');
 const { enviarEmail } = require('../utils/email');
 const { montarEmail } = require('../utils/emailTemplate');
-const { validarSenhaForte, validarCPF, validarDataNascimento } = require('../utils/validacao');
+const {
+  validarSenhaForte, validarCPF, validarDataNascimento, validarCEP,
+} = require('../utils/validacao');
 const { TERMOS_VERSAO_ATUAL } = require('../utils/termos');
 const { criarDesafio, verificarCodigo, reenviarCodigo } = require('../utils/verificacao');
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
-// Mesmo Client ID do front (santo-desapego/src/pages/Login.jsx). Não é
-// segredo — é público por natureza; serve pra conferir que o token do
-// Google foi emitido pro Santo Desapego e não pra outro site/app.
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
-  || '113184048014-ramhhojnofdd511oh1nl3h2ibono7581.apps.googleusercontent.com';
+// [RNF16] Client ID do Google vem do .env (mesmo valor do VITE_GOOGLE_CLIENT_ID
+// do front). Serve pra conferir que o token do Google foi emitido pro Santo
+// Desapego e não pra outro site/app. Sem ele, o login com Google fica desligado.
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 
 const router = express.Router();
 
@@ -63,6 +64,14 @@ router.post('/api/auth/cadastro', async (req, res) => {
     if (!validarCPF(cpf)) {
       return res.status(400).json({ erro: 'CPF inválido. Verifique os dígitos.' });
     }
+    // RF01 — CEP obrigatório e válido. Quem é de fora de Santo Amaro pode se
+    // cadastrar e comprar; só não pode publicar anúncio (RN01, rota de anúncios)
+    if (!cep) return res.status(400).json({ erro: 'Informe o CEP.' });
+    if (!validarCEP(cep)) {
+      return res.status(400).json({ erro: 'CEP inválido. Use o formato 00000-000.' });
+    }
+    const cepNumeros = String(cep).replace(/\D/g, '');
+
     // RF27 / RN11 — só quem já completou 18 anos
     const erroIdade = validarDataNascimento(req.body.data_nascimento);
     if (erroIdade) return res.status(400).json({ erro: erroIdade });
@@ -87,7 +96,7 @@ router.post('/api/auth/cadastro', async (req, res) => {
        RETURNING id, nome, email`,
       [
         nome, sobrenome, telefone || null, emailNormalizado, senhaHash,
-        cep || null, logradouro || null, numero || null,
+        cepNumeros, logradouro || null, numero || null,
         complemento || null, bairro || null, cpf, dataNascimento,
         aceita_termos === true, recebe_newsletter === true, TERMOS_VERSAO_ATUAL
       ]
@@ -346,6 +355,9 @@ router.post('/api/auth/redefinir-senha', async (req, res) => {
 // ──────────────────────────────────────────────────────────
 router.post('/api/auth/google', async (req, res) => {
   try {
+    if (!GOOGLE_CLIENT_ID) {
+      return res.status(503).json({ erro: 'O login com Google não está configurado no servidor.' });
+    }
     const { credential } = req.body;
     if (!credential) {
       return res.status(400).json({ erro: 'Token do Google não enviado.' });

@@ -258,6 +258,8 @@ CREATE INDEX idx_mensagens_nao_lidas  ON mensagens(conversa_id, remetente_id) WH
 CREATE INDEX idx_compras_comprador    ON compras(comprador_id, criada_em DESC);
 CREATE INDEX idx_compras_vendedor     ON compras(vendedor_id, criada_em DESC);
 CREATE INDEX idx_compras_payment      ON compras(payment_id);
+-- [RNF09] No máximo uma compra aprovada por anúncio (migrations/010)
+CREATE UNIQUE INDEX idx_compras_aprovada_unica ON compras(anuncio_id) WHERE status = 'approved';
 CREATE INDEX idx_avaliacoes_avaliado  ON avaliacoes(avaliado_id, criada_em DESC);
 CREATE INDEX idx_denuncias_status     ON denuncias(status, criada_em DESC);
 CREATE INDEX idx_denuncias_anuncio    ON denuncias(anuncio_id);

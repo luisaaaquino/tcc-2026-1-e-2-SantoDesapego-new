@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const express = require('express');
 const PDFDocument = require('pdfkit');
-const { MercadoPagoConfig, Payment } = require('mercadopago');
+const { MercadoPagoConfig, Payment, PaymentRefund } = require('mercadopago');
 const pool = require('../db');
 const { autenticar } = require('../middleware/auth');
 const { criarNotificacao } = require('../utils/notificacoes');
@@ -34,6 +34,148 @@ const buscarAnuncioComVendedor = (anuncioId) =>
       WHERE a.id = $1`,
     [anuncioId]
   );
+
+const tokenDoVendedor = (anuncio) => garantirTokenVendedorValido({
+  id: anuncio.vendedor_id,
+  mp_conectado: anuncio.mp_conectado,
+  mp_access_token: anuncio.mp_access_token,
+  mp_refresh_token: anuncio.mp_refresh_token,
+  mp_token_expira_em: anuncio.mp_token_expira_em,
+});
+
+// ============================================================
+//  [RNF09 / RF17] Grava o pagamento no histórico — uma única função
+//  usada pela tela de retorno (/api/compras/confirmar) e pelo aviso
+//  automático do Mercado Pago (/api/pagamentos/webhook).
+//  - Grava qualquer status (aprovado, pendente, recusado...), não só
+//    o aprovado, pra o histórico e os filtros mostrarem tudo.
+//  - Roda numa transação com o anúncio travado (FOR UPDATE): se dois
+//    pagamentos do mesmo item chegarem juntos, um espera o outro.
+//  - Só o primeiro pagamento aprovado vira compra. Se o item já foi
+//    vendido, o segundo pagamento é reembolsado automaticamente.
+//  O banco também garante isso: no máximo uma compra aprovada por
+//  anúncio (índice único da migration 010).
+// ============================================================
+const STATUS_APROVADO = 'approved';
+
+const textoReembolso = (status, titulo) => (status === 'refunded'
+  ? `Outra pessoa concluiu a compra de "${titulo}" antes de você. Seu pagamento foi reembolsado automaticamente pelo Mercado Pago.`
+  : `Outra pessoa concluiu a compra de "${titulo}" antes de você. O reembolso do seu pagamento está pendente e será feito pelo suporte.`);
+
+const reembolsar = async (sellerAccessToken, paymentId) => {
+  try {
+    const refund = new PaymentRefund(new MercadoPagoConfig({ accessToken: sellerAccessToken }));
+    await refund.create({ payment_id: paymentId });
+    return 'refunded';
+  } catch (erro) {
+    // Fica marcado no histórico para o suporte devolver manualmente
+    console.error(`Falha ao reembolsar o pagamento ${paymentId}:`, erro.message);
+    return 'reembolso_pendente';
+  }
+};
+
+const registrarPagamento = async ({ dados, anuncio, compradorId, sellerAccessToken }) => {
+  const paymentId = String(dados.id);
+  const client = await pool.connect();
+  let resultado;
+  try {
+    await client.query('BEGIN');
+
+    // Trava o anúncio: confirmações simultâneas do mesmo item entram em fila
+    const anuncioAtual = await client.query(
+      'SELECT status FROM anuncios WHERE id = $1 FOR UPDATE',
+      [anuncio.id]
+    );
+    const existente = await client.query(
+      'SELECT id, status FROM compras WHERE payment_id = $1 FOR UPDATE',
+      [paymentId]
+    );
+    const statusAnterior = existente.rows[0]?.status;
+
+    let status = dados.status;
+    let conflito = false;
+
+    // Pagamento aprovado agora, mas o item já foi vendido para outra pessoa
+    if (status === STATUS_APROVADO && statusAnterior !== STATUS_APROVADO &&
+        anuncioAtual.rows[0]?.status !== 'ativo') {
+      conflito = true;
+      status = await reembolsar(sellerAccessToken, paymentId);
+    }
+
+    const virouAprovada = status === STATUS_APROVADO && statusAnterior !== STATUS_APROVADO;
+
+    const compra = await client.query(
+      `INSERT INTO compras
+        (anuncio_id, comprador_id, vendedor_id, preco, payment_id, status, metodo_pagamento, parcelas,
+         codigo_entrega)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       ON CONFLICT (payment_id) DO UPDATE SET
+         status = EXCLUDED.status,
+         codigo_entrega = COALESCE(compras.codigo_entrega, EXCLUDED.codigo_entrega),
+         atualizada_em = NOW()
+       RETURNING id, anuncio_id, preco, status, criada_em, entrega_confirmada_em, codigo_entrega`,
+      [
+        anuncio.id, compradorId, anuncio.vendedor_id, anuncio.preco,
+        paymentId, status, dados.payment_method_id, dados.installments,
+        // O código de entrega só existe para compra aprovada
+        status === STATUS_APROVADO ? gerarCodigoEntrega() : null,
+      ]
+    );
+
+    if (virouAprovada) {
+      await client.query(
+        `UPDATE anuncios SET status = 'vendido' WHERE id = $1 AND status = 'ativo'`,
+        [anuncio.id]
+      );
+    }
+
+    await client.query('COMMIT');
+    resultado = { compra: compra.rows[0], virouAprovada, conflito };
+  } catch (erro) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw erro;
+  } finally {
+    client.release();
+  }
+
+  const { compra, virouAprovada, conflito } = resultado;
+  const comprador = await pool.query('SELECT nome FROM usuarios WHERE id = $1', [compradorId]);
+  const nomeComprador = comprador.rows[0]?.nome || 'Um comprador';
+
+  // [RF18] Notifica só na primeira vez que o pagamento é aprovado
+  if (virouAprovada) {
+    criarNotificacao(
+      anuncio.vendedor_id,
+      'pagamento_confirmado',
+      'Sua peça foi vendida! 🎉 Guarde o código de entrega',
+      `O pagamento de "${anuncio.titulo}" foi aprovado. Combine a entrega com ${nomeComprador} pelo chat. Seu código de entrega é ${compra.codigo_entrega}: passe esse código ao comprador junto com a peça. Quando ele digitar o código no site, o valor da venda é liberado para você.`,
+      '/perfil?aba=vendas'
+    );
+
+    // A solicitação de avaliação (RF18) só sai quando a entrega é
+    // confirmada — ver POST /api/compras/:id/confirmar-entrega
+    criarNotificacao(
+      compradorId,
+      'pagamento_confirmado',
+      'Pagamento confirmado',
+      `Seu pagamento de "${anuncio.titulo}" foi aprovado e fica retido até você confirmar o recebimento. Combine a entrega com o vendedor pelo chat. Ao receber a peça, peça o código de entrega ao vendedor e digite em "Compras realizadas".`,
+      '/mensagens'
+    );
+  }
+
+  if (conflito) {
+    criarNotificacao(
+      compradorId,
+      'pagamento_confirmado',
+      'Esta peça já tinha sido vendida',
+      textoReembolso(compra.status, anuncio.titulo),
+      '/perfil?aba=compras'
+    );
+  }
+
+  return resultado;
+};
+
 
 // ============================================================
 //  PAGAMENTO — cria a preferência do Checkout Pro (só cartão)
@@ -77,18 +219,12 @@ router.post('/api/pagamentos/preferencia', autenticar, async (req, res) => {
       [req.userId]
     );
 
-    const sellerAccessToken = await garantirTokenVendedorValido({
-      id: anuncio.vendedor_id,
-      mp_conectado: anuncio.mp_conectado,
-      mp_access_token: anuncio.mp_access_token,
-      mp_refresh_token: anuncio.mp_refresh_token,
-      mp_token_expira_em: anuncio.mp_token_expira_em,
-    });
+    const sellerAccessToken = await tokenDoVendedor(anuncio);
 
     const resposta = await createSplitPreference({
       sellerAccessToken,
       anuncio,
-      comprador: comprador.rows[0] || {},
+      comprador: { ...(comprador.rows[0] || {}), id: req.userId },
     });
 
     console.log(`💳 Preferência criada (split) — anúncio #${anuncio.id}, vendedor #${anuncio.vendedor_id}`);
@@ -146,13 +282,7 @@ router.get('/api/pagamentos/:paymentId', async (req, res) => {
     }
     const anuncio = resultado.rows[0];
 
-    const sellerAccessToken = await garantirTokenVendedorValido({
-      id: anuncio.vendedor_id,
-      mp_conectado: anuncio.mp_conectado,
-      mp_access_token: anuncio.mp_access_token,
-      mp_refresh_token: anuncio.mp_refresh_token,
-      mp_token_expira_em: anuncio.mp_token_expira_em,
-    });
+    const sellerAccessToken = await tokenDoVendedor(anuncio);
 
     const payment = new Payment(new MercadoPagoConfig({ accessToken: sellerAccessToken }));
     const dados = await payment.get({ id: req.params.paymentId });
@@ -176,10 +306,11 @@ router.get('/api/pagamentos/:paymentId', async (req, res) => {
 });
 
 // ============================================================
-//  PAGAMENTO — confirma e persiste a compra no banco
-//  Chamada pela tela /compra-realizada assim que o pagamento é
-//  confirmado como aprovado junto ao Mercado Pago. Idempotente:
-//  pode ser chamada mais de uma vez pro mesmo payment_id.
+//  PAGAMENTO — grava o pagamento no histórico [RNF09 / RF17]
+//  Chamada pela tela /compra-realizada quando o comprador volta do
+//  Mercado Pago, com qualquer status (aprovado, pendente, recusado).
+//  Idempotente: pode ser chamada mais de uma vez pro mesmo payment_id.
+//  Se o comprador não voltar ao site, o webhook abaixo faz o mesmo.
 // ============================================================
 router.post('/api/compras/confirmar', autenticar, async (req, res) => {
   try {
@@ -192,16 +323,9 @@ router.post('/api/compras/confirmar', autenticar, async (req, res) => {
     if (anuncioResultado.rows.length === 0) {
       return res.status(404).json({ erro: 'Anúncio da compra não foi encontrado.' });
     }
-    const anuncioComVendedor = anuncioResultado.rows[0];
+    const anuncio = anuncioResultado.rows[0];
 
-    const sellerAccessToken = await garantirTokenVendedorValido({
-      id: anuncioComVendedor.vendedor_id,
-      mp_conectado: anuncioComVendedor.mp_conectado,
-      mp_access_token: anuncioComVendedor.mp_access_token,
-      mp_refresh_token: anuncioComVendedor.mp_refresh_token,
-      mp_token_expira_em: anuncioComVendedor.mp_token_expira_em,
-    });
-
+    const sellerAccessToken = await tokenDoVendedor(anuncio);
     const payment = new Payment(new MercadoPagoConfig({ accessToken: sellerAccessToken }));
     const dados = await payment.get({ id: payment_id });
 
@@ -209,68 +333,78 @@ router.post('/api/compras/confirmar', autenticar, async (req, res) => {
     if (String(dados.external_reference) !== String(anuncio_id)) {
       return res.status(400).json({ erro: 'O pagamento informado não corresponde a este anúncio.' });
     }
-
-    if (dados.status !== 'approved') {
-      return res.status(200).json({ registrada: false, status: dados.status });
-    }
-
-    const { titulo, vendedor_id, preco } = anuncioComVendedor;
-
-    if (vendedor_id === req.userId) {
+    if (anuncio.vendedor_id === req.userId) {
       return res.status(400).json({ erro: 'Você não pode confirmar uma compra do seu próprio anúncio.' });
     }
-
-    const compra = await pool.query(
-      `INSERT INTO compras
-        (anuncio_id, comprador_id, vendedor_id, preco, payment_id, status, metodo_pagamento, parcelas,
-         codigo_entrega)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-       ON CONFLICT (payment_id) DO UPDATE SET status = EXCLUDED.status
-       RETURNING id, anuncio_id, preco, status, criada_em, entrega_confirmada_em,
-                 codigo_entrega,
-                 (xmax = 0) AS inserida`,
-      [
-        anuncio_id, req.userId, vendedor_id, preco,
-        String(payment_id), dados.status, dados.payment_method_id, dados.installments,
-        gerarCodigoEntrega(),
-      ]
-    );
-
-    await pool.query(
-      `UPDATE anuncios SET status = 'vendido' WHERE id = $1 AND status = 'ativo'`,
-      [anuncio_id]
-    );
-
-    // [RF18] Só notifica na primeira confirmação — evita duplicar em chamadas idempotentes
-    if (compra.rows[0].inserida) {
-      const comprador = await pool.query('SELECT nome FROM usuarios WHERE id = $1', [req.userId]);
-      const nomeComprador = comprador.rows[0]?.nome || 'Um comprador';
-
-      criarNotificacao(
-        vendedor_id,
-        'pagamento_confirmado',
-        'Sua peça foi vendida! 🎉 Guarde o código de entrega',
-        `O pagamento de "${titulo}" foi aprovado. Combine a entrega com ${nomeComprador} pelo chat. Seu código de entrega é ${compra.rows[0].codigo_entrega}: passe esse código ao comprador junto com a peça. Quando ele digitar o código no site, o valor da venda é liberado para você.`,
-        '/perfil?aba=vendas'
-      );
-
-      // A solicitação de avaliação (RF18) só sai quando a entrega é
-      // confirmada — ver POST /api/compras/:id/confirmar-entrega
-      criarNotificacao(
-        req.userId,
-        'pagamento_confirmado',
-        'Pagamento confirmado',
-        `Seu pagamento de "${titulo}" foi aprovado e fica retido até você confirmar o recebimento. Combine a entrega com o vendedor pelo chat. Ao receber a peça, peça o código de entrega ao vendedor e digite em "Compras realizadas".`,
-        '/mensagens'
-      );
+    // A preference guarda quem iniciou o pagamento: outra conta não confirma por ele
+    const compradorDoPagamento = dados.metadata?.comprador_id;
+    if (compradorDoPagamento && Number(compradorDoPagamento) !== req.userId) {
+      return res.status(403).json({ erro: 'Este pagamento foi feito por outra conta.' });
     }
 
+    const { compra, conflito } = await registrarPagamento({
+      dados, anuncio, compradorId: req.userId, sellerAccessToken,
+    });
+
     // O código fica só com o vendedor: nunca volta na resposta ao comprador
-    const { inserida, codigo_entrega, ...compraRegistrada } = compra.rows[0];
-    return res.status(201).json({ registrada: true, compra: compraRegistrada });
+    const { codigo_entrega, ...compraRegistrada } = compra;
+
+    if (conflito) {
+      return res.status(409).json({
+        registrada: true,
+        conflito: true,
+        erro: textoReembolso(compra.status, anuncio.titulo),
+        compra: compraRegistrada,
+      });
+    }
+    return res.status(201).json({
+      registrada: true,
+      aprovada: compra.status === STATUS_APROVADO,
+      status: compra.status,
+      compra: compraRegistrada,
+    });
   } catch (erro) {
     console.error('Erro ao confirmar compra:', erro);
     return res.status(500).json({ erro: 'Erro ao confirmar a compra.' });
+  }
+});
+
+// ============================================================
+//  WEBHOOK — aviso automático do Mercado Pago [RNF09]
+//  O Mercado Pago chama esta rota quando o status de um pagamento muda,
+//  mesmo que o comprador feche a aba e não volte ao site. A URL vai na
+//  preference com ?anuncio_id=, porque a consulta precisa do token do
+//  vendedor dono do anúncio.
+//  Não confia no corpo do aviso: o pagamento é sempre consultado de novo
+//  na API do Mercado Pago antes de gravar.
+// ============================================================
+router.post('/api/pagamentos/webhook', async (req, res) => {
+  const tipo = req.body?.type || req.query.type || req.query.topic;
+  const paymentId = req.body?.data?.id || req.query['data.id'] || req.query.id;
+  const anuncioId = req.query.anuncio_id;
+
+  // Responde logo: o Mercado Pago reenvia o aviso se não receber 200/201
+  res.sendStatus(200);
+
+  if (tipo !== 'payment' || !paymentId || !anuncioId) return;
+
+  try {
+    const anuncioResultado = await buscarAnuncioComVendedor(anuncioId);
+    if (anuncioResultado.rows.length === 0) return;
+    const anuncio = anuncioResultado.rows[0];
+
+    const sellerAccessToken = await tokenDoVendedor(anuncio);
+    const payment = new Payment(new MercadoPagoConfig({ accessToken: sellerAccessToken }));
+    const dados = await payment.get({ id: paymentId });
+
+    if (String(dados.external_reference) !== String(anuncioId)) return;
+    const compradorId = Number(dados.metadata?.comprador_id);
+    if (!compradorId || compradorId === anuncio.vendedor_id) return;
+
+    await registrarPagamento({ dados, anuncio, compradorId, sellerAccessToken });
+    console.log(`🔔 Webhook — pagamento ${paymentId} (${dados.status}) do anúncio #${anuncioId}`);
+  } catch (erro) {
+    console.error('Erro ao processar webhook do Mercado Pago:', erro.message);
   }
 });
 
@@ -300,7 +434,7 @@ router.post('/api/compras/:id/confirmar-entrega', autenticar, async (req, res) =
     // FOR UPDATE: duas tentativas ao mesmo tempo não burlam o limite
     const resultado = await client.query(
       `SELECT co.vendedor_id, co.comprador_id, co.codigo_entrega, co.entrega_confirmada_em,
-              co.tentativas_codigo, co.preco, a.titulo
+              co.tentativas_codigo, co.preco, co.status, a.titulo
          FROM compras co
          JOIN anuncios a ON a.id = co.anuncio_id
         WHERE co.id = $1
@@ -316,6 +450,10 @@ router.post('/api/compras/:id/confirmar-entrega', autenticar, async (req, res) =
     if (compra.comprador_id !== req.userId) {
       await client.query('ROLLBACK');
       return res.status(403).json({ erro: 'Só o comprador pode confirmar o recebimento.' });
+    }
+    if (compra.status !== STATUS_APROVADO) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ erro: 'Só dá para confirmar a entrega de um pagamento aprovado.' });
     }
     if (compra.entrega_confirmada_em) {
       await client.query('ROLLBACK');

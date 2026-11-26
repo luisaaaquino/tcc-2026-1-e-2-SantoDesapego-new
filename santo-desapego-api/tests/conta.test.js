@@ -6,7 +6,7 @@ const pool = require('../db');
 const { enviarEmail } = require('../utils/email');
 const { criarDesafio, verificarCodigo, reenviarCodigo } = require('../utils/verificacao');
 const { excluirOuAnonimizarUsuario } = require('../utils/usuarios');
-const { linhas } = require('./helpers');
+const { linhas, transacaoNoPool } = require('./helpers');
 
 const sha256 = (t) => crypto.createHash('sha256').update(t).digest('hex');
 
@@ -25,7 +25,10 @@ const clienteComRegistro = (reg) => {
   return client;
 };
 
-beforeEach(() => jest.clearAllMocks());
+beforeEach(() => {
+  jest.clearAllMocks();
+  pool.connect.mockImplementation(async () => transacaoNoPool(pool));
+});
 
 describe('RN17 - Verificação em Duas Etapas', () => {
   test('o código enviado vale 10 minutos', async () => {
@@ -121,5 +124,24 @@ describe('RN10 - Exclusão de Dados Pessoais', () => {
     expect(sql).toMatch(/cep = NULL/);
     expect(params[0]).toBe('removido+5@santodesapego.invalid');
     expect(params[2]).toBe('ANON0000005');
+  });
+
+  test('na anonimização, data de nascimento e conexão com o Mercado Pago são apagadas', async () => {
+    pool.query.mockResolvedValueOnce(linhas({ 1: 1 })).mockResolvedValue(linhas());
+    await excluirOuAnonimizarUsuario(5);
+    const sql = pool.query.mock.calls.map(([s]) => s).find((s) => /UPDATE usuarios/.test(s));
+    expect(sql).toMatch(/data_nascimento = NULL/);
+    expect(sql).toMatch(/mp_access_token = NULL/);
+    expect(sql).toMatch(/mp_refresh_token = NULL/);
+    expect(sql).toMatch(/mp_conectado = FALSE/);
+  });
+
+  test('anúncios à venda da conta excluída saem de circulação', async () => {
+    pool.query.mockResolvedValueOnce(linhas({ 1: 1 })).mockResolvedValue(linhas());
+    await excluirOuAnonimizarUsuario(5);
+    const chamada = pool.query.mock.calls.find(([s]) => /UPDATE anuncios/.test(s));
+    expect(chamada[0]).toMatch(/status = 'pausado'/);
+    expect(chamada[0]).toMatch(/status IN \('ativo', 'reservado', 'em-negociacao'\)/);
+    expect(chamada[1]).toEqual([5]);
   });
 });
