@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import GavetaPerfil from '../componentes/GavetaPerfil';
 import './Home.css';
@@ -8,11 +8,9 @@ import NotificacoesSino from '../componentes/NotificacoesSino';
 import LegalModal from '../componentes/LegalModal';
 import RodapeSite from '../componentes/RodapeSite';
 import CartaoAnuncio from '../componentes/CartaoAnuncio';
-import { IconSearch, IconLogout, IconCamera, IconShield, IconCheck } from '../componentes/Icones';
-import { PlacaBairro } from '../componentes/CartaoAnuncio';
+import { IconSearch, IconLogout, IconPin } from '../componentes/Icones';
 import { API_URL } from '../config';
 import { formatarPreco } from '../utils/formato';
-import { montarMoment } from '../utils/camadaMovimento';
 
 /* ── Como funciona: o fluxo real de uma venda, em ordem ───────── */
 const PASSOS = [
@@ -31,59 +29,6 @@ const PASSOS = [
 ];
 
 const HOODS = BAIRROS;
-
-/* ── Janelas do "Como funciona" ───────────────────────────────
-   Cada passo mostra o pedaço da interface do próprio site em que
-   ele acontece (formulário do anúncio, resumo do checkout, código
-   de entrega no perfil), com o anúncio mais recente quando houver.
-   São ilustrações: aria-hidden e sem nada clicável dentro. */
-const JanelaAnuncio = ({ item }) => (
-  <div className="janela" aria-hidden="true">
-    <div className="janela-foto">
-      {item?.imagem_principal ? <img src={item.imagem_principal} alt="" /> : <IconCamera size={28} />}
-    </div>
-    <div className="janela-corpo">
-      <span className="janela-rotulo">Título</span>
-      <span className="janela-campo">{item?.titulo || 'Seu item'}</span>
-      <span className="janela-rotulo">Preço</span>
-      <span className="janela-campo">{item ? formatarPreco(item.preco) : 'R$ 0,00'}</span>
-      <div className="janela-linha">
-        <PlacaBairro bairro={item?.bairro} />
-        <span className="janela-botao">Publicar anúncio</span>
-      </div>
-    </div>
-  </div>
-);
-
-const JanelaPagamento = ({ item }) => (
-  <div className="janela" aria-hidden="true">
-    <div className="janela-corpo">
-      <div className="janela-resumo">
-        <span className="janela-miniatura">
-          {item?.imagem_principal ? <img src={item.imagem_principal} alt="" /> : <IconCamera size={18} />}
-        </span>
-        <span className="janela-resumo-titulo">{item?.titulo || 'Seu item'}</span>
-        <strong>{item ? formatarPreco(item.preco) : 'R$ 0,00'}</strong>
-      </div>
-      <p className="janela-aviso"><IconShield size={16} /> O valor fica retido até a entrega.</p>
-      <span className="janela-botao janela-botao--largo">Ir para o pagamento</span>
-    </div>
-  </div>
-);
-
-const CODIGO_EXEMPLO = ['4', '8', '1', '5', '2', '7'];
-const JanelaEntrega = () => (
-  <div className="janela" aria-hidden="true">
-    <div className="janela-corpo">
-      <span className="janela-rotulo">Código de entrega</span>
-      <div className="janela-codigo">
-        {CODIGO_EXEMPLO.map((d, i) => <span key={i}>{d}</span>)}
-      </div>
-      <span className="janela-botao janela-botao--largo">Confirmar recebimento</span>
-      <p className="janela-ok"><IconCheck size={16} /> Valor liberado ao vendedor</p>
-    </div>
-  </div>
-);
 
 /* ════════════════════════════════════════════════════════════
    COMPONENTE
@@ -106,13 +51,10 @@ const Home = () => {
   const [categorias, setCategorias] = useState([]);
 
   // ── Moment "pinned-chapters" (skill design-taste-frontend) no Como funciona
-  const comoRef = useRef(null);
-  useEffect(() => montarMoment(comoRef.current), []);
 
   // Fotos da abertura: os três anúncios recentes que têm foto
   const vitrine = (recentes || []).filter((a) => a.imagem_principal).slice(0, 3);
   const mostrarVitrine = recentes === null || vitrine.length === 3;
-  const exemplo = vitrine[0] || (recentes || [])[0];
 
   useEffect(() => {
     fetch(`${API_URL}/api/anuncios?ordenacao=recentes&limite=8`)
@@ -409,36 +351,18 @@ const Home = () => {
           )}
         </section>
 
-        {/* ── Como funciona: o fluxo real de uma venda. Moment "pinned-chapters"
-               da skill: no computador a seção fica parada enquanto os três passos
-               abrem um a um e a janela ao lado troca; no celular, com "reduzir
-               movimento" ou sem script, os passos ficam um embaixo do outro. ── */}
-        <section
-          className="inicio-como"
-          id="como-funciona"
-          aria-labelledby="titulo-como"
-          data-moment="pinned-chapters"
-          ref={comoRef}
-        >
-          <div className="mo-pc__grid">
-            <div className="mo-pc__text">
-              <h2 id="titulo-como">Como funciona uma venda</h2>
-              <ol className="mo-pc__steps">
-                {PASSOS.map((p, i) => (
-                  <li key={p.titulo} className="mo-pc__step">
-                    <h3><span className="inicio-passo-num" aria-hidden="true">{i + 1}</span>{p.titulo}</h3>
-                    <p>{p.texto}</p>
-                    <figure className="mo-pc__visual mo-pc__visual--lit">
-                      {i === 0 && <JanelaAnuncio item={exemplo} />}
-                      {i === 1 && <JanelaPagamento item={exemplo} />}
-                      {i === 2 && <JanelaEntrega />}
-                    </figure>
-                  </li>
-                ))}
-              </ol>
-            </div>
-            <div className="mo-pc__visuals" />
-          </div>
+        {/* ── Como funciona: o fluxo real de uma venda, três passos lado a lado
+               na faixa verde (no celular, um embaixo do outro) ── */}
+        <section className="inicio-como" id="como-funciona" aria-labelledby="titulo-como">
+          <h2 id="titulo-como">Como funciona uma venda</h2>
+          <ol className="inicio-passos">
+            {PASSOS.map((p, i) => (
+              <li key={p.titulo}>
+                <h3><span className="inicio-passo-num" aria-hidden="true">{i + 1}</span>{p.titulo}</h3>
+                <p>{p.texto}</p>
+              </li>
+            ))}
+          </ol>
         </section>
 
         {/* ── Bairros atendidos (mapa) ── */}
@@ -458,12 +382,21 @@ const Home = () => {
                   aria-pressed={bairroFoco === h}
                   onClick={() => setBairroFoco(bairroFoco === h ? null : h)}
                 >
-                  {h}
+                  <IconPin size={13} />{h}
                 </button>
               ))}
             </div>
           </div>
           <Mapa bairroFoco={bairroFoco} />
+        </section>
+
+        {/* ── Fechamento: o convite da primeira versão, em tamanho de bloco ── */}
+        <section className="inicio-fim" aria-labelledby="titulo-fim">
+          <div>
+            <h2 id="titulo-fim">Tem algo parado em casa?</h2>
+            <p>Anunciar é gratuito e leva poucos minutos. A plataforma só fica com 5% quando a venda acontece.</p>
+          </div>
+          <Link to={linkAnunciar} className="inicio-fim-botao">Anunciar um item</Link>
         </section>
 
       </main>
