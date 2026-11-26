@@ -51,18 +51,34 @@ const ICONE_PIN = L.divIcon({
 
 /* ── Resolve coords para um anúncio — síncrono, sem API externa ──
    1) lat/lng próprios do anúncio, se um dia existirem no banco;
-   2) centro do bairro cadastrado, com um leve espalhamento
-      aleatório (~250m) pra vários anúncios no mesmo bairro não
-      ficarem todos empilhados no mesmíssimo ponto;
-   3) fallback: centro de Santo Amaro, mesmo espalhamento. */
-const resolverCoords = (anuncio) => {
+   2) centro do bairro cadastrado. Vários anúncios do mesmo bairro
+      ficam distribuídos num círculo (~330m) em volta do centro, em
+      posição fixa, pra as etiquetas de preço não se sobreporem;
+   3) fallback: centro de Santo Amaro, mesma distribuição.
+   `ordem`/`total` = posição do anúncio entre os do mesmo bairro. */
+const RAIO_ESPALHAMENTO = 0.003;
+const resolverCoords = (anuncio, ordem = 0, total = 1) => {
   const lat = parseFloat(anuncio.latitude);
   const lng = parseFloat(anuncio.longitude);
   if (Number.isFinite(lat) && Number.isFinite(lng)) return { lat, lng };
 
   const base = CENTRO_BAIRRO[anuncio.bairro] || CENTER_SANTO_AMARO;
-  const jitter = () => (Math.random() - 0.5) * 0.0045; // ~ 250m
-  return { lat: base.lat + jitter(), lng: base.lng + jitter() };
+  if (total <= 1) return base;
+  const angulo = (2 * Math.PI * ordem) / total;
+  const raio = RAIO_ESPALHAMENTO * (1 + Math.floor(ordem / 8) * 0.6);
+  return { lat: base.lat + raio * Math.sin(angulo), lng: base.lng + raio * Math.cos(angulo) };
+};
+
+// Distribui os anúncios de cada bairro em volta do centro do bairro
+const posicionar = (anuncios) => {
+  const porBairro = {};
+  anuncios.forEach((a) => { const b = a.bairro || ''; porBairro[b] = (porBairro[b] || 0) + 1; });
+  const vistos = {};
+  return anuncios.map((anuncio) => {
+    const b = anuncio.bairro || '';
+    const ordem = vistos[b] = (vistos[b] ?? -1) + 1;
+    return { anuncio, coords: resolverCoords(anuncio, ordem, porBairro[b]) };
+  });
 };
 
 /* ── Força Leaflet a recalcular tamanho após mount ──────────
@@ -130,7 +146,7 @@ const Mapa = ({ bairroFoco }) => {
       .then((data) => {
         if (cancelado) return;
         const anuncios = data.anuncios || [];
-        setMarcadores(anuncios.map((anuncio) => ({ anuncio, coords: resolverCoords(anuncio) })));
+        setMarcadores(posicionar(anuncios));
       })
       .catch((erro) => console.error('[Mapa] Erro ao carregar anúncios:', erro))
       .finally(() => { if (!cancelado) setCarregando(false); });
@@ -168,14 +184,15 @@ const Mapa = ({ bairroFoco }) => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {marcadores.map(({ anuncio, coords }) => (
+        {marcadores.map(({ anuncio, coords }, i) => (
           <Marker
             key={anuncio.id}
             position={[coords.lat, coords.lng]}
             icon={ICONE_PIN}
           >
             {/* Rótulo sempre visível — não depende de hover/clique */}
-            <Tooltip permanent direction="top" offset={[0, -10]} className="mapa-tooltip">
+            {/* etiquetas alternam em cima/embaixo do alfinete pra não se sobreporem */}
+            <Tooltip permanent direction={i % 2 ? 'bottom' : 'top'} offset={i % 2 ? [0, 10] : [0, -10]} className="mapa-tooltip">
               {formatarPreco(anuncio.preco)}
             </Tooltip>
 
@@ -194,9 +211,9 @@ const Mapa = ({ bairroFoco }) => {
                     {formatarPreco(anuncio.preco)}
                   </span>
                   <span className="popup-bairro">
-                    📍 {anuncio.bairro || 'Santo Amaro'}
+                    {anuncio.bairro || 'Santo Amaro'}
                   </span>
-                  <Link to={`/anuncio/${anuncio.id}`}>Ver anúncio →</Link>
+                  <Link to={`/anuncio/${anuncio.id}`}>Ver anúncio</Link>
                 </div>
               </div>
             </Popup>
@@ -229,7 +246,7 @@ const Mapa = ({ bairroFoco }) => {
       {/* Estado vazio */}
       {!carregando && marcadores.length === 0 && (
         <div className="mapa-empty">
-          <span aria-hidden="true">📍</span>
+          
           <p>Ainda não há anúncios<br />com localização mapeada.</p>
         </div>
       )}

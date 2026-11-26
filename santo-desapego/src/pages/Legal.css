@@ -19,7 +19,7 @@
 
 .legal-pagina-conteudo h1 {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 600;
   font-size: clamp(1.8rem, 4vw, 2.4rem);
   letter-spacing: -0.02em;
   color: var(--ink);
@@ -34,7 +34,7 @@
 
 .legal-pagina-secao h2 {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 1.1rem;
   color: var(--ink);
   margin-bottom: 0.7rem;
@@ -43,7 +43,7 @@
 .legal-pagina-sub { margin-top: 1.1rem; }
 .legal-pagina-sub h3 {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.98rem;
   color: var(--ink);
   margin-bottom: 0.5rem;
@@ -60,4 +60,4 @@
 .legal-pagina-conteudo ul { margin: 0 0 0.8rem; padding-left: 1.2rem; }
 .legal-pagina-conteudo li { margin-bottom: 0.5rem; }
 
-.legal-pagina-rodape { font-size: 0.85rem; font-style: italic; color: var(--ink-muted); }
+.legal-pagina-rodape { font-size: 0.85rem; font-style: normal; color: var(--ink-muted); }

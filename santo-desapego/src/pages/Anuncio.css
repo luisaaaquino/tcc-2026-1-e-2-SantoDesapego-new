@@ -46,7 +46,7 @@
   position: relative;
   aspect-ratio: 4 / 3;
   border-radius: var(--radius-lg);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   background: var(--cream-soft);
   overflow: hidden;
 }
@@ -88,7 +88,7 @@
   width: 76px;
   height: 76px;
   padding: 0;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--cream-soft);
   overflow: hidden;
@@ -96,7 +96,7 @@
   transition: border-color 0.18s, transform 0.15s;
 }
 .galeria-mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.galeria-mini:hover { border-color: var(--ink); transform: translateY(-2px); }
+.galeria-mini:hover { border-color: var(--ink); transform: none; }
 .galeria-mini.ativa { border-color: var(--terracotta); box-shadow: 0 0 0 3px color-mix(in srgb, var(--terracotta) 8%, transparent); }
 
 /* ── Painel de compra ───────────────────────────────────── */
@@ -104,23 +104,23 @@
   position: sticky;
   top: 1.5rem;
   background: var(--paper);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.75rem;
 }
 
 .anuncio-categoria {
   font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--forest);
   margin-bottom: 0.5rem;
 }
 
 .anuncio-titulo {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 600;
   font-size: clamp(1.4rem, 3vw, 1.9rem);
   letter-spacing: -0.02em;
   color: var(--ink);
@@ -131,7 +131,7 @@
 
 .anuncio-preco {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 600;
   font-size: clamp(1.9rem, 4vw, 2.4rem);
   letter-spacing: -0.03em;
   color: var(--terracotta);
@@ -146,7 +146,7 @@
 }
 .anuncio-tag {
   padding: 0.35rem 0.8rem;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-pill);
   background: var(--cream);
   font-size: 0.82rem;
@@ -184,19 +184,19 @@
   border: none;
   border-radius: var(--radius-pill);
   font-family: inherit;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
   text-decoration: none;
   text-align: center;
   display: inline-block;
-  box-shadow: 3px 3px 0 var(--terracotta);
-  transition: all 0.2s;
+  box-shadow: none;
+  transition-property: background-color, border-color, color, opacity; transition-duration: 0.2s;
 }
 .btn-anuncio-comprar:hover {
   background: var(--terracotta);
-  box-shadow: 5px 5px 0 var(--ink);
-  transform: translate(-1px, -1px);
+  box-shadow: none;
+  transform: none;
 }
 .btn-anuncio-comprar:disabled {
   background: var(--border);
@@ -213,7 +213,7 @@
 .btn-anuncio-proposta {
   background: transparent;
   color: var(--ink);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   padding: 0.85rem 1.75rem;
   border-radius: var(--radius-pill);
   font-family: inherit;
@@ -231,7 +231,7 @@
   gap: 0.5rem;
   background: transparent;
   color: var(--ink-soft);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   padding: 0.7rem 1.75rem;
   border-radius: var(--radius-pill);
   font-family: inherit;
@@ -278,7 +278,7 @@
   color: var(--cream);
   display: grid;
   place-items: center;
-  font-weight: 700;
+  font-weight: 600;
   font-family: var(--font-display);
 }
 .anuncio-vendedor strong { display: block; font-size: 0.95rem; color: var(--ink); overflow-wrap: break-word; }
@@ -315,7 +315,7 @@
 .denuncia-modal select,
 .denuncia-modal textarea {
   width: 100%;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 0.7rem 0.9rem;
   font-family: inherit;
@@ -333,13 +333,13 @@
 .anuncio-descricao {
   margin-top: 2.5rem;
   background: var(--paper);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 2rem 2.5rem;
 }
 .anuncio-descricao h2 {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 1.15rem;
   letter-spacing: -0.01em;
   color: var(--ink);
@@ -408,7 +408,7 @@
     gap: 1rem;
     padding: 0.7rem 1rem;
     background: var(--paper);
-    border-top: 1.5px solid var(--border);
+    border-top: 1px solid var(--border);
   }
   .anuncio-barra span {
     display: block;
@@ -438,4 +438,12 @@
   .anuncio-wrapper * { transition: none !important; }
   .btn-anuncio-comprar:hover,
   .galeria-mini:hover { transform: none; }
+}
+/* Revisão visual (2026-11): a placa do bairro não herda o estilo dos spans do local */
+.anuncio-local .placa-bairro {
+  display: inline-block;
+  width: auto;
+  color: #fff;
+  font-size: 0.8rem;
+  margin: 0 0 0.25rem;
 }

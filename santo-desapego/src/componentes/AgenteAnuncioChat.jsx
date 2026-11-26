@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import './AgenteAnuncioChat.css';
 import { API_URL } from '../config';
 import { redimensionarImagem } from '../utils/imagem';
+import { IconCamera } from './Icones';
 
 const formatPreco = (v) => Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -238,14 +239,14 @@ const AgenteAnuncioChat = ({ onPublicado }) => {
           </div>
         ))}
         {imagens.length < 6 && !statusFinal && (
-          <label className="ia-chat-imagem-add">
-            📷
+          <label className="ia-chat-imagem-add" aria-label="Adicionar fotos">
+            <IconCamera />
             <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleFiles} />
           </label>
         )}
       </div>
 
-      {erro && <p className="ia-chat-erro">⚠️ {erro}</p>}
+      {erro && <p className="ia-chat-erro">{erro}</p>}
 
       {statusFinal && <div className="ia-chat-aviso">{AVISOS_FINAIS[statusFinal]}</div>}
 

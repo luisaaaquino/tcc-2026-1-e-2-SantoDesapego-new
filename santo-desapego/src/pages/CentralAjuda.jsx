@@ -179,13 +179,13 @@ const CentralAjuda = () => {
                   id="mensagem"
                   rows={5}
                   maxLength={2000}
-                  placeholder="Conte com detalhes o que está acontecendo..."
+                  placeholder="Conte com detalhes o que está acontecendo…"
                   value={mensagem}
                   onChange={(e) => setMensagem(e.target.value)}
                 />
 
                 <button type="submit" className="btn-ajuda" disabled={enviando}>
-                  {enviando ? 'Enviando...' : 'Enviar mensagem'}
+                  {enviando ? 'Enviando…' : 'Enviar mensagem'}
                 </button>
               </form>
             )}

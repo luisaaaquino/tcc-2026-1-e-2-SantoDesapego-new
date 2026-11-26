@@ -28,7 +28,7 @@
 }
 .sobre-nav-links a:hover { color: var(--ink); background: var(--cream-soft); }
 .sobre-nav-links a:focus-visible { outline: 2px solid var(--terracotta); outline-offset: 2px; }
-.sobre-nav-links a.active { color: var(--cream); font-weight: 600; background: var(--ink); }
+.sobre-nav-links a.active { color: var(--ink); font-weight: 600; }
 
 .sobre-user-chip {
   display: inline-flex; align-items: center; gap: 0.5rem;
@@ -38,7 +38,7 @@
   width: 2.35em; height: 2.35em; border-radius: 50%; /* proporcional à letra (texto ampliado) */
   background: var(--terracotta); color: var(--cream);
   display: grid; place-items: center;
-  font-size: 0.8rem; font-weight: 700; overflow: hidden;
+  font-size: 0.8rem; font-weight: 600; overflow: hidden;
 }
 .sobre-user-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
@@ -70,8 +70,8 @@
   left: 50%;
   transform: translateX(-50%);
   font-family: var(--font-display);
-  font-weight: 900;
-  font-style: italic;
+  font-weight: 600;
+  font-style: normal;
   font-size: clamp(5rem, 14vw, 11rem);
   letter-spacing: -0.04em;
   color: transparent;
@@ -88,7 +88,7 @@
 
 .sobre-hero h1 {
   font-family: var(--font-display);
-  font-weight: 900;
+  font-weight: 600;
   font-size: clamp(2.8rem, 6.5vw, 5.2rem);
   line-height: 1.02;
   letter-spacing: -0.04em;
@@ -98,7 +98,7 @@
 }
 /* destaque tipo marca-texto no lugar do sublinhado tímido */
 .sobre-hero h1 em {
-  font-style: italic;
+  font-style: normal;
   font-weight: 400;
   color: var(--ink);
   background: var(--mustard);
@@ -147,7 +147,7 @@
 
 .sobre-manifesto-title h2 {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 600;
   font-size: clamp(2rem, 4vw, 3rem);
   letter-spacing: -0.02em;
   line-height: 1.1;
@@ -155,13 +155,13 @@
   margin-top: 1.1rem;
 }
 .sobre-manifesto-title h2 em {
-  font-style: italic;
+  font-style: normal;
   color: var(--mustard);
   font-weight: 400;
 }
 
 .sobre-manifesto-text {
-  border-left: 2px solid rgba(244, 239, 228, 0.3);
+  border-left: 1px solid rgba(244, 239, 228, 0.3);
   padding-left: 2.5rem;
 }
 .sobre-manifesto-text p {
@@ -173,7 +173,7 @@
 .sobre-manifesto-text p:last-child { margin-bottom: 0; }
 .sobre-manifesto-text p:first-child::first-letter {
   font-family: var(--font-display);
-  font-weight: 900;
+  font-weight: 600;
   font-size: 3.4em;
   float: left;
   line-height: 0.82;
@@ -224,8 +224,8 @@
 
 .sobre-marco-data {
   font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 700;
+  font-style: normal;
+  font-weight: 600;
   font-size: 2.1rem;
   letter-spacing: -0.02em;
   color: var(--terracotta);
@@ -235,7 +235,7 @@
 }
 .sobre-marco h3 {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 1.3rem;
   color: var(--ink);
   margin-bottom: 0.5rem;
@@ -262,7 +262,7 @@
   transition: background 0.35s ease, transform 0.3s ease, box-shadow 0.3s ease;
 }
 .sobre-valores-grid .impact-card:hover {
-  transform: translateY(-4px);
+  transform: none;
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.1);
 }
 .sobre-valores-grid .impact-card-num,
@@ -302,7 +302,7 @@
   position: relative;
   background: var(--team-accent, var(--terracotta));
   border: none;
-  border-radius: 24px;
+  border-radius: var(--radius-lg);
   padding: 2.8rem 1.8rem 2.4rem;
   text-align: center;
   overflow: hidden;
@@ -339,7 +339,7 @@
   display: grid;
   place-items: center;
   font-family: var(--font-display);
-  font-weight: 900;
+  font-weight: 600;
   font-size: 1.6rem;
   letter-spacing: 0.02em;
   transition: transform 0.3s ease;
@@ -348,7 +348,7 @@
 
 .sobre-team-card h3 {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 1.4rem;
   color: var(--cream);
   margin-bottom: 0.35rem;
@@ -356,9 +356,9 @@
 .sobre-team-role {
   display: inline-block;
   font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
   color: rgba(244, 239, 228, 0.85);
   margin-bottom: 1rem;
 }
@@ -453,3 +453,67 @@
   .sobre-valores-grid { grid-template-columns: 1fr; }
   .sobre-manifesto-wrap { padding: 3.5rem 1.25rem; }
 }
+/* ==========================================================
+   SOBRE — página de leitura (revisão visual 2026-11)
+   Coluna única, títulos simples, listas no lugar de cartões.
+   ========================================================== */
+.sobre {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 3.5rem 2rem 4rem;
+  width: 100%;
+}
+.sobre h1 { font-size: clamp(1.9rem, 3.4vw, 2.5rem); font-weight: 600; line-height: 1.15; margin-bottom: 1rem; }
+.sobre h2 { font-size: 1.35rem; font-weight: 600; margin-bottom: 1rem; }
+.sobre h3 { font-size: 1.02rem; font-weight: 600; letter-spacing: 0; }
+.sobre p { color: var(--ink-soft); }
+.sobre .sobre-lede { font-size: 1.1rem; line-height: 1.65; }
+.sobre-abertura { padding-bottom: 2.5rem; }
+.sobre-bloco { padding: 2.5rem 0; border-top: 1px solid var(--border); }
+.sobre-texto p + p { margin-top: 0.9rem; }
+
+/* Linha do tempo: é uma sequência de verdade, então lista ordenada */
+.sobre-linha { list-style: none; display: grid; gap: 1.25rem; }
+.sobre-linha li { display: grid; grid-template-columns: 8.5rem 1fr; gap: 1rem; }
+.sobre-linha-data { color: var(--ink-muted); font-weight: 500; padding-top: 0.05rem; }
+.sobre-linha p { font-size: 0.95rem; margin-top: 0.15rem; }
+
+.sobre-valores { display: grid; gap: 1.1rem; }
+.sobre-valores dt { font-weight: 600; color: var(--ink); }
+.sobre-valores dd { color: var(--ink-soft); font-size: 0.95rem; margin-top: 0.15rem; }
+
+.sobre-equipe { list-style: none; display: grid; gap: 1.5rem; }
+.sobre-equipe li { display: grid; grid-template-columns: 2.75rem 1fr; gap: 1rem; align-items: start; }
+.sobre-equipe-iniciais {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--cream-soft);
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.sobre-equipe-papel { font-size: 0.88rem; color: var(--ink-muted) !important; margin: 0.1rem 0 0.35rem; }
+.sobre-equipe p:last-child { font-size: 0.95rem; }
+
+.sobre-fim {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 2rem 0 0;
+  border-top: 1px solid var(--border);
+}
+.sobre-fim p { color: var(--ink); font-weight: 500; }
+
+@media (max-width: 600px) {
+  .sobre { padding: 2rem 1rem 3rem; }
+  .sobre-linha li { grid-template-columns: 1fr; gap: 0.2rem; }
+}
+/* Link da página atual: sublinhado discreto em vez de pílula preta */
+.sobre-nav-links a.active { color: var(--ink); background: none; text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 2px; }
+.sobre .sobre-lede { margin: 0; max-width: none; text-align: left; padding: 0; }

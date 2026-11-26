@@ -82,7 +82,7 @@ const VerificacaoCodigo = ({ verificacao, aoVerificar, aoVoltar }) => {
     // a tela do código substitui o formulário sem mudar de rota.
     <div className="verificacao transicao-pagina">
       <div className="verificacao-icone" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="2" y="4" width="20" height="16" rx="2" />
           <path d="m22 7-10 5L2 7" />
         </svg>
@@ -112,7 +112,7 @@ const VerificacaoCodigo = ({ verificacao, aoVerificar, aoVoltar }) => {
             onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}
           />
           <button type="submit" className="verificacao-btn" disabled={enviando || codigo.length !== 6}>
-            {enviando ? 'Verificando...' : cadastro ? 'Confirmar e entrar' : 'Entrar'}
+            {enviando ? 'Verificando…' : cadastro ? 'Confirmar e entrar' : 'Entrar'}
           </button>
         </form>
       )}

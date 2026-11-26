@@ -9,11 +9,11 @@ import { API_URL } from '../config';
 
 /* ── Ícones SVG ───────────────────────────────────────────── */
 const I = {
-  dashboard: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>,
-  users:     () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
-  layers:    () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>,
-  clock:     () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
-  help:      () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
+  dashboard: () => <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>,
+  users:     () => <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+  layers:    () => <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>,
+  clock:     () => <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  help:      () => <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
 };
 
 // Rótulo de cada aba — usado no botão que abre/fecha o menu no mobile
@@ -78,7 +78,7 @@ const ModalConfirmar = ({ titulo, descricao, pedirMotivo, textoConfirmar = 'Conf
         <div className="admin-modal-actions">
           <button className="btn-modal-cancel" onClick={aoCancelar} disabled={enviando}>Cancelar</button>
           <button className={`btn-modal-confirm${positivo ? ' positivo' : ''}`} onClick={confirmar} disabled={enviando}>
-            {enviando ? 'Aguarde...' : textoConfirmar}
+            {enviando ? 'Aguarde…' : textoConfirmar}
           </button>
         </div>
       </div>
@@ -90,9 +90,10 @@ const ModalConfirmar = ({ titulo, descricao, pedirMotivo, textoConfirmar = 'Conf
    GRÁFICOS — SVG puro, sem dependências externas
    ════════════════════════════════════════════════════════════ */
 // Variáveis da paleta: acompanham os modos de cor para daltonismo
-const CORES_STATUS = { ativo: 'var(--success)', pausado: 'var(--mustard)', vendido: 'var(--ink-muted)' };
-const COR_RANKING = '#eb6834';
-const COR_SERIE = '#2a78d6';
+// Uma cor de destaque por gráfico (o verde do site); o resto em tons neutros
+const CORES_STATUS = { ativo: 'var(--forest)', pausado: 'var(--cream-deep)', vendido: 'var(--ink-muted)' };
+const COR_RANKING = 'var(--forest)';
+const COR_SERIE = 'var(--forest)';
 
 /* Barras verticais — distribuição de anúncios por status */
 const GraficoStatus = ({ dados }) => {
@@ -217,9 +218,9 @@ const Paginacao = ({ paginacao, pagina, setPagina }) => {
   if (!paginacao || paginacao.total_paginas <= 1) return null;
   return (
     <div className="admin-paginacao">
-      <button className="btn-admin-mini" disabled={pagina <= 1} onClick={() => setPagina(pagina - 1)}>← Anterior</button>
+      <button className="btn-admin-mini" disabled={pagina <= 1} onClick={() => setPagina(pagina - 1)}>Anterior</button>
       <span>Página {paginacao.pagina_atual} de {paginacao.total_paginas} · {paginacao.total_itens} itens</span>
-      <button className="btn-admin-mini" disabled={pagina >= paginacao.total_paginas} onClick={() => setPagina(pagina + 1)}>Próxima →</button>
+      <button className="btn-admin-mini" disabled={pagina >= paginacao.total_paginas} onClick={() => setPagina(pagina + 1)}>Próxima</button>
     </div>
   );
 };
@@ -251,15 +252,14 @@ const Admin = () => {
   }, [navigate]);
 
   if (carregando) {
-    return <div className="admin-wrapper"><div className="admin-loading">Carregando painel...</div></div>;
+    return <div className="admin-wrapper"><div className="admin-loading">Carregando painel…</div></div>;
   }
 
   if (negado) {
     return (
       <div className="admin-wrapper">
         <div className="admin-negado">
-          <span className="emoji">🔒</span>
-          <h2>Acesso restrito</h2>
+                    <h2>Acesso restrito</h2>
           <p>Esta área é exclusiva para administradores da plataforma.</p>
           <Link to="/" className="btn-admin-add">Voltar para a home</Link>
         </div>
@@ -269,7 +269,6 @@ const Admin = () => {
 
   return (
     <div className="admin-wrapper">
-      <div className="announcement">🛡️ Painel Administrativo — Santo Desapego</div>
 
       <SiteHeader>
         <Link to="/perfil" className="nav-btn">
@@ -367,7 +366,7 @@ const SecaoDashboard = () => {
       </div>
 
       {erro && <div className="admin-alert error">{erro}</div>}
-      {!dados && !erro && <div className="admin-loading">Carregando...</div>}
+      {!dados && !erro && <div className="admin-loading">Carregando…</div>}
 
       {dados && (
         <>
@@ -481,11 +480,11 @@ const SecaoUsuarios = ({ usuarioLogado }) => {
       {feedback && <div className={`admin-alert ${feedback.tipo}`}>{feedback.msg}</div>}
 
       <div className="admin-filtros">
-        <input type="text" placeholder="Buscar por nome ou e-mail..." value={busca}
+        <input type="text" placeholder="Buscar por nome ou e-mail…" value={busca}
           onChange={(e) => { setBusca(e.target.value); setPagina(1); }} />
       </div>
 
-      {!usuarios && <div className="admin-loading">Carregando usuários...</div>}
+      {!usuarios && <div className="admin-loading">Carregando usuários…</div>}
 
       {usuarios && (
         <div className="admin-table-wrap">
@@ -630,7 +629,7 @@ const SecaoAnuncios = () => {
       {feedback && <div className={`admin-alert ${feedback.tipo}`}>{feedback.msg}</div>}
 
       <div className="admin-filtros">
-        <input type="text" placeholder="Buscar por título..." value={busca}
+        <input type="text" placeholder="Buscar por título…" value={busca}
           onChange={(e) => { setBusca(e.target.value); setPagina(1); }} />
         <select value={statusFiltro} onChange={(e) => { setStatusFiltro(e.target.value); setPagina(1); }}>
           <option value="">Todos os status</option>
@@ -640,7 +639,7 @@ const SecaoAnuncios = () => {
         </select>
       </div>
 
-      {!anuncios && <div className="admin-loading">Carregando anúncios...</div>}
+      {!anuncios && <div className="admin-loading">Carregando anúncios…</div>}
 
       {anuncios && (
         <div className="admin-table-wrap">
@@ -748,7 +747,7 @@ const FormCategoria = ({ inicial, categorias, aoSalvar, aoCancelar }) => {
         <div className="admin-modal-actions">
           <button className="btn-modal-cancel" onClick={aoCancelar} disabled={enviando}>Cancelar</button>
           <button className="btn-modal-confirm positivo" onClick={salvar} disabled={enviando}>
-            {enviando ? 'Salvando...' : 'Salvar'}
+            {enviando ? 'Salvando…' : 'Salvar'}
           </button>
         </div>
       </div>
@@ -807,7 +806,7 @@ const SecaoCategorias = () => {
 
       {feedback && <div className={`admin-alert ${feedback.tipo}`}>{feedback.msg}</div>}
 
-      {!categorias && <div className="admin-loading">Carregando categorias...</div>}
+      {!categorias && <div className="admin-loading">Carregando categorias…</div>}
 
       {categorias && (
         <div className="admin-table-wrap">
@@ -909,7 +908,7 @@ const FormResolverDenuncia = ({ denuncia, aoSalvar, aoCancelar }) => {
         <div className="admin-modal-actions">
           <button className="btn-modal-cancel" onClick={aoCancelar} disabled={enviando}>Cancelar</button>
           <button className="btn-modal-confirm positivo" onClick={salvar} disabled={enviando}>
-            {enviando ? 'Salvando...' : 'Salvar'}
+            {enviando ? 'Salvando…' : 'Salvar'}
           </button>
         </div>
       </div>
@@ -965,10 +964,10 @@ const SecaoDenuncias = () => {
         </select>
       </div>
 
-      {!denuncias && <div className="admin-loading">Carregando denúncias...</div>}
+      {!denuncias && <div className="admin-loading">Carregando denúncias…</div>}
 
       {denuncias && denuncias.length === 0 && (
-        <div className="admin-vazio"><span className="emoji">🚩</span>Nenhuma denúncia encontrada.</div>
+        <div className="admin-vazio">Nenhuma denúncia encontrada.</div>
       )}
 
       {denuncias && denuncias.length > 0 && (
@@ -1055,7 +1054,7 @@ const FormResponderSuporte = ({ solicitacao, aoSalvar, aoCancelar }) => {
         <div className="admin-modal-actions">
           <button className="btn-modal-cancel" onClick={aoCancelar} disabled={enviando}>Cancelar</button>
           <button className="btn-modal-confirm positivo" onClick={salvar} disabled={enviando}>
-            {enviando ? 'Salvando...' : 'Salvar'}
+            {enviando ? 'Salvando…' : 'Salvar'}
           </button>
         </div>
       </div>
@@ -1111,10 +1110,10 @@ const SecaoSuporte = () => {
         </select>
       </div>
 
-      {!solicitacoes && <div className="admin-loading">Carregando solicitações...</div>}
+      {!solicitacoes && <div className="admin-loading">Carregando solicitações…</div>}
 
       {solicitacoes && solicitacoes.length === 0 && (
-        <div className="admin-vazio"><span className="emoji">💬</span>Nenhuma solicitação de suporte encontrada.</div>
+        <div className="admin-vazio">Nenhuma solicitação de suporte encontrada.</div>
       )}
 
       {solicitacoes && solicitacoes.length > 0 && (
@@ -1187,10 +1186,10 @@ const SecaoLogs = () => {
       </div>
 
       {erro && <div className="admin-alert error">{erro}</div>}
-      {!logs && !erro && <div className="admin-loading">Carregando logs...</div>}
+      {!logs && !erro && <div className="admin-loading">Carregando logs…</div>}
 
       {logs && logs.length === 0 && (
-        <div className="admin-vazio"><span className="emoji">📋</span>Nenhuma ação registrada ainda.</div>
+        <div className="admin-vazio">Nenhuma ação registrada ainda.</div>
       )}
 
       {logs && logs.length > 0 && (

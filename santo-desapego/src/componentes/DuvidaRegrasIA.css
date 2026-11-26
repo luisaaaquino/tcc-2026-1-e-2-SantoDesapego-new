@@ -16,7 +16,7 @@
   flex: 1 1 16rem;
   min-width: 0;
   padding: 0.7rem 1rem;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-pill);
   background: var(--cream);
   font-family: inherit;
@@ -29,7 +29,7 @@
   border-radius: var(--radius-pill);
   background: var(--ink);
   color: var(--cream);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.9rem;
   transition: background 0.18s;
 }
@@ -39,7 +39,7 @@
 .duvida-regras-exemplos { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
 .duvida-regras-exemplos button {
   padding: 0.35rem 0.8rem;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-pill);
   background: var(--paper);
   font-size: 0.8rem;
@@ -56,7 +56,7 @@
   margin-top: 1rem;
   padding: 1rem 1.1rem;
   border-radius: var(--radius-md);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   background: var(--paper);
 }
 .duvida-regras-resposta > p { font-size: 0.95rem; line-height: 1.55; color: var(--ink); }
@@ -71,7 +71,7 @@
   flex-direction: column;
   gap: 0.35rem;
 }
-.duvida-regras-fontes > span { font-size: 0.78rem; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.04em; }
+.duvida-regras-fontes > span { font-size: 0.78rem; font-weight: 600; color: var(--ink-soft); text-transform: none; letter-spacing: 0.04em; }
 .duvida-regras-fontes summary { cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--forest); }
 .duvida-regras-fontes details p {
   margin-top: 0.35rem;

@@ -3,8 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import './Sobre.css';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import LegalModal from '../componentes/LegalModal';
-import { EMAILS } from '../config';
-import { IconArrowRight, IconLogout } from '../componentes/Icones';
+import RodapeSite from '../componentes/RodapeSite';
+import { IconLogout } from '../componentes/Icones';
 
 /* ── Dados — altere aqui sem tocar no JSX ──────────────────── */
 
@@ -61,22 +61,7 @@ const MARCOS = [
   { data: '2025', titulo: 'A pergunta', desc: 'Nasce a inquietação: por que é tão difícil desapegar de algo bom para alguém que mora a duas quadras?' },
   { data: '2026.1', titulo: 'O projeto', desc: 'O Santo Desapego sai do papel: pesquisa, prototipação e as primeiras linhas de código.' },
   { data: '2026.2', titulo: 'A plataforma', desc: 'React, Node.js e PostgreSQL dão forma ao marketplace hiperlocal, com cadastro, anúncios e busca por bairro.' },
-  { data: 'Futuro', titulo: 'O bairro inteiro', desc: 'Chat entre vizinhos, entregas de bike e a meta de cobrir os mais de 20 bairros do distrito.' },
-];
-
-const FOOTER_LINKS = [
-  {
-    title: 'Plataforma',
-    links: ['Como funciona', 'Anunciar', 'Categorias'],
-  },
-  {
-    title: 'Comunidade',
-    links: ['Nosso impacto'],
-  },
-  {
-    title: 'Suporte',
-    links: ['Central de ajuda', 'Fale conosco', 'Termos de uso', 'Privacidade (LGPD)'],
-  },
+  { data: 'Próximos passos', titulo: 'O bairro inteiro', desc: 'Chegar aos bairros do distrito que ainda não estão na lista de atendimento.' },
 ];
 
 
@@ -140,11 +125,6 @@ const Sobre = () => {
   return (
     <div className="sobre-page">
 
-      {/* ── Announcement ── */}
-      <div className="announcement">
-        🌱 Economia circular em Santo Amaro:{' '}
-        <strong>menos descarte, mais comunidade</strong> entre vizinhos.
-      </div>
 
       {/* ── Header (mesmo padrão da home, sem search) ── */}
       <header className="site-header">
@@ -157,7 +137,7 @@ const Sobre = () => {
           <nav className="sobre-nav-links">
             <Link to="/">Início</Link>
             <Link to="/explorar">Explorar</Link>
-            <Link to="/sobre" className="active">Sobre nós</Link>
+            <Link to="/sobre" className="active" aria-current="page">Sobre nós</Link>
           </nav>
 
           <nav className="nav-actions">
@@ -170,18 +150,18 @@ const Sobre = () => {
                       ? <img src={usuario.foto_perfil} alt="" />
                       : usuario.nome[0].toUpperCase()}
                   </span>
-                  Olá, {usuario.nome}!
+                  {usuario.nome}
                 </Link>
                 <button onClick={handleLogout} className="nav-btn" style={{ cursor: 'pointer', fontFamily: 'inherit' }}>
                   <IconLogout />
                   Sair
                 </button>
-                <Link to="/anunciar" className="btn-sell">+ Anunciar grátis</Link>
+                <Link to="/anunciar" className="btn-sell">Anunciar</Link>
               </>
             ) : (
               <>
                 <Link to="/login" className="nav-btn nav-login-btn">Entrar</Link>
-                <Link to="/cadastro" className="btn-sell">+ Anunciar grátis</Link>
+                <Link to="/cadastro" className="btn-sell">Anunciar</Link>
               </>
             )}
           </nav>
@@ -209,7 +189,7 @@ const Sobre = () => {
                   ? <img src={usuario.foto_perfil} alt="" />
                   : usuario.nome[0].toUpperCase()}
               </span>
-              <span>Olá, {usuario.nome}!<small>Ver meu perfil</small></span>
+              <span>{usuario.nome}<small>Ver meu perfil</small></span>
             </Link>
           )}
           <Link to="/" onClick={fecharMenu}>Início</Link>
@@ -224,198 +204,95 @@ const Sobre = () => {
             <Link to="/login" onClick={fecharMenu}>Entrar</Link>
           )}
           <Link to={linkAnunciar} className="btn-home-primary drawer-cta" onClick={fecharMenu}>
-            + Anunciar grátis
+            Anunciar
           </Link>
         </nav>
       </div>
 
-      {/* ══════════════════════════════════
-          HERO
-          ══════════════════════════════════ */}
-      <section className="sobre-hero">
-        <span className="hero-kicker">Sobre nós • Santo Amaro, São Paulo</span>
-        <h1>
-          Somos vizinhos criando um jeito<br />
-          mais <em>circular</em> de consumir.
-        </h1>
-        <p className="sobre-lede">
-          O Santo Desapego é um marketplace hiperlocal nascido dentro da faculdade
-          e feito para as ruas de Santo Amaro: uma plataforma onde o que sobra na
-          sua casa encontra quem precisa — a poucos quarteirões de distância.
-        </p>
-      </section>
+      <main className="sobre">
 
-      {/* ══════════════════════════════════
-          MANIFESTO / HISTÓRIA
-          ══════════════════════════════════ */}
-      <section className="sobre-manifesto">
-        <div className="sobre-manifesto-wrap">
-          <div className="sobre-manifesto-title">
-            <span className="badge-ods">Por que existimos</span>
-            <h2>Todo objeto parado é uma <em>história interrompida</em>.</h2>
-          </div>
-          <div className="sobre-manifesto-text">
+        <section className="sobre-abertura">
+          <h1>Sobre o Santo Desapego</h1>
+          <p className="sobre-lede">
+            O Santo Desapego é um marketplace de usados para quem mora em Santo Amaro
+            e região. Nasceu como Trabalho de Conclusão de Curso no Centro Universitário
+            Senac Santo Amaro: o que sobra numa casa encontra quem precisa a poucos
+            quarteirões de distância.
+          </p>
+        </section>
+
+        <section className="sobre-bloco">
+          <h2>Por que existe</h2>
+          <div className="sobre-texto">
             <p>
               A ideia nasceu de uma cena comum: móveis bons na calçada esperando o
               caminhão de lixo, enquanto a poucos metros dali alguém procurava
-              exatamente aquilo em um marketplace gigante, vindo de outro estado.
+              exatamente aquilo em um marketplace grande, comprando de outro estado.
             </p>
             <p>
-              Os grandes marketplaces conectam o Brasil inteiro, mas desconectam o
-              quarteirão. O Santo Desapego faz o caminho contrário: valida o CEP de
-              cada morador, mostra a distância real entre comprador e vendedor e
-              transforma a transação em um encontro de vizinhos.
-            </p>
-            <p>
-              Somos um projeto acadêmico com ambição de bairro — e acreditamos que
-              é exatamente nessa escala, a da vizinhança, que a economia circular
-              deixa de ser conceito e vira hábito.
+              Os grandes marketplaces conectam o Brasil inteiro, mas não o quarteirão.
+              O Santo Desapego faz o caminho contrário: anúncios só com CEP da região,
+              busca e ordenação por bairro e a entrega combinada entre vizinhos.
             </p>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ══════════════════════════════════
-          LINHA DO TEMPO
-          ══════════════════════════════════ */}
-      <section className="sobre-timeline-section">
-        <div className="section">
-          <div className="section-head">
-            <div>
-              <h2>Do rascunho ao <em>bairro</em></h2>
-              <p>A trajetória do projeto, semestre a semestre.</p>
-            </div>
-          </div>
-          <div className="sobre-timeline">
+        <section className="sobre-bloco">
+          <h2>Trajetória do projeto</h2>
+          <ol className="sobre-linha">
             {MARCOS.map((m) => (
-              <div key={m.data} className="sobre-marco">
-                <span className="sobre-marco-data">{m.data}</span>
-                <h3>{m.titulo}</h3>
-                <p>{m.desc}</p>
+              <li key={m.data}>
+                <span className="sobre-linha-data">{m.data}</span>
+                <div>
+                  <h3>{m.titulo}</h3>
+                  <p>{m.desc}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section className="sobre-bloco">
+          <h2>No que a gente acredita</h2>
+          <dl className="sobre-valores">
+            {VALORES.map((v) => (
+              <div key={v.title}>
+                <dt>{v.title}</dt>
+                <dd>{v.desc}</dd>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
+          </dl>
+        </section>
 
-      {/* ══════════════════════════════════
-          VALORES
-          ══════════════════════════════════ */}
-      <section className="sobre-valores-section">
-        <div className="section">
-          <div className="section-head">
-            <div>
-              <h2>No que a gente <em>acredita</em></h2>
-              <p>Os princípios que guiam cada decisão da plataforma.</p>
-            </div>
-          </div>
-          <div className="sobre-valores-grid">
-            {VALORES.map((v) => (
-              <article key={v.num} className={`impact-card impact-card--${v.accent}`}>
-                <span className="impact-card-num">{v.num}</span>
-                <h3 className="impact-card-title">{v.title}</h3>
-                <p className="impact-card-desc">{v.desc}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════
-          EQUIPE
-          ══════════════════════════════════ */}
-      <section className="sobre-team-section">
-        <div className="section">
-          <div className="section-head">
-            <div>
-              <h2>Quem faz o <em>Santo Desapego</em></h2>
-              <p>Três estudantes, um bairro e muitas linhas de código.</p>
-            </div>
-          </div>
-          <div className="sobre-team-grid">
+        <section className="sobre-bloco">
+          <h2>Quem faz</h2>
+          <ul className="sobre-equipe">
             {TEAM.map((pessoa) => (
-              <article key={pessoa.nome} className={`sobre-team-card sobre-team-card--${pessoa.accent}`}>
-                <span className="sobre-team-avatar">
+              <li key={pessoa.nome}>
+                <span className="sobre-equipe-iniciais" aria-hidden="true">
                   {pessoa.nome.split(' ').map((n) => n[0]).slice(0, 2).join('')}
                 </span>
-                <h3>{pessoa.nome}</h3>
-                <span className="sobre-team-role">{pessoa.papel}</span>
-                <p>{pessoa.bio}</p>
-              </article>
+                <div>
+                  <h3>{pessoa.nome}</h3>
+                  <p className="sobre-equipe-papel">{pessoa.papel}</p>
+                  <p>{pessoa.bio}</p>
+                </div>
+              </li>
             ))}
-          </div>
-        </div>
-      </section>
+          </ul>
+        </section>
 
-      {/* ══════════════════════════════════
-          CTA
-          ══════════════════════════════════ */}
-      <section className="cta-section">
-        <div className="cta-wrap">
-          <h2>Quer fazer parte<br />dessa <em>história</em>?</h2>
-          <p>Anuncie o que está parado, encontre o que procura e conheça seus vizinhos no caminho.</p>
-          <Link to={linkAnunciar} className="btn-home-primary cta-btn">
-            Começar a desapegar <IconArrowRight />
-          </Link>
-        </div>
-      </section>
+        <section className="sobre-fim">
+          <p>Tem algo parado em casa? Anunciar leva poucos minutos.</p>
+          <Link to={linkAnunciar} className="btn-primary">Anunciar um item</Link>
+        </section>
+
+      </main>
 
       {/* ══════════════════════════════════
           FOOTER (mesmo da home)
           ══════════════════════════════════ */}
-      <footer className="home-footer">
-        <div className="footer-wrap">
-          <div className="footer-brand">
-            <Link to="/" className="logo">
-              <span className="logo-mark">SD</span>
-              Santo <em>Desapego</em>
-            </Link>
-            <p>Marketplace C2C hiperlocal para Santo Amaro, São Paulo. Economia compartilhada e consumo consciente.</p>
-          </div>
-
-          {FOOTER_LINKS.map((col) => (
-            <details key={col.title} className="footer-col">
-              <summary><h4>{col.title}</h4></summary>
-              <div className="footer-col-links">
-                {col.links.map((l) => {
-                  if (l === 'Como funciona') return <Link key={l} to="/#como-funciona">{l}</Link>;
-                  if (l === 'Anunciar') return <Link key={l} to={linkAnunciar}>{l}</Link>;
-                  if (l === 'Categorias') return <Link key={l} to="/explorar">{l}</Link>;
-                  if (l === 'Nosso impacto') return <Link key={l} to="/sobre">Sobre nós</Link>;
-                  if (l === 'Central de ajuda') return <Link key={l} to="/central-ajuda">Central de ajuda</Link>;
-                  if (l === 'Fale conosco') return <a key={l} href={`mailto:${EMAILS.contato}`}>{EMAILS.contato}</a>;
-                  if (l === 'Termos de uso') return <a key={l} href="#termos" onClick={abrirLegal('termos')}>{l}</a>;
-                  if (l === 'Privacidade (LGPD)') return <a key={l} href="#termos" onClick={abrirLegal('privacidade')}>{l}</a>;
-                  return <a key={l} href="#">{l}</a>;
-                })}
-              </div>
-            </details>
-          ))}
-        </div>
-
-        <div className="footer-tcc">
-          <div className="footer-tcc-info">
-            <div>Luisa Aquino • Maria Erica Cruz • Paulo Santana</div>
-          </div>
-
-          <div className="cc-license">
-            <Link to="/">Santo Desapego</Link> © 2026 by{' '}
-            <span className="cc-authors">Paulo Santana, Maria Erica Cruz e Luisa Nascimento</span>{' '}
-            is licensed under{' '}
-            <a
-              href="https://creativecommons.org/licenses/by-nc-nd/4.0/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              CC BY-NC-ND 4.0
-            </a>
-            <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="CC" />
-            <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="BY" />
-            <img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="NC" />
-            <img src="https://mirrors.creativecommons.org/presskit/icons/nd.svg" alt="ND" />
-          </div>
-        </div>
-      </footer>
+      <RodapeSite usuario={usuario} onAbrirLegal={abrirLegal} />
 
       <LegalModal aba={legalAberto} onSelectAba={setLegalAberto} onClose={() => setLegalAberto(null)} />
 

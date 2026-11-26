@@ -3,14 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import './NotificacoesSino.css';
 
 import { API_URL } from '../config';
+import { IconChat, IconTag, IconCheck, IconStar, IconAlert } from './Icones';
 const INTERVALO = 20000; // 20s
 
+// Ícone de linha por tipo de notificação (mesmo conjunto do resto do site)
 const ICONE_TIPO = {
-  nova_mensagem: '💬',
-  intencao_compra: '🛒',
-  pagamento_confirmado: '🎉',
-  avaliacao_pendente: '⭐',
-  anuncio_expirando: '⏳',
+  nova_mensagem: IconChat,
+  intencao_compra: IconTag,
+  pagamento_confirmado: IconCheck,
+  avaliacao_pendente: IconStar,
+  anuncio_expirando: IconAlert,
 };
 
 const tempoRelativo = (dataStr) => {
@@ -114,7 +116,7 @@ const NotificacoesSino = () => {
         }}
         aria-label={`Notificações${totalNaoLidas > 0 ? ` (${totalNaoLidas} não lidas)` : ''}`}
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
           <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
         </svg>
@@ -146,7 +148,7 @@ const NotificacoesSino = () => {
                 className={`sino-item${n.lida ? '' : ' nao-lida'}`}
                 onClick={() => clicarNotificacao(n)}
               >
-                <span className="sino-item-icone">{ICONE_TIPO[n.tipo] || '🔔'}</span>
+                <span className="sino-item-icone">{(() => { const Icone = ICONE_TIPO[n.tipo] || IconAlert; return <Icone size={16} />; })()}</span>
                 <span className="sino-item-corpo">
                   <span className="sino-item-titulo">{n.titulo}</span>
                   <span className="sino-item-msg">{n.mensagem}</span>

@@ -55,7 +55,7 @@
 /* Headline */
 .left-panel h2 {
   font-family: var(--font-display);
-  font-weight: 900;
+  font-weight: 600;
   font-size: clamp(1.8rem, 2.6vw, 2.8rem);
   line-height: 1.06;
   letter-spacing: -0.03em;
@@ -64,7 +64,7 @@
   position: relative;
   z-index: 1;
 }
-.left-panel h2 em { font-style: italic; font-weight: 400; color: var(--mustard-soft); }
+.left-panel h2 em { font-style: normal; font-weight: 400; color: var(--mustard-soft); }
 
 .left-panel > p {
   color: rgba(244, 239, 228, 0.7);
@@ -113,7 +113,7 @@
   position: relative;
   z-index: 1;
 }
-.left-testimonial p { color: rgba(244, 239, 228, 0.85); font-style: italic; font-size: 0.88rem; margin-bottom: 1rem; }
+.left-testimonial p { color: rgba(244, 239, 228, 0.85); font-style: normal; font-size: 0.88rem; margin-bottom: 1rem; }
 
 .testimonial-author { display: flex; align-items: center; gap: 0.8rem; }
 .testimonial-avatar {
@@ -122,7 +122,7 @@
   background: var(--terracotta);
   display: grid; place-items: center;
   color: var(--cream);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.82rem;
   flex-shrink: 0;
 }
@@ -145,14 +145,14 @@
 
 .form-header h1 {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 1.9rem;
   letter-spacing: -0.025em;
   line-height: 1.1;
   color: var(--ink);
   margin-bottom: 0.4rem;
 }
-.form-header h1 em { font-style: italic; color: var(--terracotta); font-weight: 400; }
+.form-header h1 em { font-style: normal; color: var(--terracotta); font-weight: 400; }
 .form-header p     { color: var(--ink-muted); font-size: 0.93rem; }
 
 /* ── OAuth ──────────────────────────────────────────────── */
@@ -164,7 +164,7 @@
   justify-content: center;
   gap: 0.6rem;
   padding: 0.7rem 1rem;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--cream);
   font-size: 0.88rem;
@@ -211,7 +211,7 @@
 .field-input {
   width: 100%;
   padding: 0.75rem 1rem 0.75rem 2.5rem;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--cream);
   font-family: inherit;
@@ -258,7 +258,7 @@
 .cep-loader.visible { display: block; }
 .cep-loader span {
   display: block; width: 16px; height: 16px;
-  border: 2px solid var(--border);
+  border: 1px solid var(--border);
   border-top-color: var(--terracotta);
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
@@ -270,7 +270,7 @@
 .field-select {
   width: 100%;
   padding: 0.75rem 2.5rem 0.75rem 2.5rem;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--cream);
   font-family: inherit;
@@ -291,7 +291,7 @@
 .checkbox-group { display: flex; align-items: flex-start; gap: 0.7rem; margin-bottom: 0.9rem; }
 .checkbox-custom {
   width: 20px; height: 20px;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--cream);
   flex-shrink: 0;
@@ -305,8 +305,8 @@
   content: "";
   display: block;
   width: 10px; height: 7px;
-  border-left: 2px solid white;
-  border-bottom: 2px solid white;
+  border-left: 1px solid white;
+  border-bottom: 1px solid white;
   transform: rotate(-45deg) translateY(-1px);
 }
 .checkbox-label { font-size: 0.85rem; color: var(--ink-soft); line-height: 1.5; cursor: pointer; }
@@ -319,7 +319,7 @@
   align-items: flex-start;
   gap: 0.7rem;
   background: var(--aviso-fundo);
-  border: 1.5px solid var(--mustard);
+  border: 1px solid var(--mustard);
   color: var(--aviso-texto);
   padding: 0.85rem 1rem;
   border-radius: var(--radius-md);
@@ -333,9 +333,9 @@
 /* ── Rótulo de seção dentro do formulário ───────────────── */
 .form-section-label {
   font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
   color: var(--ink-muted);
   border-bottom: 1px solid var(--border);
   padding-bottom: 0.4rem;
@@ -364,11 +364,11 @@
   display: grid; place-items: center;
   color: var(--cream);
   margin-bottom: 1.5rem;
-  box-shadow: 4px 4px 0 var(--mustard);
+  box-shadow: none;
   animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.success-state h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.7rem; color: var(--ink); margin-bottom: 0.6rem; }
-.success-state h2 em { font-style: italic; color: var(--terracotta); font-weight: 400; }
+.success-state h2 { font-family: var(--font-display); font-weight: 600; font-size: 1.7rem; color: var(--ink); margin-bottom: 0.6rem; }
+.success-state h2 em { font-style: normal; color: var(--terracotta); font-weight: 400; }
 .success-state p   { color: var(--ink-muted); max-width: 340px; margin-bottom: 2rem; font-size: 0.93rem; }
 
 .btn-success {
@@ -376,15 +376,15 @@
   color: var(--cream);
   padding: 0.9rem 2rem;
   border-radius: var(--radius-pill);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.98rem;
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  box-shadow: 3px 3px 0 var(--ink);
+  box-shadow: none;
   transition: transform 0.2s, box-shadow 0.2s;
 }
-.btn-success:hover { transform: translate(-1px, -1px); box-shadow: 5px 5px 0 var(--ink); }
+.btn-success:hover { transform: none; box-shadow: none; }
 
 /* ============================================================
    RESPONSIVO
@@ -440,4 +440,22 @@
 .checkbox-nativo:focus-visible + .checkbox-custom {
   outline: 2px solid var(--forest);
   outline-offset: 2px;
+}
+
+/* ==========================================================
+   Revisão visual (2026-11): painel lateral neutro, lista simples,
+   sem círculos, sem ícones em quadradinho e sem depoimento.
+   ========================================================== */
+.cadastro-page .left-panel { background: var(--cream-soft); color: var(--ink); }
+.cadastro-page .left-panel::before,
+.cadastro-page .left-panel::after { display: none; }
+.cadastro-page .left-panel h2 { color: var(--ink); font-weight: 600; font-size: clamp(1.5rem, 2.4vw, 2rem); line-height: 1.2; }
+.cadastro-page .left-panel > p { color: var(--ink-soft); }
+.cadastro-page .benefits-list li { gap: 0; padding-left: 1rem; border-left: 2px solid var(--border); }
+.cadastro-page .benefit-text strong { color: var(--ink); font-size: 0.95rem; }
+.cadastro-page .benefit-text span { color: var(--ink-soft); font-size: 0.88rem; }
+/* Texto do painel no alto (o formulário é longo; centralizar deixava um vazio enorme) */
+.cadastro-page .left-panel { justify-content: flex-start; }
+@media (min-width: 901px) {
+  .cadastro-page .left-panel { padding-top: 4.5rem; }
 }

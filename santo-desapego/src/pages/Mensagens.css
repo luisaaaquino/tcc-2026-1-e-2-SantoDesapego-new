@@ -29,7 +29,7 @@
 /* ── Lista de conversas ─────────────────────────────────── */
 .msg-lista {
   background: var(--paper);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
@@ -42,7 +42,7 @@
 }
 .msg-lista-topo h1 {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 1.35rem;
   letter-spacing: -0.02em;
   color: var(--ink);
@@ -150,7 +150,7 @@
   background: var(--terracotta);
   color: var(--cream);
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: 600;
   display: grid;
   place-items: center;
 }
@@ -158,7 +158,7 @@
 /* ── Área da conversa ───────────────────────────────────── */
 .msg-chat {
   background: var(--paper);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
@@ -224,7 +224,7 @@
 .msg-chat-anuncio em {
   font-style: normal;
   font-size: 0.85rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--terracotta);
 }
 .msg-chat-anuncio:hover strong { color: var(--terracotta); }
@@ -295,7 +295,7 @@
 .msg-form input {
   flex: 1;
   padding: 0.75rem 1rem;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-pill);
   background: var(--cream);
   font-family: inherit;
@@ -316,7 +316,7 @@
   border: none;
   border-radius: var(--radius-pill);
   font-family: inherit;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
   transition: background 0.18s;
@@ -334,7 +334,7 @@
 .msg-erro {
   margin: 0 1.25rem;
   padding: 0.6rem 0.85rem;
-  border: 1.5px solid var(--terracotta);
+  border: 1px solid var(--terracotta);
   border-radius: var(--radius-md);
   background: var(--erro-fundo);
   color: var(--terracotta);
@@ -359,7 +359,7 @@
   color: var(--cream);
   border-radius: var(--radius-pill);
   text-decoration: none;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.85rem;
 }
 
@@ -384,3 +384,5 @@
   outline: 2px solid var(--terracotta);
   outline-offset: 2px;
 }
+/* Revisão visual (2026-11): miniatura sem foto com texto pequeno */
+.msg-sem-foto { font-size: 0.65rem; opacity: 1; color: var(--ink-muted); line-height: 1.1; text-align: center; }

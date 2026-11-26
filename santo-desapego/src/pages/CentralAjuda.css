@@ -23,7 +23,7 @@
 
 .ajuda-titulo {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 600;
   font-size: clamp(1.8rem, 4vw, 2.6rem);
   letter-spacing: -0.02em;
   color: var(--ink);
@@ -48,14 +48,14 @@
 
 .ajuda-bloco {
   background: var(--paper);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.5rem 1.75rem;
 }
 
 .ajuda-bloco h2 {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 1.1rem;
   letter-spacing: -0.01em;
   color: var(--ink);
@@ -70,7 +70,7 @@
 }
 
 .ajuda-faq-item {
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 0.85rem 1rem;
   background: var(--cream);
@@ -89,7 +89,7 @@
   display: inline-block;
   width: 1.1rem;
   color: var(--terracotta);
-  font-weight: 700;
+  font-weight: 600;
 }
 .ajuda-faq-item[open] summary::before { content: '−'; }
 
@@ -119,7 +119,7 @@
   font-family: inherit;
   font-size: 0.9rem;
   padding: 0.65rem 0.8rem;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--cream);
   color: var(--ink);
@@ -141,18 +141,18 @@
   border: none;
   border-radius: var(--radius-pill);
   font-family: inherit;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.92rem;
   text-align: center;
   text-decoration: none;
   cursor: pointer;
-  box-shadow: 3px 3px 0 var(--terracotta);
-  transition: all 0.2s;
+  box-shadow: none;
+  transition-property: background-color, border-color, color, opacity; transition-duration: 0.2s;
 }
 .btn-ajuda:hover:not(:disabled) {
   background: var(--terracotta);
-  box-shadow: 5px 5px 0 var(--ink);
-  transform: translate(-1px, -1px);
+  box-shadow: none;
+  transform: none;
 }
 .btn-ajuda:disabled {
   opacity: 0.6;
@@ -180,12 +180,12 @@
 }
 .ajuda-alerta.erro {
   background: var(--erro-fundo);
-  border: 1.5px solid var(--terracotta);
+  border: 1px solid var(--terracotta);
   color: var(--terracotta);
 }
 .ajuda-alerta.sucesso {
   background: var(--sucesso-fundo);
-  border: 1.5px solid var(--forest);
+  border: 1px solid var(--forest);
   color: var(--forest);
 }
 
@@ -235,7 +235,7 @@
 }
 
 .ajuda-historico-item {
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 0.75rem 0.9rem;
   background: var(--cream);
@@ -270,7 +270,7 @@
   padding: 0.2rem 0.55rem;
   border-radius: var(--radius-pill);
   font-size: 0.72rem;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: capitalize;
 }
 .ajuda-badge.aberto          { background: var(--erro-fundo); color: var(--terracotta); }
@@ -319,3 +319,12 @@
   margin: -0.4rem 0 1.25rem;
   max-width: 60rem;
 }
+
+/* Revisão visual (2026-11): perguntas frequentes como lista com
+   divisórias, em vez de caixas dentro da caixa */
+.ajuda-faq-lista { gap: 0; }
+.ajuda-faq-item { padding: 0.85rem 0; border: none; border-radius: 0; background: none; border-bottom: 1px solid var(--border); }
+.ajuda-faq-item:last-child { border-bottom: none; }
+.ajuda-faq-item summary { padding-left: 0; padding-right: 0; }
+.ajuda-faq-item p { padding-left: 0; padding-right: 0; }
+.ajuda-faq-item summary::before { color: var(--ink-muted); }

@@ -97,7 +97,7 @@
 }
 .ia-chat-comparavel-preco {
   font-size: 0.85rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--forest);
 }
 
@@ -142,7 +142,7 @@
   width: calc(64px * var(--escala-fonte, 1));
   height: calc(64px * var(--escala-fonte, 1));
   border-radius: var(--radius-md);
-  border: 1.5px dashed var(--border);
+  border: 1px dashed var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -165,7 +165,7 @@
 .ia-chat-form input {
   flex: 1;
   padding: 0.75rem 1rem;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-pill);
   background: var(--cream);
   font-family: inherit;
@@ -187,7 +187,7 @@
   border: none;
   border-radius: var(--radius-pill);
   font-family: inherit;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
   transition: background 0.18s;
@@ -222,11 +222,11 @@
   flex-direction: column;
   gap: 0.7rem;
   padding: 1rem;
-  border: 1.5px solid var(--forest);
+  border: 1px solid var(--forest);
   border-radius: var(--radius-md);
   background: var(--paper);
 }
-.ia-chat-aprovacao-titulo { font-weight: 700; color: var(--forest); }
+.ia-chat-aprovacao-titulo { font-weight: 600; color: var(--forest); }
 .ia-chat-aprovacao label {
   display: flex;
   flex-direction: column;
@@ -242,7 +242,7 @@
 .ia-chat-aprovacao select {
   width: 100%;
   padding: 0.6rem 0.75rem;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--cream);
   font-family: inherit;
@@ -264,7 +264,7 @@
   background: var(--ink);
   color: var(--cream);
   font-family: inherit;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
   transition: background 0.18s;
@@ -273,7 +273,7 @@
 .ia-chat-aprovacao-botoes button.secundario {
   background: transparent;
   color: var(--ink-soft);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
 }
 .ia-chat-aprovacao-botoes button.secundario:hover:not(:disabled) { background: var(--cream); color: var(--ink); }
 .ia-chat-aprovacao-botoes button:disabled { opacity: 0.5; cursor: not-allowed; }

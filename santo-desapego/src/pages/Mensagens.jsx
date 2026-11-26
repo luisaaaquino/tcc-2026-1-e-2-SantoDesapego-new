@@ -185,7 +185,7 @@ const Mensagens = () => {
           </div>
 
           {carregandoLista ? (
-            <div className="msg-vazio">Carregando...</div>
+            <div className="msg-vazio">Carregando…</div>
           ) : conversas.length === 0 ? (
             <div className="msg-vazio">
               <p><strong>Nenhuma conversa ainda</strong></p>
@@ -204,7 +204,7 @@ const Mensagens = () => {
                     <span className="msg-conversa-foto">
                       {c.anuncio_imagem
                         ? <img src={c.anuncio_imagem} alt="" />
-                        : <span className="msg-sem-foto">📦</span>}
+                        : <span className="msg-sem-foto">Sem foto</span>}
                     </span>
 
                     <span className="msg-conversa-texto">
@@ -234,8 +234,7 @@ const Mensagens = () => {
         <section className={`msg-chat ${!conversaId ? 'msg-chat--oculto-mobile' : ''}`}>
           {!conversaId ? (
             <div className="msg-chat-vazio">
-              <span>💬</span>
-              <p>Escolha uma conversa à esquerda</p>
+                            <p>Escolha uma conversa à esquerda</p>
             </div>
           ) : (
             <>
@@ -253,7 +252,7 @@ const Mensagens = () => {
                   <Link to={`/anuncio/${conversaAtual.anuncio_id}`} className="msg-chat-anuncio">
                     {conversaAtual.anuncio_imagem
                       ? <img src={conversaAtual.anuncio_imagem} alt="" />
-                      : <span className="msg-sem-foto">📦</span>}
+                      : <span className="msg-sem-foto">Sem foto</span>}
                     <span>
                       <strong>{conversaAtual.anuncio_titulo}</strong>
                       <em>{brl(conversaAtual.anuncio_preco)}</em>
@@ -268,7 +267,7 @@ const Mensagens = () => {
 
               <div className="msg-balloes">
                 {carregandoChat ? (
-                  <div className="msg-vazio">Carregando conversa...</div>
+                  <div className="msg-vazio">Carregando conversa…</div>
                 ) : mensagens.length === 0 ? (
                   <div className="msg-vazio">
                     <p><strong>Comece a conversa</strong></p>
@@ -293,13 +292,13 @@ const Mensagens = () => {
               <form className="msg-form" onSubmit={enviar}>
                 <input
                   type="text"
-                  placeholder="Escreva sua mensagem..."
+                  placeholder="Escreva sua mensagem…"
                   value={texto}
                   onChange={(e) => setTexto(e.target.value)}
                   maxLength={1000}
                 />
                 <button type="submit" disabled={enviando || !texto.trim()}>
-                  {enviando ? '...' : 'Enviar'}
+                  {enviando ? '…' : 'Enviar'}
                 </button>
               </form>
 

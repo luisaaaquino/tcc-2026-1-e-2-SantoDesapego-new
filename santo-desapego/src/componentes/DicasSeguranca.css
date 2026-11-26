@@ -5,7 +5,7 @@
 /* ── Compacta: quadrinho no anúncio, checkout, chat... ── */
 .dicas-seg {
   background: color-mix(in srgb, var(--forest) 6%, var(--paper));
-  border: 1.5px solid color-mix(in srgb, var(--forest) 25%, transparent);
+  border: 1px solid color-mix(in srgb, var(--forest) 25%, transparent);
   border-radius: var(--radius-md);
   padding: 0.9rem 1rem;
   margin-bottom: 1.5rem;
@@ -14,7 +14,7 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.88rem;
   color: var(--forest);
   margin-bottom: 0.5rem;
@@ -67,7 +67,7 @@
 }
 .dicas-seg-grupo h3 {
   font-size: 0.95rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ink);
   margin-bottom: 0.6rem;
 }

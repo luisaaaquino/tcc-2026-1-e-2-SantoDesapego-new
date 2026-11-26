@@ -103,7 +103,7 @@ const AssistenteCompraFlutuante = () => {
                       <Link key={item.id} to={`/anuncio/${item.id}`} className="compra-ia-item" onClick={() => setAberto(false)}>
                         {item.imagem
                           ? <img src={item.imagem} alt={item.titulo} />
-                          : <div className="compra-ia-item-sem-foto">📦</div>}
+                          : <div className="compra-ia-item-sem-foto">Sem foto</div>}
                         <div className="compra-ia-item-info">
                           <span className="compra-ia-item-titulo">{item.titulo}</span>
                           <span className="compra-ia-item-preco">

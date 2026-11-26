@@ -8,6 +8,7 @@ import { redimensionarImagem } from '../utils/imagem';
 import AgenteAnuncioChat from '../componentes/AgenteAnuncioChat';
 import AnuncioRapidoIA from '../componentes/AnuncioRapidoIA';
 import { BAIRROS } from '../componentes/SeletorBairro';
+import { IconCamera } from '../componentes/Icones';
 
 // ── Limites do TCC [RNF19] ────────────────────────────────
 const MAX_IMAGENS  = 6;
@@ -17,10 +18,10 @@ const MIN_TITULO    = 5;
 const MIN_DESCRICAO = 20;
 
 const ESTADOS_CONSERVACAO = [
-  { value: 'novo',        emoji: '✨', name: 'Novo',         desc: 'Sem uso, na embalagem' },
-  { value: 'seminovo',    emoji: '👌', name: 'Seminovo',     desc: 'Pouco uso, sem marcas' },
-  { value: 'usado',       emoji: '👍', name: 'Usado',        desc: 'Funcional, com sinais de uso' },
-  { value: 'para-reparo', emoji: '🔧', name: 'Para reparo',  desc: 'Precisa de manutenção' },
+  { value: 'novo',        name: 'Novo',         desc: 'Sem uso, na embalagem' },
+  { value: 'seminovo',    name: 'Seminovo',     desc: 'Pouco uso, sem marcas' },
+  { value: 'usado',       name: 'Usado',        desc: 'Funcional, com sinais de uso' },
+  { value: 'para-reparo', name: 'Para reparo',  desc: 'Precisa de manutenção' },
 ];
 
 /* ════════════════════════════════════════════════════════════
@@ -324,7 +325,7 @@ const Anunciar = () => {
     return (
       <div className="anunciar-wrapper">
         <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--ink-muted)' }}>
-          Carregando...
+          Carregando…
         </div>
       </div>
     );
@@ -341,8 +342,7 @@ const Anunciar = () => {
         <div className="anunciar-container">
           <div className="anunciar-card">
             <div className="success-state">
-              <div className="success-emoji">🎉</div>
-              <h2>Seu anúncio está <em>no ar</em>!</h2>
+                            <h2>Seu anúncio está <em>no ar</em>!</h2>
               <p>
                 "<strong>{submitted.titulo}</strong>" já está visível para vizinhos
                 de Santo Amaro. Você receberá uma notificação assim que alguém
@@ -351,7 +351,7 @@ const Anunciar = () => {
               <div className="success-actions">
                 <Link to="/" className="btn-anunciar-cancel">Ver na home</Link>
                 <Link to="/perfil" className="btn-anunciar-publish">
-                  Ir para meu perfil →
+                  Ir para meu perfil
                 </Link>
               </div>
             </div>
@@ -403,10 +403,10 @@ const Anunciar = () => {
               Preencher manualmente
             </button>
             <button type="button" className={modo === 'ia' ? 'active' : ''} onClick={() => setModo('ia')}>
-              Conversar com IA ✨
+              Conversar com IA
             </button>
             <button type="button" className={modo === 'rapido' ? 'active' : ''} onClick={() => setModo('rapido')}>
-              Anúncio rápido ⚡
+              Anúncio rápido
             </button>
           </div>
         )}
@@ -432,14 +432,14 @@ const Anunciar = () => {
           {/* Erro global */}
           {erroGlobal && (
             <div className="anunciar-alert error">
-              ⚠️ <strong>{erroGlobal}</strong>
+              <strong>{erroGlobal}</strong>
             </div>
           )}
 
           {/* Aviso do "Anúncio rápido" (IA) — some ao editar o form ou publicar */}
           {avisoIA && (
             <div className={`anunciar-alert ${avisoIA.avaliacao?.aprovado ? 'success' : 'info'}`}>
-              {avisoIA.avaliacao?.aprovado ? '✅' : '✨'}{' '}
+              
               <span>
                 Rascunho gerado pela IA — revise os campos abaixo antes de publicar.
                 {avisoIA.observacao_preco && !avisoIA.observacao_preco.erro && (
@@ -511,8 +511,7 @@ const Anunciar = () => {
                         className="estado-option-radio"
                         checked={form.estado_conservacao === e.value}
                         onChange={() => setForm({ ...form, estado_conservacao: e.value })} />
-                      <span className="estado-option-emoji" aria-hidden="true">{e.emoji}</span>
-                      <span className="estado-option-name">{e.name}</span>
+                                            <span className="estado-option-name">{e.name}</span>
                       <span className="estado-option-desc">{e.desc}</span>
                     </label>
                   ))}
@@ -537,7 +536,7 @@ const Anunciar = () => {
                       value={form.categoria_principal}
                       onChange={(e) => handleCategoriaPrincipal(e.target.value)}
                       required>
-                      <option value="">Selecione...</option>
+                      <option value="">Selecione…</option>
                       {categorias.map((c) => (
                         <option key={c.id} value={c.id}>{c.nome}</option>
                       ))}
@@ -559,7 +558,7 @@ const Anunciar = () => {
                       <option value="">
                         {subcategorias.length === 0
                           ? 'Selecione uma categoria primeiro'
-                          : 'Selecione...'}
+                          : 'Selecione…'}
                       </option>
                       {subcategorias.map((s) => (
                         <option key={s.id} value={s.id}>{s.nome}</option>
@@ -602,7 +601,7 @@ const Anunciar = () => {
               </div>
 
               <div className="anunciar-alert info" style={{ marginBottom: '1rem' }}>
-                📍 <span>O Santo Desapego é hiperlocal — só aceitamos anúncios de Santo Amaro e bairros vizinhos da zona sul de SP.</span>
+                <span>O Santo Desapego é hiperlocal — só aceitamos anúncios de Santo Amaro e bairros vizinhos da zona sul de SP.</span>
               </div>
 
               <div className="anunciar-row">
@@ -626,7 +625,7 @@ const Anunciar = () => {
                       value={form.bairro}
                       onChange={(e) => setForm({ ...form, bairro: e.target.value })}
                       required>
-                      <option value="">Selecione...</option>
+                      <option value="">Selecione…</option>
                       {[...BAIRROS, 'Outro bairro'].map((b) => (
                         <option key={b}>{b}</option>
                       ))}
@@ -657,7 +656,7 @@ const Anunciar = () => {
 
                 {imagens.length < MAX_IMAGENS && (
                   <label className="imagem-add">
-                    <span className="imagem-add-icon">📷</span>
+                    <span className="imagem-add-icon"><IconCamera size={22} /></span>
                     <span className="imagem-add-text">
                       {imagens.length === 0 ? 'Adicionar fotos' : 'Mais uma'}
                     </span>
@@ -669,7 +668,7 @@ const Anunciar = () => {
 
               <div className="imagens-hint">
                 <strong>{imagens.length}/{MAX_IMAGENS}</strong> imagens.
-                A primeira foto será a principal. Use boas fotos com luz natural — anúncios com fotos de qualidade vendem 3x mais rápido.
+                A primeira foto será a principal. Prefira fotos com luz natural, mostrando o item inteiro e os detalhes.
               </div>
             </div>
 
@@ -678,8 +677,8 @@ const Anunciar = () => {
               <Link to="/perfil" className="btn-anunciar-cancel">Cancelar</Link>
               <button type="submit" className="btn-anunciar-publish" disabled={enviando}>
                 {editando
-                  ? (enviando ? 'Salvando...' : 'Salvar alterações →')
-                  : (enviando ? 'Publicando...' : 'Publicar anúncio →')}
+                  ? (enviando ? 'Salvando…' : 'Salvar alterações')
+                  : (enviando ? 'Publicando…' : 'Publicar anúncio')}
               </button>
             </div>
           </form>

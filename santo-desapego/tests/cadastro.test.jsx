@@ -34,7 +34,7 @@ const preencher = async (user, dados = {}) => {
   if (d.confirmSenha) await user.type(campo('repita sua senha'), d.confirmSenha);
   if (d.cep) {
     await user.type(campo('04000-000'), d.cep);
-    await waitFor(() => expect(campo('Rua, Av., Travessa...')).not.toHaveValue(''));
+    await waitFor(() => expect(campo('Rua, Av., Travessa…')).not.toHaveValue(''));
   }
   if (d.numero) await user.type(campo('Ex: 123'), d.numero);
   if (d.termos) await user.click(screen.getByText(/Li e aceito os/));
@@ -51,7 +51,7 @@ describe('RF01 - Gestão de Perfil Geográfico', () => {
     const { user } = abrir();
     await user.type(campo('04000-000'), '04710150');
 
-    await waitFor(() => expect(campo('Rua, Av., Travessa...')).toHaveValue('Rua Padre José de Anchieta'));
+    await waitFor(() => expect(campo('Rua, Av., Travessa…')).toHaveValue('Rua Padre José de Anchieta'));
     expect(screen.getByRole('combobox')).toHaveValue('Campo Belo');
     expect(campo('04000-000')).toHaveValue('04710-150');
   });

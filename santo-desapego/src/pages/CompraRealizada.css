@@ -34,7 +34,7 @@
   left: -0.06em;
   z-index: -1;
   font-size: clamp(6rem, 22vw, 16rem);
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.04em;
   line-height: 0.8;
   color: transparent;
@@ -50,9 +50,9 @@
   background: var(--forest);
   color: var(--cream);
   font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .compra-hero__titulo {
@@ -85,15 +85,15 @@
   margin: 0 0 2rem;
   padding: 1.1rem 1.25rem;
   background: var(--paper);
-  border: 2px dashed var(--forest);
+  border: 1px dashed var(--forest);
 }
 
 .compra-codigo__label {
   display: block;
   font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--forest);
 }
 
@@ -101,7 +101,7 @@
   display: block;
   margin: 0.25rem 0 0.5rem;
   font-size: clamp(2rem, 6vw, 2.6rem);
-  letter-spacing: 0.14em;
+  letter-spacing: 0;
   line-height: 1.1;
 }
 
@@ -123,8 +123,8 @@
 .compra .btn {
   display: inline-block;
   padding: 0.85rem 1.6rem;
-  border: 2px solid var(--ink);
-  font-weight: 700;
+  border: 1px solid var(--ink);
+  font-weight: 600;
   font-size: 0.95rem;
   text-decoration: none;
   transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
@@ -134,8 +134,8 @@
 .compra .btn--vazado { background: transparent; color: var(--ink); }
 .compra .btn--creme  { background: var(--cream); color: var(--ink); border-color: var(--cream); }
 
-.compra .btn:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--ink); }
-.compra .btn--creme:hover { box-shadow: 4px 4px 0 var(--mustard); }
+.compra .btn:hover { transform: none; box-shadow: none; }
+.compra .btn--creme:hover { box-shadow: none; }
 
 .compra a:focus-visible,
 .compra .btn:focus-visible {
@@ -177,14 +177,14 @@
   margin: 0;
   font-size: 0.88rem;
   letter-spacing: 0.04em;
-  text-transform: uppercase;
+  text-transform: none;
   color: var(--forest);
 }
 
 .resumo-item__preco {
   flex-shrink: 0;
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
@@ -209,7 +209,7 @@
   padding-top: 0.9rem !important;
   border-top: 3px solid var(--ink);
   font-size: 1.35rem;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .resumo-meta {
@@ -229,9 +229,9 @@
   display: block;
   margin-bottom: 0.2rem;
   font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--terracotta);
 }
 
@@ -266,8 +266,8 @@
   display: block;
   margin-bottom: 0.4rem;
   font-size: clamp(2.6rem, 6vw, 4rem);
-  font-style: italic;
-  font-weight: 800;
+  font-style: normal;
+  font-weight: 600;
   line-height: 0.9;
   letter-spacing: -0.05em;
   color: color-mix(in srgb, var(--ink) 22%, transparent);
@@ -344,3 +344,28 @@
   }
   .compra .btn:hover { transform: none; }
 }
+/* ==========================================================
+   Revisão visual (2026-11): sem palavra gigante no fundo, sem
+   marca-texto, título curto, filetes finos, passos menores e
+   bloco de ajuda em superfície neutra.
+   ========================================================== */
+.compra-hero__marca { display: none; }
+.compra-hero__titulo { font-size: clamp(1.9rem, 3.4vw, 2.5rem); font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; }
+.compra-hero__titulo em { background: none !important; padding: 0 !important; }
+.compra-hero__selo { background: var(--cream-soft); color: var(--ink-soft); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.compra-codigo { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--paper); }
+.compra-codigo__label { color: var(--forest); font-weight: 600; }
+.compra-resumo,
+.compra-etapas { border-top: 1px solid var(--border) !important; }
+.resumo-conta__total { border-top-width: 1px !important; }
+.resumo-meta > * { background: var(--paper) !important; border: 1px solid var(--border); border-radius: var(--radius-md); }
+.compra .compra-titulo { font-size: 1.35rem; font-weight: 600; }
+.resumo-meta span { color: var(--ink-muted) !important; }
+.etapa { border-top-width: 2px; }
+.etapa__n { font-size: 1rem; font-weight: 600; color: var(--ink-muted); }
+.etapa--ativa .etapa__n { color: var(--terracotta); }
+.compra-ajuda { background: var(--cream-soft) !important; color: var(--ink) !important; }
+.compra-ajuda h2, .compra-ajuda p { color: var(--ink) !important; }
+.compra-ajuda a:not(.btn) { color: var(--ink) !important; }
+.compra .btn { border-radius: var(--radius-md); }
+.compra .btn--creme { background: var(--paper); border: 1px solid var(--border); color: var(--ink); }

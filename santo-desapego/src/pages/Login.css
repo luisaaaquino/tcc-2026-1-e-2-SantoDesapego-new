@@ -69,12 +69,12 @@
   place-items: center;
   text-align: center;
   font-family: 'Fraunces', serif;
-  font-style: italic;
-  font-weight: 700;
+  font-style: normal;
+  font-weight: 600;
   font-size: 0.7rem;
   line-height: 1.2;
   transform: rotate(-8deg);
-  box-shadow: 4px 4px 0 var(--ink);
+  box-shadow: none;
   z-index: 3;
 }
 
@@ -90,7 +90,7 @@
   background: var(--paper);
   padding: 0.4rem 0.4rem 0.6rem;
   border-radius: 6px;
-  box-shadow: 3px 3px 0 var(--ink);
+  box-shadow: none;
   transition: transform 0.35s ease;
 }
 .polaroid img {
@@ -102,14 +102,14 @@
 }
 .polaroid h4 {
   font-family: 'Fraunces', serif;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.78rem;
   color: var(--ink);
   margin-bottom: 0.1rem;
   letter-spacing: -0.01em;
   line-height: 1.2;
 }
-.polaroid-price { font-family: 'Fraunces', serif; font-weight: 700; font-size: 0.78rem; color: var(--terracotta); margin-bottom: 0.05rem; }
+.polaroid-price { font-family: 'Fraunces', serif; font-weight: 600; font-size: 0.78rem; color: var(--terracotta); margin-bottom: 0.05rem; }
 .polaroid-hood  { font-size: 0.66rem; color: var(--ink-muted); }
 .polaroid-1 { transform: rotate(-4deg); }
 .polaroid-2 { transform: rotate(3deg) translateY(0.65rem); }
@@ -145,14 +145,14 @@
 }
 .auth-visual-foot h2 {
   font-family: 'Fraunces', serif;
-  font-weight: 700;
+  font-weight: 600;
   font-size: clamp(1.3rem, 2vw, 1.7rem);
   line-height: 1.1;
   color: var(--cream);
   margin: 0.4rem 0 0.5rem;
   letter-spacing: -0.02em;
 }
-.auth-visual-foot h2 em { font-style: italic; font-weight: 400; color: var(--mustard); }
+.auth-visual-foot h2 em { font-style: normal; font-weight: 400; color: var(--mustard); }
 
 .auth-lede {
   color: rgba(244, 239, 228, 0.75);
@@ -169,7 +169,7 @@
   border-top: 1px solid rgba(255, 255, 255, 0.15);
 }
 .auth-stats .stat { display: flex; flex-direction: column; gap: 0.1rem; }
-.auth-stats .num  { font-family: 'Fraunces', serif; font-size: 1.2rem; font-weight: 700; color: var(--mustard); line-height: 1; }
+.auth-stats .num  { font-family: 'Fraunces', serif; font-size: 1.2rem; font-weight: 600; color: var(--mustard); line-height: 1; }
 .auth-stats .lbl  { font-size: 0.68rem; color: rgba(244, 239, 228, 0.6); }
 
 /* ==========================================================================
@@ -190,8 +190,8 @@
   max-width: 440px;
   background: white;
   padding: 1.75rem 1.85rem;
-  border-radius: 24px;
-  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
   box-shadow: 0 10px 25px rgba(0,0,0,0.05);
 }
 
@@ -212,7 +212,7 @@
 
 .form-header { margin-bottom: 1.25rem; text-align: center; }
 .form-header h1 { font-family: 'Fraunces', serif; font-size: 1.7rem; letter-spacing: -0.01em; }
-.form-header h1 em { font-style: italic; color: var(--terracotta); font-weight: 400; }
+.form-header h1 em { font-style: normal; color: var(--terracotta); font-weight: 400; }
 
 .form-sub { text-align: center; color: var(--ink-muted); font-size: 0.84rem; margin-top: 0.25rem; }
 
@@ -235,7 +235,7 @@
 .input-with-icon input {
   width: 100%;
   padding: 0.65rem 2.4rem;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: 10px;
   font-family: inherit;
   font-size: 0.9rem;
@@ -286,7 +286,7 @@
 .checkbox-row input[type="checkbox"] {
   appearance: none;
   width: 16px; height: 16px;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: 5px;
   background: white;
   cursor: pointer;
@@ -353,7 +353,7 @@
   justify-content: center;
   gap: 0.5rem;
   background: white;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   color: var(--ink);
   padding: 0.65rem 1rem;
   border-radius: 10px;
@@ -363,11 +363,11 @@
   transition: border-color 0.18s, background 0.18s, transform 0.18s;
 }
 .btn-social svg   { width: 16px; height: 16px; }
-.btn-social:hover { border-color: var(--terracotta); background: var(--paper); transform: translateY(-1px); }
+.btn-social:hover { border-color: var(--terracotta); background: var(--paper); transform: none; }
 
 /* ── Rodapé do card ─────────────────────────────────────── */
 .auth-foot-link { text-align: center; margin-top: 0.85rem; font-size: 0.84rem; color: var(--ink-muted); }
-.auth-foot-link a { color: var(--terracotta); font-weight: 700; transition: color 0.18s; }
+.auth-foot-link a { color: var(--terracotta); font-weight: 600; transition: color 0.18s; }
 .auth-foot-link a:hover { color: var(--terracotta-dark); text-decoration: underline; }
 
 /* ── Mini footer ────────────────────────────────────────── */
@@ -421,4 +421,65 @@
   .auth-nav-top .nav-actions { gap: 0.5rem; }
   .auth-nav-top .nav-btn { padding: 0.45rem 0.8rem; font-size: 0.78rem !important; }
   .auth-nav-top .btn-sell { padding: 0.5rem 0.8rem; font-size: 0.78rem; }
+}
+/* ==========================================================
+   Revisão visual (2026-11): painel lateral neutro, sem círculos,
+   selo, pílula nem números; anúncios reais numa grade reta.
+   Prefixo .login-page: o index.css carrega por último.
+   ========================================================== */
+.login-page .auth-visual {
+  background: var(--cream-soft);
+  color: var(--ink);
+  justify-content: center;
+  gap: 1rem;
+  padding: 4rem;
+}
+.login-page .auth-visual::before,
+.login-page .auth-visual::after,
+.login-page .login-card::before { display: none; }
+.login-page .auth-visual h2 {
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  font-weight: 600;
+  line-height: 1.2;
+  max-width: 24ch;
+  color: var(--ink);
+}
+.login-page .auth-lede { color: var(--ink-soft); max-width: 34rem; font-size: 1.02rem; }
+.auth-recentes { margin-top: 1.5rem; max-width: 34rem; }
+.auth-recentes-titulo { font-size: 0.9rem; color: var(--ink-muted); margin-bottom: 0.6rem; }
+.auth-recentes-grade { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; }
+.auth-recente {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--ink);
+  font-size: 0.85rem;
+  transition: border-color 0.15s var(--ease);
+}
+.auth-recente:hover { border-color: var(--cream-deep); }
+.auth-recente-foto {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px; /* 14 - 6 */
+  overflow: hidden;
+  background: var(--cream-soft);
+  margin-bottom: 6px;
+}
+.auth-recente-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.auth-recente-titulo { color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+.auth-recente .placa-bairro { align-self: flex-start; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.login-page .login-card h1 em { color: inherit; }
+@media (max-width: 900px) {
+  .login-page .auth-visual { padding: 1.75rem 1.25rem; }
+  .auth-recentes { display: none; }
+}
+.login-page .auth-visual { align-items: flex-start; }
+.auth-mini-footer {
+  background: var(--paper);
+  border-top: 1px solid var(--border);
+  color: var(--ink-muted);
 }

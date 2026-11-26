@@ -4,29 +4,12 @@ import './Explorar.css';
 import SeletorBairro, { BAIRROS } from '../componentes/SeletorBairro';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import LegalModal from '../componentes/LegalModal';
-import { IconSearch, IconLogout, IconHeart } from '../componentes/Icones';
+import RodapeSite from '../componentes/RodapeSite';
+import { IconSearch, IconLogout } from '../componentes/Icones';
 import { API_URL as API_BASE } from '../config';
+import CartaoAnuncio from '../componentes/CartaoAnuncio';
 
 const API_URL = `${API_BASE}/api`;
-
-/* ── Condição do produto — emoji + rótulo legível ─────────── */
-const ESTADO_LABEL = {
-  'novo':        { emoji: '✨', label: 'Novo' },
-  'seminovo':    { emoji: '👌', label: 'Seminovo' },
-  'usado':       { emoji: '👍', label: 'Usado' },
-  'para-reparo': { emoji: '🔧', label: 'Para reparo' },
-};
-
-/* ── Data relativa (pt-BR) — "Hoje", "Ontem", "há 3 dias"... ─ */
-const tempoRelativo = (dataISO) => {
-  const dias = Math.floor((Date.now() - new Date(dataISO).getTime()) / 86400000);
-  if (dias <= 0) return 'Hoje';
-  if (dias === 1) return 'Ontem';
-  if (dias < 7) return `há ${dias} dias`;
-  if (dias < 30) return `há ${Math.floor(dias / 7)} sem.`;
-  if (dias < 365) return `há ${Math.floor(dias / 30)} meses`;
-  return new Date(dataISO).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
-};
 
 const Explorar = () => {
   const navigate = useNavigate();
@@ -243,13 +226,6 @@ const Explorar = () => {
   const limparCondicoes = () => setCondicoes([]);
   const limparBairro = () => setBairroFiltro('');
 
-  const formatarPreco = (valor) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(valor);
-  };
-
   /* Renderiza um link de categoria já com o ícone certo */
   return (
     <div className="explorar-wrapper">
@@ -266,7 +242,7 @@ const Explorar = () => {
             <IconSearch />
             <input
               type="text"
-              placeholder="Buscar sofá, bicicleta, livro..."
+              placeholder="Buscar sofá, bicicleta, livro…"
               value={termoBusca}
               onChange={(e) => setTermoBusca(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleBuscar(e)}
@@ -279,6 +255,8 @@ const Explorar = () => {
           </div>
 
           <nav className="nav-actions">
+            <Link to="/explorar" className="nav-link" aria-current="page">Explorar</Link>
+            <Link to="/sobre" className="nav-link">Sobre nós</Link>
             {usuario ? (
               <>
                 <NotificacoesSino />
@@ -296,18 +274,18 @@ const Explorar = () => {
                       ? <img src={usuario.foto_perfil} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       : usuario.nome[0].toUpperCase()}
                   </span>
-                  Olá, {usuario.nome}!
+                  {usuario.nome}
                 </Link>
                 <button onClick={handleLogout} className="nav-btn" style={{ cursor: 'pointer', fontFamily: 'inherit' }}>
                   <IconLogout />
                   Sair
                 </button>
-                <Link to="/anunciar" className="btn-sell">+ Anunciar grátis</Link>
+                <Link to="/anunciar" className="btn-sell">Anunciar</Link>
               </>
             ) : (
               <>
                 <Link to="/login" className="nav-btn nav-login-btn">Entrar</Link>
-                <Link to="/cadastro" className="btn-sell">+ Anunciar grátis</Link>
+                <Link to="/cadastro" className="btn-sell">Anunciar</Link>
               </>
             )}
           </nav>
@@ -336,7 +314,7 @@ const Explorar = () => {
                   ? <img src={usuario.foto_perfil} alt="" />
                   : usuario.nome[0].toUpperCase()}
               </span>
-              <span>Olá, {usuario.nome}!<small>Ver meu perfil</small></span>
+              <span>{usuario.nome}<small>Ver meu perfil</small></span>
             </Link>
           )}
           <Link to="/" onClick={fecharMenu}>Início</Link>
@@ -350,7 +328,7 @@ const Explorar = () => {
             <Link to="/login" onClick={fecharMenu}>Entrar</Link>
           )}
           <Link to={usuario ? '/anunciar' : '/cadastro'} className="btn-home-primary drawer-cta" onClick={fecharMenu}>
-            + Anunciar grátis
+            Anunciar
           </Link>
         </nav>
       </div>
@@ -406,7 +384,7 @@ const Explorar = () => {
           aria-expanded={filtrosAbertos}
         >
           <span>Filtros</span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="6 9 12 15 18 9" />
           </svg>
         </button>
@@ -528,61 +506,17 @@ const Explorar = () => {
           {/* ── Grid de produtos ── */}
           <div className="explorar-content">
             {carregando && anuncios.length === 0 ? (
-              <div className="explorar-loading">Carregando...</div>
+              <div className="explorar-loading">Carregando…</div>
             ) : anuncios.length > 0 ? (
               <div className="explorar-grid">
-                {anuncios.map((anuncio) => {
-                  const estado = ESTADO_LABEL[anuncio.estado_conservacao] || { emoji: '📦', label: anuncio.estado_conservacao };
-                  return (
-                    /* Card inteiro vira link para a página do anúncio */
-                    <Link
-                      key={anuncio.id}
-                      to={`/anuncio/${anuncio.id}`}
-                      className="ecard"
-                    >
-                      <div className="ecard-imagem">
-                        {anuncio.imagem_principal ? (
-                          <img src={anuncio.imagem_principal} alt={anuncio.titulo} loading="lazy" />
-                        ) : (
-                          <div className="ecard-imagem-vazia">📦</div>
-                        )}
-                        <button
-                          type="button"
-                          className={`ecard-favorito${anuncio.favoritado ? ' ativo' : ''}`}
-                          onClick={(e) => alternarFavorito(e, anuncio)}
-                          aria-label={anuncio.favoritado ? 'Remover dos favoritos' : 'Salvar nos favoritos'}
-                        >
-                          <IconHeart size={17} filled={anuncio.favoritado} />
-                        </button>
-                      </div>
-                      <div className="ecard-info">
-                        <h3 className="ecard-titulo">{anuncio.titulo}</h3>
-                        <p className="ecard-preco">{formatarPreco(anuncio.preco)}</p>
-                        <p className="ecard-local">
-                          📍 {anuncio.bairro || 'Santo Amaro'}
-                          {typeof anuncio.distancia_km === 'number' && (
-                            <span className="ecard-distancia"> · {anuncio.distancia_km < 1 ? 'menos de 1 km' : `${anuncio.distancia_km.toFixed(1)} km`}</span>
-                          )}
-                        </p>
-                        {anuncio.vendedor_recebe_pagamentos ? (
-                          <p className="ecard-selo-pagamento">✓ Recebe pagamentos</p>
-                        ) : (
-                          <p className="ecard-selo-pagamento indisponivel">Vendedor ainda não habilitou pagamentos</p>
-                        )}
-                        <div className="ecard-meta">
-                          <span className="ecard-condicao">{estado.emoji} {estado.label}</span>
-                          <span className="ecard-tempo">{tempoRelativo(anuncio.data_criacao)}</span>
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                })}
+                {anuncios.map((anuncio, i) => (
+                  <CartaoAnuncio key={anuncio.id} anuncio={anuncio} onFavoritar={alternarFavorito} prioridade={i < 4} />
+                ))}
               </div>
             ) : (
               <div className="explorar-grid">
                 <div className="explorar-empty">
-                  <div className="explorar-empty-icon">📦</div>
-                  <h3>Nenhum anúncio por aqui ainda</h3>
+                                    <h3>Nenhum anúncio por aqui ainda</h3>
                   <p>
                     Seja o primeiro a anunciar! Publique seu desapego e comece a
                     movimentar a economia local de Santo Amaro.
@@ -596,7 +530,7 @@ const Explorar = () => {
 
             {anuncios.length > 0 && anuncios.length < totalItens && (
               <button className="explorar-carregar-mais" onClick={carregarMais} disabled={carregando}>
-                {carregando ? 'Carregando...' : `Carregar mais anúncios (${anuncios.length} de ${totalItens})`}
+                {carregando ? 'Carregando…' : `Carregar mais anúncios (${anuncios.length} de ${totalItens})`}
               </button>
             )}
           </div>
@@ -604,46 +538,7 @@ const Explorar = () => {
       </div>
 
       {/* ── Footer ── */}
-      <footer className="home-footer">
-        <div className="footer-wrap">
-          <div className="footer-brand">
-            <Link to="/" className="logo">
-              <span className="logo-mark">SD</span>
-              Santo <em>Desapego</em>
-            </Link>
-            <p>Marketplace C2C hiperlocal para Santo Amaro, São Paulo. Economia compartilhada e consumo consciente.</p>
-          </div>
-
-          <details className="footer-col">
-            <summary><h4>Plataforma</h4></summary>
-            <div className="footer-col-links">
-              <Link to="/#como-funciona">Como funciona</Link>
-              <Link to={usuario ? '/anunciar' : '/cadastro'}>Anunciar</Link>
-              <Link to="/explorar">Categorias</Link>
-            </div>
-          </details>
-
-          <details className="footer-col">
-            <summary><h4>Comunidade</h4></summary>
-            <div className="footer-col-links">
-              <Link to="/sobre">Sobre nós</Link>
-            </div>
-          </details>
-
-          <details className="footer-col">
-            <summary><h4>Suporte</h4></summary>
-            <div className="footer-col-links">
-              <Link to="/central-ajuda">Central de ajuda</Link>
-              <a href="#termos" onClick={abrirLegal('termos')}>Termos de uso</a>
-              <a href="#termos" onClick={abrirLegal('privacidade')}>Privacidade (LGPD)</a>
-            </div>
-          </details>
-        </div>
-
-        <div className="footer-tcc">
-          <div>Luisa Aquino • Maria Erica Cruz • Paulo Santana</div>
-        </div>
-      </footer>
+      <RodapeSite usuario={usuario} onAbrirLegal={abrirLegal} />
 
       <LegalModal aba={legalAberto} onSelectAba={setLegalAberto} onClose={() => setLegalAberto(null)} />
     </div>

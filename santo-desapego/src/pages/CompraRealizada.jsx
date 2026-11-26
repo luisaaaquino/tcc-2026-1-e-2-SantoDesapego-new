@@ -86,7 +86,7 @@ export default function CompraRealizada() {
     {
       n: '03',
       titulo: 'Entrega',
-      texto: 'O vendedor entrega a peça junto com um código de 6 dígitos. Com a peça em mãos, digite o código em "Compras realizadas", no seu perfil: só então o pagamento é liberado ao vendedor.',
+      texto: 'O vendedor entrega a peça junto com um código de 6 dígitos. Com a peça em mãos, digite o código em “Compras realizadas”, no seu perfil: só então o pagamento é liberado ao vendedor.',
     },
     {
       n: '04',
@@ -101,9 +101,9 @@ export default function CompraRealizada() {
     return (
       <main className="compra">
         <section className="compra-hero">
-          <h1 className="compra-hero__titulo">Nenhuma compra para mostrar.</h1>
+          <h1 className="compra-hero__titulo">Nenhuma compra para mostrar</h1>
           <p className="compra-hero__texto">
-            Esta página aparece depois de um pagamento. Suas compras ficam em "Compras realizadas", no seu perfil.
+            Esta página aparece depois de um pagamento. Suas compras ficam em “Compras realizadas”, no seu perfil.
           </p>
           <div className="compra-hero__acoes">
             <Link to="/perfil?aba=compras" className="btn btn--solido">Ver minhas compras</Link>
@@ -118,7 +118,7 @@ export default function CompraRealizada() {
     return (
       <main className="compra">
         <section className="compra-hero">
-          <h1 className="compra-hero__titulo">Esta peça <em>já foi vendida</em>.</h1>
+          <h1 className="compra-hero__titulo">Esta peça já foi vendida</h1>
           <p className="compra-hero__texto" role="alert">{jaVendida}</p>
           <div className="compra-hero__acoes">
             <Link to="/explorar" className="btn btn--solido">Continuar garimpando</Link>
@@ -133,7 +133,7 @@ export default function CompraRealizada() {
     return (
       <main className="compra">
         <section className="compra-hero">
-          <h1 className="compra-hero__titulo">Confirmando o pagamento...</h1>
+          <h1 className="compra-hero__titulo">Confirmando o pagamento…</h1>
         </section>
       </main>
     );
@@ -142,15 +142,13 @@ export default function CompraRealizada() {
   return (
     <main className="compra">
       <section className="compra-hero">
-        <span className="compra-hero__marca" aria-hidden="true">ACHOU</span>
-
         {paymentId && <p className="compra-hero__selo">Pagamento {paymentId}</p>}
 
         <h1 className="compra-hero__titulo">
           {aprovado ? (
-            <>Compra realizada.<br />A peça <em>achou</em> uma nova casa.</>
+            <>Compra realizada</>
           ) : (
-            <>Pagamento <em>em análise</em>.<br />Já já confirmamos.</>
+            <>Pagamento em análise</>
           )}
         </h1>
 
@@ -165,7 +163,7 @@ export default function CompraRealizada() {
             <span className="compra-codigo__label">Seu pagamento está protegido</span>
             <p>
               O valor fica <b>retido até você confirmar o recebimento</b>. Na entrega, o vendedor
-              te passa um código de 6 dígitos: digite em "Compras realizadas", no seu perfil,
+              te passa um código de 6 dígitos: digite em “Compras realizadas”, no seu perfil,
               só quando estiver com a peça em mãos.
             </p>
           </div>

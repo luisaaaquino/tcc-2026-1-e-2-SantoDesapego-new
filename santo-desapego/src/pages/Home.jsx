@@ -5,86 +5,28 @@ import Mapa from '../componentes/Mapa';
 import SeletorBairro, { BAIRROS } from '../componentes/SeletorBairro';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import LegalModal from '../componentes/LegalModal';
-import { IconSearch, IconArrowRight, IconLogout } from '../componentes/Icones';
-import { API_URL, EMAILS } from '../config';
+import RodapeSite from '../componentes/RodapeSite';
+import CartaoAnuncio from '../componentes/CartaoAnuncio';
+import { IconSearch, IconLogout } from '../componentes/Icones';
+import { API_URL } from '../config';
 
-/* ── Dados — altere aqui sem tocar no JSX ──────────────────── */
-const STEPS = [
+/* ── Como funciona: o fluxo real de uma venda, em ordem ───────── */
+const PASSOS = [
   {
-    num: '01',
-    title: 'Anuncie em 2 minutos',
-    desc: 'Fotografe, descreva, defina o preço. Nosso sistema valida seu CEP e posiciona seu anúncio para vizinhos do bairro.',
+    titulo: 'Anuncie',
+    texto: 'Foto, descrição e preço. Só é possível anunciar com CEP de Santo Amaro e região.',
   },
   {
-    num: '02',
-    title: 'Conecte-se com vizinhos',
-    desc: 'Converse direto no chat seguro da plataforma. Combine o encontro, a forma de pagamento e esclareça dúvidas em tempo real.',
+    titulo: 'Pague pelo site',
+    texto: 'O comprador paga com cartão pelo Mercado Pago. O valor fica retido até a entrega.',
   },
   {
-    num: '03',
-    title: 'Feche o negócio perto de casa',
-    desc: 'Retire pessoalmente ou escolha entrega hiperlocal. Após a transação, ambos se avaliam e fortalecem a reputação da comunidade.',
-  },
-];
-
-/* ── Pilares do Santo Desapego ─────────────────────────────── */
-const IMPACT_CARDS = [
-  {
-    num: '01',
-    title: 'Hiperlocal',
-    desc: 'Cadastros validados por CEP. Anúncios e transações acontecem 100% dentro do distrito de Santo Amaro.',
-    accent: 'terracotta',
-  },
-  {
-    num: '02',
-    title: 'Circular',
-    desc: 'Cada item ganha uma nova história em vez de virar descarte. Menos lixo no aterro, menos produção nova.',
-    accent: 'forest',
-  },
-  {
-    num: '03',
-    title: 'Comunidade',
-    desc: 'Conexões reais entre quem mora perto. A reputação do vizinho se constrói anúncio a anúncio.',
-    accent: 'mustard',
-  },
-  {
-    num: '04',
-    title: 'Consciente',
-    desc: 'Preço justo e ciclo de vida prolongado. Um modelo pensado para um consumo mais responsável.',
-    accent: 'ink',
+    titulo: 'Confirme a entrega',
+    texto: 'Vocês combinam a entrega pelo chat. O comprador digita o código recebido e o valor é liberado ao vendedor.',
   },
 ];
 
 const HOODS = BAIRROS;
-
-const FOOTER_LINKS = [
-  {
-    title: 'Plataforma',
-    links: ['Como funciona', 'Anunciar', 'Categorias'],
-  },
-  {
-    title: 'Comunidade',
-    links: ['Nosso impacto'],
-  },
-  {
-    title: 'Suporte',
-    links: ['Central de ajuda', 'Fale conosco', 'Termos de uso', 'Privacidade (LGPD)'],
-  },
-];
-
-const HERO_CARDS = [
-  { img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80', price: 'R$ 480',  hood: 'Sofá • Jardim Marajoara',      cls: 'hero-card-1', accent: 'terracotta' },
-  { img: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=400&q=80', price: 'R$ 120',  hood: 'Bicicleta • Campo Belo', cls: 'hero-card-2', accent: 'forest' },
-  { img: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&q=80', price: 'R$ 35',   hood: 'Livros • Vila Cruzeiro',          cls: 'hero-card-3', accent: 'mustard' },
-  { img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80', price: 'R$ 220',  hood: 'Tênis • Vila Mascote',            cls: 'hero-card-4', accent: 'ink' },
-];
-
-/* ── Ícones — UI ────────────────────────────────────────────── */
-const IconPin = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>
-  </svg>
-);
 
 /* ════════════════════════════════════════════════════════════
    COMPONENTE
@@ -101,6 +43,21 @@ const Home = () => {
 
   // ── Estado do usuário logado (lê do localStorage)
   const [usuario, setUsuario] = useState(null);
+
+  // ── Anúncios recentes e categorias (o conteúdo da página)
+  const [recentes, setRecentes] = useState(null); // null = carregando
+  const [categorias, setCategorias] = useState([]);
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/anuncios?ordenacao=recentes&limite=8`)
+      .then((r) => r.json())
+      .then((d) => setRecentes(d.anuncios || []))
+      .catch(() => setRecentes([]));
+    fetch(`${API_URL}/api/categorias`)
+      .then((r) => r.json())
+      .then((d) => setCategorias((d.categorias || []).filter((c) => !c.categoria_pai)))
+      .catch(() => setCategorias([]));
+  }, []);
 
   // ── Menu mobile (hambúrguer + gaveta)
   const [menuAberto, setMenuAberto] = useState(false);
@@ -196,12 +153,6 @@ const Home = () => {
   return (
     <div className="home-page">
 
-      {/* ── Announcement ── */}
-      <div className="announcement">
-        🌱 Economia circular em Santo Amaro:{' '}
-        <strong>menos descarte, mais comunidade</strong> entre vizinhos.
-      </div>
-
       {/* ── Header ── */}
       <header className="site-header">
         <div className="nav-top home-nav">
@@ -214,7 +165,7 @@ const Home = () => {
             <IconSearch />
             <input
               type="text"
-              placeholder="Buscar sofá, bicicleta, livro..."
+              placeholder="Buscar sofá, bicicleta, livro…"
               value={termoBusca}
               onChange={(e) => setTermoBusca(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleBuscar(e)}
@@ -241,6 +192,8 @@ const Home = () => {
 
           {/* ───── Header dinâmico: muda se está logado ───── */}
           <nav className="nav-actions">
+            <Link to="/explorar" className="nav-link">Explorar</Link>
+            <Link to="/sobre" className="nav-link">Sobre nós</Link>
             {usuario ? (
               <>
                 <NotificacoesSino />
@@ -271,19 +224,18 @@ const Home = () => {
                       ? <img src={usuario.foto_perfil} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       : usuario.nome[0].toUpperCase()}
                   </span>
-                  Olá, {usuario.nome}!
+                  {usuario.nome}
                 </Link>
                 <button onClick={handleLogout} className="nav-btn" style={{ cursor: 'pointer', fontFamily: 'inherit' }}>
                   <IconLogout />
                   Sair
                 </button>
-                <Link to="/anunciar" className="btn-sell">+ Anunciar grátis</Link>
+                <Link to="/anunciar" className="btn-sell">Anunciar</Link>
               </>
             ) : (
               <>
-                <Link to="/sobre" className="nav-btn">Sobre nós</Link>
                 <Link to="/login" className="nav-btn nav-login-btn">Entrar</Link>
-                <Link to="/cadastro" className="btn-sell">+ Anunciar grátis</Link>
+                <Link to="/cadastro" className="btn-sell">Anunciar</Link>
               </>
             )}
           </nav>
@@ -312,7 +264,7 @@ const Home = () => {
                   ? <img src={usuario.foto_perfil} alt="" />
                   : usuario.nome[0].toUpperCase()}
               </span>
-              <span>Olá, {usuario.nome}!<small>Ver meu perfil</small></span>
+              <span>{usuario.nome}<small>Ver meu perfil</small></span>
             </Link>
           )}
           <Link to="/explorar" onClick={fecharMenu}>Explorar desapegos</Link>
@@ -327,224 +279,103 @@ const Home = () => {
             <Link to="/login" onClick={fecharMenu}>Entrar</Link>
           )}
           <Link to={linkAnunciar} className="btn-home-primary drawer-cta" onClick={fecharMenu}>
-            + Anunciar grátis
+            Anunciar
           </Link>
         </nav>
       </div>
 
-      {/* ══════════════════════════════════
-          HERO
-          ══════════════════════════════════ */}
-      <section className="hero">
-        <div className="hero-text">
-          <span className="hero-kicker">Economia compartilhada • Santo Amaro</span>
-          <h1>
-            {usuario ? (
-              <>
-                Olá, <em>{usuario.nome}</em>! <br />
-                Veja o que tem de novo no <em>seu bairro</em>.
-              </>
-            ) : (
-              <>
-                Seu desapego <br />
-                encontra uma <em>nova história</em> aqui perto.
-              </>
-            )}
-          </h1>
-          <p className="lede">
-            Uma plataforma hiperlocal de compra e venda entre vizinhos de Santo Amaro.
-            Menos descarte, mais comunidade — e produtos com preço justo.
-          </p>
+      <main className="inicio">
 
-          <div className="hero-cta-row">
-            <Link to={linkAnunciar} className="btn-home-primary hero-cta-sell">
-              {usuario ? 'Criar anúncio' : 'Anunciar grátis'} <IconArrowRight />
-            </Link>
-            <Link to="/explorar" className="btn-home-primary">
-              Explorar desapegos <IconArrowRight />
-            </Link>
-            <a href="#como-funciona" className="btn-ghost">Como funciona</a>
+        {/* ── Abertura: o que é, em uma frase, e as duas ações ── */}
+        <section className="inicio-abertura">
+          <div>
+            <h1>Usados à venda entre vizinhos de Santo Amaro</h1>
+            <p>
+              Compre e venda perto de casa. O pagamento fica retido no Mercado Pago
+              até o comprador confirmar que recebeu o item.
+            </p>
           </div>
-        </div>
-
-        <div className="hero-visual">
-          {HERO_CARDS.map((c) => (
-            <div key={c.cls} className={`hero-card ${c.cls} hero-card--${c.accent}`}>
-              <div className="hero-card-img-wrap">
-                <img src={c.img} alt="" />
-                <span className="hero-card-price">{c.price}</span>
-              </div>
-              <div className="hero-card-hood">
-                <IconPin />
-                {c.hood}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════
-          COMO FUNCIONA
-          ══════════════════════════════════ */}
-      <section className="how-section" id="como-funciona">
-        <div className="section">
-          <div className="section-head">
-            <div>
-              <h2>Três passos. <em>Zero complicação.</em></h2>
-              <p>Do cadastro à entrega. Uma experiência pensada pra quem vive em Santo Amaro.</p>
-            </div>
+          <div className="inicio-acoes">
+            <Link to={linkAnunciar} className="btn-primary">Anunciar um item</Link>
+            <a href="#como-funciona" className="nav-btn">Como funciona</a>
           </div>
+        </section>
 
-          <div className="steps">
-            {STEPS.map((s) => (
-              <div key={s.num} className="step">
-                <span className="step-num">{s.num}</span>
-                <h3>{s.title}</h3>
-                <p>{s.desc}</p>
-              </div>
+        {/* ── Categorias ── */}
+        {categorias.length > 0 && (
+          <nav className="inicio-categorias" aria-label="Categorias">
+            <Link to="/explorar">Todas</Link>
+            {categorias.map((c) => (
+              <Link key={c.id} to={`/explorar?categoria_id=${c.id}`}>{c.nome}</Link>
             ))}
-          </div>
-        </div>
-      </section>
+          </nav>
+        )}
 
-      {/* ══════════════════════════════════
-          NOSSOS PILARES
-          ══════════════════════════════════ */}
-      <section className="impact-section">
-        <div className="impact-wrap">
-          <div className="impact-text">
-            <span className="badge-ods">Nossos pilares</span>
-            <h2>Cada desapego é uma <em>pequena revolução</em> circular.</h2>
-            <p>
-              Mais que um marketplace, o Santo Desapego propõe um modelo de
-              economia circular hiperlocal alinhado aos Objetivos de
-              Desenvolvimento Sustentável da ONU — combinando sustentabilidade
-              ambiental, vínculo comunitário e fortalecimento da economia
-              do bairro.
-            </p>
-            <a href="#como-funciona" className="btn-ghost">Ver como funciona →</a>
+        {/* ── Anúncios recentes (o conteúdo principal) ── */}
+        <section className="inicio-recentes" aria-labelledby="titulo-recentes">
+          <div className="inicio-titulo-linha">
+            <h2 id="titulo-recentes">Anunciados recentemente</h2>
+            <Link to="/explorar" className="inicio-ver-todos">Ver todos os anúncios</Link>
           </div>
 
-          <div className="impact-grid">
-            {IMPACT_CARDS.map((c) => (
-              <article
-                key={c.num}
-                className={`impact-card impact-card--${c.accent}`}
-              >
-                <span className="impact-card-num">{c.num}</span>
-                <h3 className="impact-card-title">{c.title}</h3>
-                <p className="impact-card-desc">{c.desc}</p>
-              </article>
+          {recentes === null ? (
+            <p className="inicio-vazio">Carregando anúncios…</p>
+          ) : recentes.length === 0 ? (
+            <div className="inicio-vazio">
+              <p>Ainda não há anúncios ativos. Que tal publicar o primeiro?</p>
+              <Link to={linkAnunciar} className="btn-primary">Anunciar um item</Link>
+            </div>
+          ) : (
+            <div className="inicio-grade">
+              {recentes.map((a, i) => <CartaoAnuncio key={a.id} anuncio={a} prioridade={i < 4} />)}
+            </div>
+          )}
+        </section>
+
+        {/* ── Como funciona: o fluxo real de uma venda ── */}
+        <section className="inicio-como" id="como-funciona" aria-labelledby="titulo-como">
+          <h2 id="titulo-como">Como funciona uma venda</h2>
+          <ol className="inicio-passos">
+            {PASSOS.map((p) => (
+              <li key={p.titulo}>
+                <h3>{p.titulo}</h3>
+                <p>{p.texto}</p>
+              </li>
             ))}
-          </div>
-        </div>
-      </section>
+          </ol>
+        </section>
 
-      {/* ══════════════════════════════════
-          LOCAL — SANTO AMARO
-          ══════════════════════════════════ */}
-      <section className="local-section">
-        <div className="local-wrap">
-          <Mapa bairroFoco={bairroFoco} />
-
-          <div className="local-text">
-            <h2>Feito <em>pra cá</em>, feito <em>por aqui</em>.</h2>
+        {/* ── Bairros atendidos (mapa) ── */}
+        <section className="inicio-bairros" aria-labelledby="titulo-bairros">
+          <div className="inicio-bairros-texto">
+            <h2 id="titulo-bairros">Bairros atendidos</h2>
             <p>
-              Diferente de marketplaces globais, o Santo Desapego nasce com foco hiperlocal:
-              apenas moradores da região podem anunciar, e todas as transações acontecem
-              dentro do distrito. Menos logística, mais vínculo comunitário.
+              O Santo Desapego funciona em {HOODS.length} bairros de Santo Amaro e arredores.
+              Qualquer pessoa pode comprar; para anunciar, o CEP precisa ser desta região.
             </p>
-            <p>
-              A plataforma valida endereços por CEP e prioriza entregas a pé, de bike ou em
-              encontros presenciais seguros — sempre perto de casa.
-            </p>
-            <div className="local-hoods">
+            <div className="inicio-bairros-lista">
               {HOODS.map((h) => (
                 <button
                   key={h}
                   type="button"
-                  className={`hood-tag${bairroFoco === h ? ' active' : ''}`}
+                  className={`inicio-bairro${bairroFoco === h ? ' ativo' : ''}`}
+                  aria-pressed={bairroFoco === h}
                   onClick={() => setBairroFoco(bairroFoco === h ? null : h)}
                 >
-                  📍 {h}
+                  {h}
                 </button>
               ))}
             </div>
           </div>
-        </div>
-      </section>
+          <Mapa bairroFoco={bairroFoco} />
+        </section>
 
-      {/* ══════════════════════════════════
-          CTA
-          ══════════════════════════════════ */}
-      <section className="cta-section">
-        <div className="cta-wrap">
-          <h2>Tem algo <em>parado em casa</em>?<br />Transforme em desapego.</h2>
-          <p>{usuario
-            ? 'Anúncio em 2 minutos. Seu próximo vizinho-comprador está aqui do lado.'
-            : 'Cadastro gratuito, anúncio em 2 minutos. Seu próximo vizinho-comprador está aqui do lado.'}</p>
-          <Link to={linkAnunciar} className="btn-home-primary cta-btn">
-            {usuario ? 'Criar novo anúncio' : 'Anunciar meu primeiro item'} <IconArrowRight />
-          </Link>
-        </div>
-      </section>
+      </main>
 
       {/* ══════════════════════════════════
           FOOTER
           ══════════════════════════════════ */}
-      <footer className="home-footer">
-        <div className="footer-wrap">
-          <div className="footer-brand">
-            <Link to="/" className="logo">
-              <span className="logo-mark">SD</span>
-              Santo <em>Desapego</em>
-            </Link>
-            <p>Marketplace C2C hiperlocal para Santo Amaro, São Paulo. Economia compartilhada e consumo consciente.</p>
-          </div>
-
-          {FOOTER_LINKS.map((col) => (
-            <details key={col.title} className="footer-col">
-              <summary><h4>{col.title}</h4></summary>
-              <div className="footer-col-links">
-                {col.links.map((l) => {
-                  if (l === 'Como funciona') return <Link key={l} to="/#como-funciona">{l}</Link>;
-                  if (l === 'Anunciar') return <Link key={l} to={linkAnunciar}>{l}</Link>;
-                  if (l === 'Categorias') return <Link key={l} to="/explorar">{l}</Link>;
-                  if (l === 'Nosso impacto') return <Link key={l} to="/sobre">Sobre nós</Link>;
-                  if (l === 'Central de ajuda') return <Link key={l} to="/central-ajuda">Central de ajuda</Link>;
-                  if (l === 'Fale conosco') return <a key={l} href={`mailto:${EMAILS.contato}`}>{EMAILS.contato}</a>;
-                  if (l === 'Termos de uso') return <a key={l} href="#termos" onClick={abrirLegal('termos')}>{l}</a>;
-                  if (l === 'Privacidade (LGPD)') return <a key={l} href="#termos" onClick={abrirLegal('privacidade')}>{l}</a>;
-                  return <a key={l} href="#">{l}</a>;
-                })}
-              </div>
-            </details>
-          ))}
-        </div>
-
-        <div className="footer-tcc">
-          <div className="footer-tcc-info">
-            <div>Luisa Aquino • Maria Erica Cruz • Paulo Santana</div>
-          </div>
-
-          <div className="cc-license">
-            <Link to="/">Santo Desapego</Link> © 2026 by{' '}
-            <span className="cc-authors">Paulo Santana, Maria Erica Cruz e Luisa Nascimento</span>{' '}
-            is licensed under{' '}
-            <a
-              href="https://creativecommons.org/licenses/by-nc-nd/4.0/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              CC BY-NC-ND 4.0
-            </a>
-            <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="CC" />
-            <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="BY" />
-            <img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="NC" />
-            <img src="https://mirrors.creativecommons.org/presskit/icons/nd.svg" alt="ND" />
-          </div>
-        </div>
-      </footer>
+      <RodapeSite usuario={usuario} onAbrirLegal={abrirLegal} />
 
       {/* ══════════════════════════════════
           MODAL — TERMOS DE USO / PRIVACIDADE

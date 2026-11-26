@@ -18,7 +18,7 @@ const DICAS = {
       { id: 'codigo-entrega', texto: 'Só informe o código de entrega depois de receber e conferir o produto.' },
       { id: 'local-publico', texto: 'Combine a entrega num lugar público e movimentado, de preferência durante o dia.' },
       { id: 'confira', texto: 'Confira o produto (funcionamento e defeitos) antes de confirmar o recebimento.' },
-      { id: 'preco-baixo', texto: 'Desconfie de preço muito abaixo do mercado e de pressa ("tem outro interessado, paga agora").' },
+      { id: 'preco-baixo', texto: 'Desconfie de preço muito abaixo do mercado e de pressa (“tem outro interessado, paga agora”).' },
     ],
   },
   vendedor: {

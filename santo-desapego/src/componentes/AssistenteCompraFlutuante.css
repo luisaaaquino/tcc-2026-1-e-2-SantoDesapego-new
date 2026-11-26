@@ -23,7 +23,7 @@
   border-radius: 50%;
   /* Terracota + anel creme: destaca tanto nas seções claras quanto nas
      verdes (antes era forest e sumia na seção "Três passos") */
-  border: 2px solid var(--cream);
+  border: 1px solid var(--cream);
   background: var(--terracotta);
   color: var(--cream);
   cursor: pointer;
@@ -35,14 +35,14 @@
 }
 .compra-ia-botao:hover {
   background: var(--terracotta-dark);
-  transform: scale(1.06);
+  transform: none;
 }
 
 .compra-ia-painel {
   width: min(20rem, calc(100vw - 2.5rem));
   max-height: min(28rem, calc(100vh - 8rem));
   background: var(--paper);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
   display: flex;
@@ -60,7 +60,7 @@
 }
 .compra-ia-painel-topo strong {
   font-size: 0.92rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 .compra-ia-fechar {
   background: none;
@@ -145,7 +145,7 @@
 }
 .compra-ia-item-preco {
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--forest);
 }
 
@@ -173,7 +173,7 @@
 .compra-ia-pedido {
   font-size: 0.8rem;
   color: var(--ink-muted);
-  font-style: italic;
+  font-style: normal;
   line-height: 1.4;
 }
 .compra-ia-escolha {
@@ -196,7 +196,7 @@
   flex: 1;
   min-width: 0;
   padding: 0.55rem 0.8rem;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-pill);
   background: var(--cream);
   font-family: inherit;
@@ -211,9 +211,13 @@
   background: var(--ink);
   color: var(--cream);
   font-family: inherit;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.82rem;
   cursor: pointer;
 }
 .compra-ia-form button:hover:not(:disabled) { background: var(--terracotta); }
 .compra-ia-form button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Revisão visual (2026-11): grafite, sombra discreta */
+.compra-ia-botao { background: var(--ink); color: #fff; border-color: var(--ink); box-shadow: var(--sombra-2); }
+.compra-ia-botao:hover { background: #34322E; }

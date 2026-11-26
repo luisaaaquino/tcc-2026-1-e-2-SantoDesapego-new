@@ -95,7 +95,7 @@ const Checkout = () => {
     return (
       <div className="checkout-wrapper">
         <Header />
-        <div className="checkout-estado">Carregando seu pedido...</div>
+        <div className="checkout-estado">Carregando seu pedido…</div>
       </div>
     );
   }
@@ -107,7 +107,7 @@ const Checkout = () => {
         <div className="checkout-estado">
           <h2>Não foi possível abrir este pedido</h2>
           <p>{erro}</p>
-          <Link to="/explorar" className="btn-checkout">Ver outros desapegos →</Link>
+          <Link to="/explorar" className="btn-checkout">Ver outros desapegos</Link>
         </div>
       </div>
     );
@@ -167,7 +167,7 @@ const Checkout = () => {
               <div className="checkout-item">
                 {anuncio.imagens?.[0]
                   ? <img src={anuncio.imagens[0]} alt={anuncio.titulo} />
-                  : <span className="checkout-sem-foto">📦</span>}
+                  : <span className="checkout-sem-foto">Sem foto</span>}
 
                 <div className="checkout-item-info">
                   <h3>{anuncio.titulo}</h3>
@@ -265,7 +265,7 @@ const Checkout = () => {
               onClick={irParaPagamento}
               disabled={!aceite || enviando || bloqueado}
             >
-              {enviando ? 'Abrindo pagamento...' : 'Ir para o pagamento →'}
+              {enviando ? 'Abrindo pagamento…' : 'Ir para o pagamento'}
             </button>
 
             <Link to={`/anuncio/${id}`} className="checkout-cancelar">
@@ -273,7 +273,7 @@ const Checkout = () => {
             </Link>
 
             <p className="checkout-selo">
-              🔒 Pagamento processado pelo Mercado Pago
+              Pagamento processado pelo Mercado Pago
             </p>
           </aside>
         </div>

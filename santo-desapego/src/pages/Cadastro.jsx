@@ -304,10 +304,6 @@ const Cadastro = () => {
   return (
     <div className="cadastro-wrapper">
 
-      <div className="announcement">
-        🎉 <strong>Novo!</strong> Cadastro gratuito — Anuncie seu primeiro item em menos de 2 minutos
-      </div>
-
       <SiteHeader>
         <NavBackButton to="/">Voltar para a home</NavBackButton>
       </SiteHeader>
@@ -316,18 +312,17 @@ const Cadastro = () => {
 
         {/* LEFT PANEL */}
         <div className="left-panel">
-          <h2>Seu bairro <em>nunca</em><br />foi tão próximo.</h2>
-          <p>Crie sua conta gratuita e comece a comprar e vender com vizinhos de Santo Amaro em poucos minutos.</p>
+          <h2>Crie sua conta no Santo Desapego</h2>
+          <p>Com a conta você compra e vende entre vizinhos de Santo Amaro e região.</p>
 
           <ul className="benefits-list">
             {[
-              { icon: '🏷️', title: 'Anúncio gratuito',        desc: 'Publique quantos itens quiser sem pagar nada' },
-              { icon: '📍', title: 'Hiperlocal de verdade',    desc: 'Veja a distância exata até o vendedor do bairro' },
-              { icon: '💬', title: 'Chat seguro integrado',    desc: 'Negocie sem expor seu número de telefone' },
-              { icon: '⭐', title: 'Reputação comunitária',    desc: 'Avaliações que constroem confiança real entre vizinhos' },
+              { title: 'Anunciar não custa nada', desc: 'A plataforma fica com 5% só quando a venda acontece.' },
+              { title: 'Pagamento protegido', desc: 'O valor fica retido no Mercado Pago até o comprador confirmar que recebeu.' },
+              { title: 'Conversa pelo site', desc: 'Vocês combinam tudo pelo chat, sem precisar passar o telefone.' },
+              { title: 'Avaliações', desc: 'Depois da entrega, o comprador avalia o vendedor.' },
             ].map((b) => (
               <li key={b.title}>
-                <div className="benefit-icon">{b.icon}</div>
                 <div className="benefit-text">
                   <strong>{b.title}</strong>
                   <span>{b.desc}</span>
@@ -335,17 +330,6 @@ const Cadastro = () => {
               </li>
             ))}
           </ul>
-
-          <div className="left-testimonial">
-            <p>"Vendi meu sofá em menos de 3 horas. O comprador morava a 400m. Foi ridiculamente fácil."</p>
-            <div className="testimonial-author">
-              <div className="testimonial-avatar">MC</div>
-              <div className="testimonial-name">
-                <strong>Mariana Costa</strong>
-                <span>Campo Belo · membro desde jan/2025</span>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* RIGHT PANEL */}
@@ -547,11 +531,11 @@ const Cadastro = () => {
                   <div className="field-group no-mb">
                     <label className="field-label" htmlFor="cad-bairro">Bairro <span className="required">*</span></label>
                     <div className="select-wrap field-input-wrap">
-                      <svg className="select-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg aria-hidden="true" focusable="false" className="select-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
                       </svg>
                       <select id="cad-bairro" className="field-select" name="bairro" value={form.bairro} onChange={handleChange} required>
-                        <option value="" disabled>Selecione...</option>
+                        <option value="" disabled>Selecione…</option>
                         {BAIRROS.map((b) => (
                           <option key={b}>{b}</option>
                         ))}
@@ -578,7 +562,7 @@ const Cadastro = () => {
                     <label className="field-label" htmlFor="cad-logradouro">Logradouro <span className="required">*</span></label>
                     <div className="field-input-wrap">
                       <IconHome />
-                      <input type="text" id="cad-logradouro" className="field-input" placeholder="Rua, Av., Travessa..."
+                      <input type="text" id="cad-logradouro" className="field-input" placeholder="Rua, Av., Travessa…"
                         name="logradouro" value={form.logradouro} onChange={handleChange}
                         autoComplete="street-address" required />
                     </div>
@@ -598,7 +582,7 @@ const Cadastro = () => {
                     <label className="field-label" htmlFor="cad-complemento">Complemento <span style={{ color: 'var(--ink-muted)', fontWeight: 400 }}>(opcional)</span></label>
                     <div className="field-input-wrap">
                       <IconHome />
-                      <input type="text" id="cad-complemento" className="field-input" placeholder="Apto, Bloco..."
+                      <input type="text" id="cad-complemento" className="field-input" placeholder="Apto, Bloco…"
                         name="complemento" value={form.complemento} onChange={handleChange} />
                     </div>
                   </div>
@@ -631,12 +615,12 @@ const Cadastro = () => {
                 </div>
 
                 <button type="submit" className="btn-dark btn-submit" disabled={loading}>
-                  {loading ? 'Criando sua conta...' : <> Criar minha conta grátis <IconArrowRight /> </>}
+                  {loading ? 'Criando sua conta…' : <> Criar minha conta grátis <IconArrowRight /> </>}
                 </button>
               </form>
 
               <p className="form-footer">
-                Já tem uma conta? <Link to="/login">Entrar agora →</Link>
+                Já tem uma conta? <Link to="/login">Entrar agora</Link>
               </p>
             </>
           )}
@@ -644,7 +628,7 @@ const Cadastro = () => {
       </div>
 
       <footer className="site-footer">
-        <span>© 2025 Santo Desapego · </span>
+        <span>© 2026 Santo Desapego · </span>
         <a href="#termos" onClick={abrirLegal('privacidade')}>Privacidade</a> ·{' '}
         <a href="#termos" onClick={abrirLegal('termos')}>Termos</a>
       </footer>

@@ -6,6 +6,8 @@ import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
 import VerificacaoCodigo from '../componentes/VerificacaoCodigo';
 
 import { API_URL, GOOGLE_CLIENT_ID } from '../config';
+import { PlacaBairro } from '../componentes/CartaoAnuncio';
+import { formatarPreco } from '../utils/formato';
 
 // ============================================================
 //  Componente interno (precisa ficar dentro do Provider)
@@ -114,81 +116,51 @@ const LoginContent = () => {
     onError: () => setErrorMsg('Login com Google cancelado.'),
   });
 
-  // Anúncios reais recentes (antes eram 4 fotos de banco de imagens com
-  // produtos/preços inventados, que não existiam no site de verdade) e
-  // estatísticas reais da plataforma (antes eram números fixos tipo
-  // "4.800+ itens" e "93% satisfação", sem nenhum dado por trás).
-  const [polaroids, setPolaroids] = useState([]);
-  const [stats, setStats] = useState(null);
+  // Anúncios reais recentes mostrados ao lado do formulário
+  const [recentes, setRecentes] = useState([]);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/anuncios?limite=4&ordenacao=recentes`)
+    fetch(`${API_URL}/api/anuncios?limite=3&ordenacao=recentes`)
       .then((r) => r.json())
-      .then((dados) => setPolaroids(dados.anuncios || []))
-      .catch(() => {});
-
-    fetch(`${API_URL}/api/estatisticas`)
-      .then((r) => r.json())
-      .then((dados) => { if (!dados.erro) setStats(dados); })
+      .then((dados) => setRecentes(dados.anuncios || []))
       .catch(() => {});
   }, []);
 
   return (
     <div className="login-page">
 
-      <div className="announcement">
-        🌱 Economia circular em Santo Amaro: compre e venda com
-        vizinhos do seu bairro.
-      </div>
 
       <SiteHeader variant="auth-nav-top">
         <NavBackButton to="/">Voltar para a home</NavBackButton>
-        <Link to="/cadastro" className="btn-sell">+ Criar conta</Link>
+        <Link to="/cadastro" className="btn-sell">Criar conta</Link>
       </SiteHeader>
 
       <main className="auth-container">
 
         {/* ════ PAINEL ESQUERDO ════ */}
         <aside className="auth-visual">
-          <div className="auth-stamp" aria-hidden="true">
-            100%<br />grátis<br />pra anunciar
-          </div>
+          <h2>Entre para comprar, anunciar e conversar com vizinhos</h2>
+          <p className="auth-lede">
+            Sua conta guarda seus anúncios, favoritos, conversas e o histórico das compras.
+          </p>
 
-          {/* Anúncios reais, não fotos de banco de imagens com produto
-              inventado — se ainda não tiver anúncio nenhum, a seção some. */}
-          {polaroids.length > 0 && (
-            <div className="polaroids" aria-hidden="true">
-              {polaroids.map((p, i) => (
-                <article key={p.id} className={`polaroid polaroid-${i + 1}`}>
-                  {p.imagem_principal && <img src={p.imagem_principal} alt="" />}
-                  <h4>{p.titulo}</h4>
-                  <div className="polaroid-price">
-                    {Number(p.preco).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                  </div>
-                  <span className="polaroid-hood">{p.bairro}</span>
-                </article>
-              ))}
+          {recentes.length > 0 && (
+            <div className="auth-recentes">
+              <p className="auth-recentes-titulo">Anunciados recentemente</p>
+              <div className="auth-recentes-grade">
+                {recentes.map((a) => (
+                  <Link key={a.id} to={`/anuncio/${a.id}`} className="auth-recente">
+                    <span className="auth-recente-foto">
+                      {a.imagem_principal && <img src={a.imagem_principal} alt="" />}
+                    </span>
+                    <strong>{formatarPreco(a.preco)}</strong>
+                    <span className="auth-recente-titulo">{a.titulo}</span>
+                    <PlacaBairro bairro={a.bairro} />
+                  </Link>
+                ))}
+              </div>
             </div>
           )}
-
-          <div className="auth-visual-foot">
-            <span className="badge">
-              <span className="badge-dot" />
-              Plataforma hiperlocal
-            </span>
-            <h2>Seu bairro tem <em>mais do que você imagina.</em></h2>
-            <p className="auth-lede">
-              Desapegos que viram novos começos. Conecte-se com vizinhos,
-              encontre raridades e contribua com a economia local.
-            </p>
-            {stats && (
-              <div className="auth-stats">
-                <div className="stat"><span className="num">{stats.itens_ativos}</span><span className="lbl">itens disponíveis</span></div>
-                <div className="stat"><span className="num">{stats.vizinhos_cadastrados}</span><span className="lbl">vizinhos cadastrados</span></div>
-                <div className="stat"><span className="num">{stats.bairros_atendidos}</span><span className="lbl">bairros atendidos</span></div>
-              </div>
-            )}
-          </div>
         </aside>
 
         {/* ════ PAINEL DIREITO ════ */}
@@ -221,7 +193,7 @@ const LoginContent = () => {
               <div className="input-group">
                 <label htmlFor="email">E-mail</label>
                 <div className="input-with-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="2" y="4" width="20" height="16" rx="2" />
                     <path d="m22 7-10 5L2 7" />
                   </svg>
@@ -234,7 +206,7 @@ const LoginContent = () => {
               <div className="input-group">
                 <label htmlFor="password">Senha</label>
                 <div className="input-with-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="11" width="18" height="11" rx="2" />
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
@@ -245,14 +217,14 @@ const LoginContent = () => {
                     onClick={() => setShowPassword((s) => !s)}
                     aria-label={showPassword ? 'Esconder senha' : 'Mostrar senha'}>
                     {showPassword ? (
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
                         <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
                         <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
                         <line x1="2" y1="2" x2="22" y2="22" />
                       </svg>
                     ) : (
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
                         <circle cx="12" cy="12" r="3" />
                       </svg>
@@ -270,7 +242,7 @@ const LoginContent = () => {
                   marginBottom: '0.5rem', display: 'flex',
                   alignItems: 'center', gap: '0.5rem',
                 }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <circle cx="12" cy="12" r="10"/>
                     <line x1="12" y1="8" x2="12" y2="12"/>
                     <line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -290,9 +262,9 @@ const LoginContent = () => {
 
               {/* Submit */}
               <button type="submit" className="btn-login" disabled={submitting}>
-                {submitting ? 'Entrando...' : (
+                {submitting ? 'Entrando…' : (
                   <>Entrar
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M5 12h14M13 5l7 7-7 7" />
                     </svg>
                   </>
@@ -310,7 +282,7 @@ const LoginContent = () => {
                 disabled={submitting}
                 style={{ width: '100%' }}
               >
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path fill="#EA4335" d="M12 5c1.617 0 3.077.557 4.225 1.648l3.155-3.155C17.476 1.677 14.94.66 12 .66 7.392.66 3.397 3.297 1.386 7.122l3.708 2.875C6.082 7.108 8.74 5 12 5z" />
                   <path fill="#34A853" d="M23.34 12.272c0-.815-.073-1.6-.21-2.355H12v4.46h6.367c-.276 1.483-1.116 2.738-2.378 3.583v2.985h3.85c2.252-2.077 3.5-5.135 3.5-8.673z" />
                   <path fill="#4A90E2" d="M5.087 14.327A7.21 7.21 0 0 1 4.66 12c0-.808.143-1.589.4-2.319L1.353 6.806A11.96 11.96 0 0 0 .064 12c0 1.93.461 3.752 1.276 5.366l3.747-3.039z" />

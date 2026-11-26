@@ -1,21 +1,28 @@
+/* Hallmark · v2.0.0 · built: the project · redesign: polish · scope: site · genre: editorial */
+/* critique: polish dos itens globais da auditoria (rodapé, cabeçalho, botões, campos, ícones, card, movimento, base); layout, paleta e fontes mantidos */
+/* waive 48 · os blocos :root[data-daltonismo] são temas (paletas para daltonismo), não cores soltas */
+/* waive 7b · --paper #FFFFFF é a cor de cartão da paleta do projeto, mantida por pedido */
 :root {
-  /* Paleta */
-  --cream:           #F4EFE4;
-  --cream-soft:      #EAE3D0;
-  --cream-deep:      #DDD3BA;
-  --paper:           #FBF8F1;
+  /* Paleta — superfícies neutras; a cor fica no conteúdo (fotos dos
+     anúncios, mapa). Terracota (a do logo) é a única cor de ação; o verde
+     marca o bairro e os estados positivos. Os nomes antigos (cream, paper)
+     ficam para não mexer em todos os arquivos de estilo. */
+  --cream:           #FAFAF9;  /* fundo da página */
+  --cream-soft:      #F2F1EE;  /* superfície elevada: campo, linha ativa */
+  --cream-deep:      #E4E2DD;
+  --paper:           #FFFFFF;  /* cartão */
   --terracotta:      #C14B35;
   --terracotta-dark: #9E3A28;
-  --terracotta-soft: #E8A595;
+  --terracotta-soft: #F3D9D2;
   --forest:          #1F4F3F;
   --forest-soft:     #3A6B5A;
-  --mustard:         #E4A020;
-  --mustard-soft:    #F2C96A;
-  --ink:             #1A1A1A;
-  --ink-soft:        #4A4A4A;
-  --ink-muted:       #7A7A7A;
-  --border:          #D6CFBD;
-  --border-soft:     #E5DFCE;
+  --mustard:         #B7791F;  /* só para avisos; não é mais cor de enfeite */
+  --mustard-soft:    #F5E6C8;
+  --ink:             #1C1B19;  /* texto principal */
+  --ink-soft:        #52504B;  /* texto secundário */
+  --ink-muted:       #6F6C66;  /* legendas e meta (≥ 4.5:1 sobre o fundo) */
+  --border:          #E2E0DB;
+  --border-soft:     #ECEBE7;
   --success:         #2A7D5C;
   --error:           #C14B35;
 
@@ -27,16 +34,37 @@
   --aviso-texto:       color-mix(in srgb, var(--mustard) 55%, #000);
   --aviso-texto-forte: color-mix(in srgb, var(--mustard) 42%, #000);
 
-  /* Tipografia */
-  --font-body:    'DM Sans', system-ui, sans-serif;
-  --font-display: 'Fraunces', serif;
+  /* Tipografia — uma família só; títulos usam a mesma fonte, com a
+     hierarquia feita por tamanho e peso. A serifada fica só no logo. */
+  --font-body:    'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  --font-display: var(--font-body);
+  --font-logo:    'Fraunces', serif;
 
-  /* Raios */
-  --radius-sm:  8px;
-  --radius-md:  12px;
-  --radius-lg:  16px;
-  --radius-pill: 100px;
+  /* Raios — por tamanho do elemento, não tudo em pílula */
+  --radius-sm:  6px;   /* etiqueta, botão pequeno */
+  --radius-md:  10px;  /* campo, botão */
+  --radius-lg:  14px;  /* cartão */
+  --radius-pill: 10px; /* nome antigo: botões e campos deixam de ser pílula */
+
+  /* Sombra — pequena e neutra */
+  --sombra-1: 0 1px 2px rgba(28, 27, 25, 0.06);
+  --sombra-2: 0 8px 24px rgba(28, 27, 25, 0.08);
+
+  /* Movimento — uma curva só */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+/* Títulos: sem o trecho em itálico colorido. O <em> continua no HTML
+   (semântica), mas visualmente o título é uma frase só. */
+:is(h1, h2, h3, h4) em {
+  font-style: normal !important;  /* vence os estilos de cada página */
+  color: inherit !important;
+  font-weight: inherit !important;
+}
+:is(h1, h2, h3, h4) { letter-spacing: -0.01em; }
+
+/* Números alinhados (preços, contagens) */
+body { font-variant-numeric: tabular-nums; }
 
 /* ── Paletas para daltonismo ─────────────────────────────────
    Ativadas pelo seletor flutuante (AcessibilidadeCores), que põe
@@ -76,6 +104,7 @@ html {
   /* 100% = tamanho padrão do navegador; --escala-fonte vem do
      controle de tamanho do texto (utils/tamanhoFonte.js) */
   font-size: calc(100% * var(--escala-fonte, 1));
+  overflow-x: clip;
 }
 /* Escala geral menor no celular (tudo em rem encolhe junto): 87,5% = 14px
    no padrão do navegador. Fica aqui, e não em Home.css, porque o index.css
@@ -89,7 +118,7 @@ body {
   color: var(--ink);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow-x: clip;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -100,25 +129,16 @@ a    { color: inherit; text-decoration: none; }
 img  { max-width: 100%; display: block; }
 button { font-family: inherit; cursor: pointer; border: none; background: none; }
 
-/* ── Announcement bar ───────────────────────────────────── */
-.announcement {
-  background: var(--forest);
-  color: var(--cream);
-  text-align: center;
-  font-size: 0.85rem;
-  padding: 0.6rem 1rem;
-  letter-spacing: 0.02em;
-}
-.announcement strong { color: var(--mustard-soft); }
+/* ── Faixa de slogan no topo: removida (enfeite sem informação) ── */
+.announcement { display: none; }
 
 /* ── Site header ────────────────────────────────────────── */
 .site-header {
-  background: var(--cream);
+  background: var(--paper);
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 100;
-  backdrop-filter: blur(8px);
 }
 
 .nav-top {
@@ -141,7 +161,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 /* ── Logo ───────────────────────────────────────────────── */
 .logo {
-  font-family: var(--font-display);
+  font-family: var(--font-logo);
   font-weight: 900;
   font-size: 1.6rem;
   letter-spacing: -0.02em;
@@ -173,46 +193,39 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   font-weight: 500;
   font-size: 0.95rem;
   color: var(--ink-soft);
-  transition: color 0.2s;
+  transition: color 0.15s var(--ease);
 }
-.nav-actions a:hover { color: var(--terracotta); }
+.nav-actions a:hover { color: var(--ink); }
 
-/* ── Botão de navegação (outline) — links do topo do site,
-   tipo "Voltar", "Sair", "Explorar" — em vez de texto solto ── */
+/* ── Botão de navegação (secundário) — "Voltar", "Sair", "Entrar" ── */
 .nav-btn {
   display: inline-flex !important;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.55rem 1.1rem;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-pill);
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   background: var(--paper);
-  color: var(--ink-soft) !important;
-  font-weight: 600 !important;
-  font-size: 0.87rem !important;
+  color: var(--ink) !important;
+  font-weight: 500 !important;
+  font-size: 0.9rem !important;
   max-width: 100%; /* texto ampliado em tela estreita: quebra em vez de vazar */
-  transition: border-color 0.18s, background 0.18s, color 0.18s, transform 0.15s;
+  transition: background-color 0.15s var(--ease), border-color 0.15s var(--ease);
 }
-.nav-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
-.nav-btn:hover {
-  border-color: var(--terracotta);
-  color: var(--terracotta) !important;
-  background: var(--cream-soft);
-  transform: translateY(-1px);
-}
+.nav-btn svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--ink-muted); }
+.nav-btn:hover { background: var(--cream-soft); border-color: var(--cream-deep); }
 
 /* ── Botões globais ─────────────────────────────────────── */
-/* Botão CTA da nav (home / listagem) — mantém nome original do JSX */
+/* Ação principal (terracota) — "Anunciar", "Comprar" */
 .btn-sell,
 .btn-primary {
   background: var(--terracotta);
-  color: var(--cream) !important;
-  padding: 0.7rem 1.4rem;
-  border-radius: var(--radius-pill);
-  font-weight: 700 !important;
-  font-size: 0.9rem;
-  box-shadow: 3px 3px 0 var(--ink);
-  transition: transform 0.15s, box-shadow 0.15s;
+  color: var(--paper) !important;
+  padding: 0.6rem 1.1rem;
+  border-radius: var(--radius-md);
+  font-weight: 600 !important;
+  font-size: 0.92rem;
+  transition: background-color 0.15s var(--ease), transform 0.12s var(--ease);
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -220,63 +233,78 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   flex-shrink: 0;
 }
 .btn-sell:hover,
-.btn-primary:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 5px 5px 0 var(--ink);
-  color: var(--cream) !important;
-}
+.btn-primary:hover { background: var(--terracotta-dark); color: var(--paper) !important; }
+.btn-sell:active,
+.btn-primary:active { transform: scale(0.98); }
 
 /* Botão de login — base; Login.css complementa com display:flex, gap etc. */
 .btn-login {
   width: 100%;
-  background: var(--ink);
-  color: var(--cream);
-  padding: 1rem;
-  border-radius: var(--radius-pill);
+  background: var(--terracotta);
+  color: var(--paper);
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.98rem;
   border: none;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background-color 0.15s var(--ease);
 }
-.btn-login:hover  { background: var(--terracotta); }
+.btn-login:hover  { background: var(--terracotta-dark); }
 .btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
 
-/* Botão escuro (submit / ação principal de formulário) */
+/* Botão de formulário (submit) — mesma cor da ação principal:
+   o site tem uma cor só de botão cheio, a terracota */
 .btn-dark {
-  background: var(--ink);
-  color: var(--cream);
-  padding: 0.9rem 2rem;
-  border-radius: var(--radius-pill);
-  font-weight: 700;
+  background: var(--terracotta);
+  color: var(--paper);
+  padding: 0.8rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
   font-size: 0.98rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
-  box-shadow: 3px 3px 0 var(--terracotta);
-  transition: all 0.2s;
+  transition: background-color 0.15s var(--ease), transform 0.12s var(--ease);
   border: none;
   cursor: pointer;
   width: 100%;
 }
-.btn-dark:hover {
-  background: var(--terracotta);
-  transform: translate(-1px, -1px);
-  box-shadow: 5px 5px 0 var(--ink);
-}
+.btn-dark:hover { background: var(--terracotta-dark); }
+.btn-dark:active { transform: scale(0.98); }
 .btn-dark:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+/* Foco visível para quem navega pelo teclado */
+:is(a, button, input, select, textarea, [tabindex], summary):focus-visible {
+  outline: 2px solid var(--terracotta);
+  outline-offset: 2px;
+}
+/* Campos: várias páginas zeram o outline e trocam por uma mudança de
+   borda quase invisível; o anel global volta por cima delas */
+:is(input, select, textarea):focus-visible {
+  outline: 2px solid var(--terracotta) !important;
+  outline-offset: 2px;
+}
+/* Busca do cabeçalho: o anel vai na caixa inteira, não no campo
+   sem borda lá dentro */
+.search-bar input:focus-visible { outline: none !important; }
+.search-bar:focus-within {
+  outline: 2px solid var(--terracotta);
+  outline-offset: 2px;
+}
 
 /* ── Search bar (home / listagem) ───────────────────────── */
 .search-bar {
   display: flex;
   align-items: center;
   background: var(--paper);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-pill);
-  padding: 0.5rem 0.5rem 0.5rem 1.3rem;
+  /* borda com contraste ≥ 3:1 sobre o fundo (a --border fica em 1,3:1) */
+  border: 1px solid color-mix(in srgb, var(--ink-muted) 80%, var(--paper));
+  border-radius: var(--radius-md);
+  padding: 0.3rem 0.3rem 0.3rem 0.9rem;
   flex: 1;
-  max-width: 31.25rem; /* = 500px no padrão; em rem pra acompanhar o texto ampliado */
+  max-width: 36rem; /* em rem pra acompanhar o texto ampliado */
 }
 .search-bar svg   { color: var(--ink-muted); }
 .search-bar input { flex: 1; border: none; background: transparent; padding: 0.5rem 0.8rem; outline: none; }
@@ -343,52 +371,64 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   max-width: 480px;
 }
 .login-card {
-  background: white;
-  padding: 2.5rem;
-  border-radius: 24px;
-  border: 1.5px solid var(--border);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  background: var(--paper);
+  padding: 2.25rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--sombra-1);
 }
 
 /* ── Site footer ────────────────────────────────────────── */
 .site-footer {
-  background: var(--ink);
+  background: var(--paper);
+  border-top: 1px solid var(--border);
   padding: 1.1rem 2rem;
   text-align: center;
-  font-size: 0.78rem;
-  color: rgba(244, 239, 228, 0.45);
+  font-size: 0.82rem;
+  color: var(--ink-muted);
 }
-.site-footer a { color: rgba(244, 239, 228, 0.6); margin: 0 0.2rem; }
-.site-footer a:hover { color: var(--cream); }
+.site-footer a { color: var(--ink-soft); margin: 0 0.2rem; }
+.site-footer a:hover { color: var(--ink); }
 
 /* ── Feature items (painéis laterais de auth) ───────────── */
 .feature-list  { display: flex; flex-direction: column; gap: 1.5rem; }
 .feature-item  { display: flex; gap: 1rem; align-items: flex-start; }
 .feature-icon  {
   width: 36px; height: 36px;
-  background: rgba(255, 255, 255, 0.1);
+  background: color-mix(in srgb, var(--paper) 10%, transparent);
   border-radius: var(--radius-sm);
   display: grid; place-items: center;
   flex-shrink: 0;
 }
 .feature-text h4 { font-size: 1rem; margin-bottom: 0.2rem; }
-.feature-text p  { font-size: 0.85rem; color: rgba(244, 239, 228, 0.7); }
+.feature-text p  { font-size: 0.85rem; color: color-mix(in srgb, var(--cream) 70%, transparent); }
 
 /* ── Badge pill (painéis laterais) ─────────────────────── */
 .badge {
   display: inline-flex;
-  background: rgba(255, 255, 255, 0.1);
+  background: color-mix(in srgb, var(--paper) 10%, transparent);
   padding: 0.4rem 1rem;
   border-radius: var(--radius-pill);
   font-size: 0.85rem;
   font-weight: 600;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid color-mix(in srgb, var(--paper) 20%, transparent);
 }
 
 /* ── Animações compartilhadas ───────────────────────────── */
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 @keyframes spin  { to { transform: rotate(360deg); } }
 @keyframes pop   { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* "Reduzir movimento" no sistema: animações e transições do site
+   inteiro viram instantâneas (pulse, spin, pop e as das páginas) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
 /* ── Responsividade base ────────────────────────────────── */
 @media (max-width: 768px) {

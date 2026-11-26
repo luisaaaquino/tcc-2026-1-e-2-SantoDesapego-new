@@ -25,7 +25,7 @@
 .admin-sidebar {
   background: var(--paper);
   border-radius: var(--radius-lg);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   padding: 1.5rem 1.1rem;
   height: fit-content;
   position: sticky;
@@ -72,7 +72,7 @@
   background: var(--terracotta);
   color: var(--cream);
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: 600;
   padding: 0.1rem 0.45rem;
   border-radius: var(--radius-pill);
 }
@@ -82,7 +82,7 @@
 .admin-content {
   background: var(--paper);
   border-radius: var(--radius-lg);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   padding: 2rem 2.25rem;
   min-width: 0;
 }
@@ -99,11 +99,11 @@
 }
 .admin-section-head h1 {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 1.5rem;
   color: var(--ink);
 }
-.admin-section-head h1 em { font-style: italic; color: var(--terracotta); font-weight: 400; }
+.admin-section-head h1 em { font-style: normal; color: var(--terracotta); font-weight: 400; }
 .admin-section-head p { color: var(--ink-muted); font-size: 0.88rem; margin-top: 0.2rem; }
 
 /* ── Cards de estatística (dashboard) ────────────────────── */
@@ -115,12 +115,12 @@
 }
 .admin-stat {
   background: var(--cream-soft);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.25rem;
 }
 .admin-stat-label { font-size: 0.78rem; color: var(--ink-muted); font-weight: 600; margin-bottom: 0.4rem; }
-.admin-stat-num { font-family: var(--font-display); font-weight: 700; font-size: 1.8rem; color: var(--ink); }
+.admin-stat-num { font-family: var(--font-display); font-weight: 600; font-size: 1.8rem; color: var(--ink); }
 .admin-stat-sub { font-size: 0.76rem; color: var(--ink-muted); margin-top: 0.2rem; }
 .admin-stat.alerta { background: var(--erro-fundo); border-color: var(--terracotta-soft); }
 .admin-stat.alerta .admin-stat-num { color: var(--terracotta); }
@@ -144,7 +144,7 @@
 }
 .admin-chart-card {
   background: var(--cream-soft);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.25rem 1.4rem 1rem;
 }
@@ -152,7 +152,7 @@
 .admin-chart-card h3 {
   font-family: var(--font-display);
   font-size: 0.98rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ink);
   margin-bottom: 0.9rem;
   display: flex;
@@ -177,7 +177,7 @@
 }
 .admin-filtros input,
 .admin-filtros select {
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 0.55rem 0.9rem;
   font-family: inherit;
@@ -188,16 +188,16 @@
 .admin-filtros input { flex: 1; min-width: 180px; }
 
 /* ── Tabela ──────────────────────────────────────────────── */
-.admin-table-wrap { overflow-x: auto; border: 1.5px solid var(--border); border-radius: var(--radius-lg); }
+.admin-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-lg); }
 .admin-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
 .admin-table th {
   text-align: left;
   padding: 0.8rem 1rem;
   background: var(--cream-soft);
   color: var(--ink-soft);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.76rem;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.03em;
   white-space: nowrap;
 }
@@ -219,7 +219,7 @@
   padding: 0.22rem 0.65rem;
   border-radius: var(--radius-pill);
   font-size: 0.74rem;
-  font-weight: 700;
+  font-weight: 600;
   white-space: nowrap;
 }
 .badge-status.ativa,  .badge-status.ativo,     .badge-status.resolvida, .badge-status.respondido  { background: color-mix(in srgb, var(--forest) 12%, transparent); color: var(--forest); }
@@ -244,11 +244,11 @@
   padding: 0.4rem 0.75rem;
   border-radius: var(--radius-pill);
   font-size: 0.76rem;
-  font-weight: 700;
-  border: 1.5px solid var(--border);
+  font-weight: 600;
+  border: 1px solid var(--border);
   background: white;
   color: var(--ink);
-  transition: all 0.15s;
+  transition-property: background-color, border-color, color, opacity; transition-duration: 0.15s;
   white-space: nowrap;
 }
 .btn-admin-mini:hover { border-color: var(--ink); }
@@ -263,7 +263,7 @@
   color: var(--cream);
   padding: 0.65rem 1.2rem;
   border-radius: var(--radius-pill);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.85rem;
   display: inline-flex;
   align-items: center;
@@ -297,8 +297,8 @@
   font-size: 0.86rem;
   margin-bottom: 1.25rem;
 }
-.admin-alert.success { background: color-mix(in srgb, var(--forest) 10%, transparent); border: 1.5px solid var(--forest); color: var(--forest); }
-.admin-alert.error   { background: var(--erro-fundo); border: 1.5px solid var(--terracotta); color: var(--terracotta); }
+.admin-alert.success { background: color-mix(in srgb, var(--forest) 10%, transparent); border: 1px solid var(--forest); color: var(--forest); }
+.admin-alert.error   { background: var(--erro-fundo); border: 1px solid var(--terracotta); color: var(--terracotta); }
 
 /* ── Modal de ação (confirmação com motivo) ──────────────── */
 .modal-overlay {
@@ -322,7 +322,7 @@
 .admin-modal input,
 .admin-modal select {
   width: 100%;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 0.7rem 0.9rem;
   font-family: inherit;
@@ -345,7 +345,7 @@
 .btn-modal-confirm {
   padding: 0.7rem 1.3rem;
   border-radius: var(--radius-pill);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.86rem;
   background: var(--terracotta);
   color: white;
@@ -388,10 +388,10 @@
     width: 100%;
     padding: 0.75rem 1rem;
     background: var(--cream);
-    border: 1.5px solid var(--border);
+    border: 1px solid var(--border);
     border-radius: var(--radius-pill);
     font-family: inherit;
-    font-weight: 700;
+    font-weight: 600;
     font-size: 0.9rem;
     color: var(--ink);
   }
@@ -426,3 +426,12 @@
   .admin-stat-num { font-size: 1.3rem; }
   .admin-stat-sub { font-size: 0.68rem; }
 }
+
+/* ==========================================================
+   Revisão visual (2026-11): números sem ícone em quadradinho,
+   cartões em superfície branca com filete, item ativo discreto.
+   ========================================================== */
+.admin-stat-icon { display: none; }
+.admin-stat,
+.admin-chart-card { background: var(--paper); border: 1px solid var(--border); }
+.admin-stat-label { font-weight: 500; }

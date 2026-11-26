@@ -332,3 +332,28 @@
   .mapa-info strong { font-size: 1.1rem; }
   .mapa-nota { bottom: 0.7rem; left: 0.7rem; padding: 0.3rem 0.6rem; font-size: 0.68rem; }
 }
+/* ==========================================================
+   Revisão visual (2026-11): alfinete parado (sem pulsação),
+   cantos e sombras no padrão do site, preço em etiqueta clara.
+   ========================================================== */
+.leaflet-wrapper,
+.leaflet-map { border-radius: var(--radius-lg); }
+.leaflet-wrapper { border-width: 1px; box-shadow: none; }
+.mapa-marker-pin::before { display: none; }
+.mapa-marker-pin { box-shadow: 0 0 0 1px var(--terracotta), 0 1px 3px rgba(0, 0, 0, 0.25); }
+.mapa-tooltip.leaflet-tooltip {
+  background: var(--paper) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-sm) !important;
+  font-weight: 600;
+  box-shadow: var(--sombra-1);
+}
+.leaflet-wrapper .leaflet-popup-content-wrapper {
+  border-radius: var(--radius-lg) !important;
+  border-width: 1px;
+  box-shadow: var(--sombra-2) !important;
+}
+.mapa-popup-body strong { font-family: var(--font-body); }
+.popup-price { font-family: var(--font-body); color: var(--ink); font-weight: 600; }
+.mapa-info { border-radius: var(--radius-md); border-width: 1px; }

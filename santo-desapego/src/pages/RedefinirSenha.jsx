@@ -6,8 +6,8 @@ import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
 import { API_URL } from '../config';
 
 const IconEye = (open) => open
-  ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" /><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" /><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" /><line x1="2" y1="2" x2="22" y2="22" /></svg>
-  : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>;
+  ? <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" /><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" /><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" /><line x1="2" y1="2" x2="22" y2="22" /></svg>
+  : <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>;
 
 const RedefinirSenha = () => {
   const navigate = useNavigate();
@@ -86,10 +86,6 @@ const RedefinirSenha = () => {
 
   return (
     <div className="login-page">
-      <div className="announcement">
-        🌱 Economia circular em Santo Amaro:{' '}
-        <strong>já evitamos 2,4 toneladas</strong> de descarte neste mês.
-      </div>
 
       <SiteHeader variant="auth-nav-top">
         <NavBackButton to="/">Voltar para a home</NavBackButton>
@@ -97,21 +93,8 @@ const RedefinirSenha = () => {
 
       <main className="auth-container">
         <aside className="auth-visual">
-          <div className="auth-stamp" aria-hidden="true">
-            Nova<br />senha<br />segura
-          </div>
-
-          <div className="auth-visual-foot">
-            <span className="badge">
-              <span className="badge-dot" />
-              Última etapa
-            </span>
-            <h2>Escolha uma<br /><em>nova senha.</em></h2>
-            <p className="auth-lede">
-              Use uma senha forte: mínimo de 8 caracteres, com maiúsculas,
-              minúsculas, número e um caractere especial.
-            </p>
-          </div>
+          <h2>Escolha uma nova senha</h2>
+          <p className="auth-lede">Use no mínimo 8 caracteres, com letras maiúsculas e minúsculas, um número e um caractere especial.</p>
         </aside>
 
         <section className="auth-form-side">
@@ -143,7 +126,7 @@ const RedefinirSenha = () => {
             )}
 
             {linkStatus === 'verificando' && (
-              <p className="form-sub" style={{ marginBottom: '1rem' }}>Verificando o link...</p>
+              <p className="form-sub" style={{ marginBottom: '1rem' }}>Verificando o link…</p>
             )}
 
             {sucesso ? (
@@ -152,14 +135,14 @@ const RedefinirSenha = () => {
                 color: 'var(--forest)', padding: '0.9rem 1rem',
                 borderRadius: '10px', fontSize: '0.88rem', lineHeight: 1.5,
               }}>
-                Senha redefinida com sucesso! Redirecionando para o login...
+                Senha redefinida com sucesso! Redirecionando para o login…
               </div>
             ) : linkStatus === 'valido' && (
               <form onSubmit={handleSubmit} noValidate>
                 <div className="input-group">
                   <label htmlFor="novaSenha">Nova senha</label>
                   <div className="input-with-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="11" width="18" height="11" rx="2" />
                       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                     </svg>
@@ -189,7 +172,7 @@ const RedefinirSenha = () => {
                 <div className="input-group">
                   <label htmlFor="confirmar">Confirmar nova senha</label>
                   <div className="input-with-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="11" width="18" height="11" rx="2" />
                       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                     </svg>
@@ -213,7 +196,7 @@ const RedefinirSenha = () => {
                     marginBottom: '0.5rem', display: 'flex',
                     alignItems: 'center', gap: '0.5rem',
                   }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                       <circle cx="12" cy="12" r="10" />
                       <line x1="12" y1="8" x2="12" y2="12" />
                       <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -223,7 +206,7 @@ const RedefinirSenha = () => {
                 )}
 
                 <button type="submit" className="btn-login" disabled={submitting || !token}>
-                  {submitting ? 'Salvando...' : 'Redefinir senha'}
+                  {submitting ? 'Salvando…' : 'Redefinir senha'}
                 </button>
               </form>
             )}

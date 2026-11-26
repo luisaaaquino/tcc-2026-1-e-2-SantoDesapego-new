@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import './AnuncioRapidoIA.css';
 import { API_URL } from '../config';
+import { IconCamera } from './Icones';
 
 /**
  * "Anúncio rápido" (IA) — modo de tiro único: o vendedor escreve uma
@@ -73,17 +74,17 @@ const AnuncioRapidoIA = ({ imagens, handleFiles, removerImagem, fileInputRef, ma
             </div>
           ))}
           {imagens.length < maxImagens && (
-            <label className="rapido-ia-imagem-add">
-              📷
+            <label className="rapido-ia-imagem-add" aria-label="Adicionar fotos">
+              <IconCamera />
               <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFiles} />
             </label>
           )}
         </div>
 
-        {erro && <p className="rapido-ia-erro">⚠️ {erro}</p>}
+        {erro && <p className="rapido-ia-erro">{erro}</p>}
 
         <button type="submit" className="rapido-ia-botao" disabled={gerando || !mensagem.trim()}>
-          {gerando ? 'Gerando...' : 'Gerar anúncio com IA ✨'}
+          {gerando ? 'Gerando...' : 'Gerar anúncio com IA'}
         </button>
       </form>
     </div>

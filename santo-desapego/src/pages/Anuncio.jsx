@@ -7,12 +7,13 @@ import { IconHeart } from '../componentes/Icones';
 import DicasSeguranca from '../componentes/DicasSeguranca';
 
 import { API_URL, EMAILS } from '../config';
+import { PlacaBairro } from '../componentes/CartaoAnuncio';
 
 const ESTADO_LABEL = {
-  'novo':        { emoji: '✨', name: 'Novo / Na caixa' },
-  'seminovo':    { emoji: '👌', name: 'Seminovo' },
-  'usado':       { emoji: '👍', name: 'Usado' },
-  'para-reparo': { emoji: '🔧', name: 'Para reparo' },
+  'novo':        { name: 'Novo / Na caixa' },
+  'seminovo':    { name: 'Seminovo' },
+  'usado':       { name: 'Usado' },
+  'para-reparo': { name: 'Para reparo' },
 };
 
 const brl = (v) =>
@@ -61,8 +62,7 @@ const ModalDenunciar = ({ anuncio, aoFechar }) => {
       <div className="denuncia-modal" onClick={(e) => e.stopPropagation()}>
         {enviado ? (
           <div className="denuncia-sucesso">
-            <span className="emoji">✅</span>
-            <h2>Denúncia enviada</h2>
+                        <h2>Denúncia enviada</h2>
             <p>Nossa equipe vai analisar em breve. Obrigado por ajudar a manter a comunidade segura.</p>
             <div className="denuncia-modal-actions" style={{ justifyContent: 'center' }}>
               <button type="button" className="btn-anuncio-comprar" onClick={aoFechar}>Fechar</button>
@@ -90,7 +90,7 @@ const ModalDenunciar = ({ anuncio, aoFechar }) => {
             <div className="denuncia-modal-actions">
               <button type="button" className="btn-anuncio-proposta" onClick={aoFechar} disabled={enviando}>Cancelar</button>
               <button type="button" className="btn-anuncio-comprar" onClick={enviar} disabled={enviando}>
-                {enviando ? 'Enviando...' : 'Enviar denúncia'}
+                {enviando ? 'Enviando…' : 'Enviar denúncia'}
               </button>
             </div>
           </>
@@ -241,7 +241,7 @@ const Anuncio = () => {
     return (
       <div className="anuncio-wrapper">
         <Header />
-        <div className="anuncio-estado">Carregando anúncio...</div>
+        <div className="anuncio-estado">Carregando anúncio…</div>
       </div>
     );
   }
@@ -253,7 +253,7 @@ const Anuncio = () => {
         <div className="anuncio-estado">
           <h2>Este anúncio não está disponível</h2>
           <p>{erro || 'Ele pode ter sido vendido ou removido pelo vendedor.'}</p>
-          <Link to="/explorar" className="btn-anuncio-comprar">Ver outros desapegos →</Link>
+          <Link to="/explorar" className="btn-anuncio-comprar">Ver outros desapegos</Link>
         </div>
       </div>
     );
@@ -265,7 +265,7 @@ const Anuncio = () => {
     ? anuncio.imagens
     : [anuncio.imagem_principal || null]
   ).map((img) => (typeof img === 'string' || !img ? img : img.imagem || img.url || null));
-  const estado   = ESTADO_LABEL[anuncio.estado_conservacao] || { emoji: '📦', name: anuncio.estado_conservacao || '—' };
+  const estado   = ESTADO_LABEL[anuncio.estado_conservacao] || { name: anuncio.estado_conservacao || '—' };
   const vendedor = anuncio.usuario?.nome || anuncio.vendedor?.nome || anuncio.usuario_nome || 'Vendedor';
   const categoria = anuncio.categoria?.nome || anuncio.categoria_nome || '';
 
@@ -316,14 +316,14 @@ const Anuncio = () => {
             <p className="anuncio-preco">{brl(anuncio.preco)}</p>
 
             <div className="anuncio-tags">
-              <span className="anuncio-tag">{estado.emoji} {estado.name}</span>
+              <span className="anuncio-tag">{estado.name}</span>
               {anuncio.vendedor_recebe_pagamentos && (
-                <span className="anuncio-tag positiva">✓ Vendedor recebe pagamentos</span>
+                <span className="anuncio-tag positiva">Vendedor recebe pagamentos</span>
               )}
             </div>
 
             <p className="anuncio-local">
-              📍 {anuncio.bairro}
+              <PlacaBairro bairro={anuncio.bairro} />
               {anuncio.cep && <span>CEP {anuncio.cep}</span>}
             </p>
 
@@ -342,7 +342,7 @@ const Anuncio = () => {
                 onClick={conversar}
                 disabled={abrindoChat}
               >
-                {abrindoChat ? 'Abrindo conversa...' : '💬 Conversar com o anunciante'}
+                {abrindoChat ? 'Abrindo conversa…' : 'Conversar com o anunciante'}
               </button>
               <button
                 type="button"
@@ -378,7 +378,7 @@ const Anuncio = () => {
             </Link>
 
             <button type="button" className="anuncio-denunciar" onClick={() => setDenunciando(true)}>
-              🚩 Denunciar este anúncio
+              Denunciar este anúncio
             </button>
           </aside>
         </div>

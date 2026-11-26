@@ -39,33 +39,16 @@ const EsqueciSenha = () => {
 
   return (
     <div className="login-page">
-      <div className="announcement">
-        🌱 Economia circular em Santo Amaro:{' '}
-        <strong>já evitamos 2,4 toneladas</strong> de descarte neste mês.
-      </div>
 
       <SiteHeader variant="auth-nav-top">
         <NavBackButton to="/">Voltar para a home</NavBackButton>
-        <Link to="/cadastro" className="btn-sell">+ Criar conta</Link>
+        <Link to="/cadastro" className="btn-sell">Criar conta</Link>
       </SiteHeader>
 
       <main className="auth-container">
         <aside className="auth-visual">
-          <div className="auth-stamp" aria-hidden="true">
-            Sua<br />conta<br />protegida
-          </div>
-
-          <div className="auth-visual-foot">
-            <span className="badge">
-              <span className="badge-dot" />
-              Segurança da conta
-            </span>
-            <h2>Esqueceu a senha?<br /><em>Sem problema.</em></h2>
-            <p className="auth-lede">
-              Informe o e-mail cadastrado e enviaremos um link seguro para você
-              criar uma nova senha. O link expira em 1 hora.
-            </p>
-          </div>
+          <h2>Esqueceu a senha?</h2>
+          <p className="auth-lede">Informe o e-mail cadastrado e enviaremos um link para você criar uma nova senha. O link expira em 1 hora.</p>
         </aside>
 
         <section className="auth-form-side">
@@ -97,7 +80,7 @@ const EsqueciSenha = () => {
                 <div className="input-group">
                   <label htmlFor="email">E-mail</label>
                   <div className="input-with-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="2" y="4" width="20" height="16" rx="2" />
                       <path d="m22 7-10 5L2 7" />
                     </svg>
@@ -115,7 +98,7 @@ const EsqueciSenha = () => {
                     marginBottom: '0.5rem', display: 'flex',
                     alignItems: 'center', gap: '0.5rem',
                   }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                       <circle cx="12" cy="12" r="10" />
                       <line x1="12" y1="8" x2="12" y2="12" />
                       <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -125,9 +108,9 @@ const EsqueciSenha = () => {
                 )}
 
                 <button type="submit" className="btn-login" disabled={submitting}>
-                  {submitting ? 'Enviando...' : (
+                  {submitting ? 'Enviando…' : (
                     <>Enviar link de recuperação
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+                      <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M5 12h14M13 5l7 7-7 7" />
                       </svg>
                     </>

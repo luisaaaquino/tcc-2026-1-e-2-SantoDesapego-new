@@ -14,15 +14,15 @@ import { API_URL } from '../config';
 
 /* ── Ícones SVG ───────────────────────────────────────────── */
 const I = {
-  data:    () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>,
-  layout:  () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M3 9h18"/></svg>,
-  bag:     () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>,
-  star:    () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
-  message: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
-  camera:  () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>,
-  download: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
-  wallet:  () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>,
-  trash:   () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
+  data:    () => <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/></svg>,
+  layout:  () => <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M3 9h18"/></svg>,
+  bag:     () => <svg aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>,
+  star:    () => <svg aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+  message: () => <svg aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
+  camera:  () => <svg aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>,
+  download: () => <svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
+  wallet:  () => <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>,
+  trash:   () => <svg aria-hidden="true" focusable="false" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
 };
 
 const BAIRROS = [...BAIRROS_SANTO_AMARO, 'Outro bairro'];
@@ -144,7 +144,7 @@ const Perfil = () => {
     return (
       <div className="perfil-wrapper">
         <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--ink-muted)' }}>
-          Carregando perfil...
+          Carregando perfil…
         </div>
       </div>
     );
@@ -155,9 +155,6 @@ const Perfil = () => {
   return (
     <div className="perfil-wrapper">
 
-      <div className="announcement">
-        🌱 Cuidando dos seus dados — Esta página está em conformidade com a LGPD
-      </div>
 
       <SiteHeader>
         <NotificacoesSino />
@@ -355,7 +352,7 @@ const AvatarUpload = ({ usuario, setUsuario }) => {
       <Avatar usuario={usuario} size={88} />
       <label className="perfil-avatar-edit" title="Trocar foto">
         {enviando ? (
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <svg aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <path d="M21 12a9 9 0 1 1-6.219-8.56">
               <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>
             </path>
@@ -395,7 +392,7 @@ const SecaoPainel = ({ usuario, estatisticas }) => {
         <div className="painel-stat">
           <div className="painel-stat-icon mustard"><I.star /></div>
           {e.reputacao_media != null
-            ? <div className="painel-stat-num">{e.reputacao_media.toFixed(1)} ★</div>
+            ? <div className="painel-stat-num">{e.reputacao_media.toFixed(1).replace('.', ',')} de 5</div>
             : <div className="painel-stat-num empty">sem avaliações</div>}
           <div className="painel-stat-label">
             Reputação{e.total_avaliacoes ? ` (${e.total_avaliacoes})` : ''}
@@ -431,7 +428,6 @@ const SecaoPainel = ({ usuario, estatisticas }) => {
 
       {/* Lista vazia (futura: meus anúncios e últimas compras) */}
       <div className="painel-empty">
-        <div className="painel-empty-icon">📦</div>
         <h4>Você ainda não tem atividade por aqui</h4>
         <p>Quando publicar um anúncio ou fazer uma compra, tudo aparece aqui.</p>
       </div>
@@ -501,11 +497,10 @@ const SecaoAnuncios = () => {
         <p>Tudo o que você já publicou no Santo Desapego — ativo, vendido ou pausado.</p>
       </div>
 
-      {carregando && <p className="perfil-loading">Carregando anúncios...</p>}
+      {carregando && <p className="perfil-loading">Carregando anúncios…</p>}
 
       {!carregando && anuncios?.length === 0 && (
         <div className="painel-empty">
-          <div className="painel-empty-icon">🏷️</div>
           <h4>Você ainda não publicou nenhum anúncio</h4>
           <p>Que tal transformar o que você não usa mais em renda extra?</p>
           <Link to="/anunciar" className="painel-cta-btn painel-empty-btn">
@@ -524,7 +519,7 @@ const SecaoAnuncios = () => {
                 <div className="anuncio-card-perfil-img">
                   {a.imagem_principal
                     ? <img src={a.imagem_principal} alt={a.titulo} />
-                    : <span>📦</span>}
+                    : <span className="sem-foto-texto">Sem foto</span>}
                 </div>
                 <div className="anuncio-card-perfil-info">
                   <h3>{a.titulo}</h3>
@@ -612,7 +607,7 @@ const SecaoFavoritos = () => {
         <p>Anúncios que você salvou pra ver com calma depois.</p>
       </div>
 
-      {carregando && <p className="perfil-loading">Carregando favoritos...</p>}
+      {carregando && <p className="perfil-loading">Carregando favoritos…</p>}
 
       {!carregando && favoritos?.length === 0 && (
         <div className="painel-empty">
@@ -632,7 +627,7 @@ const SecaoFavoritos = () => {
               <div className="anuncio-card-perfil-img">
                 {f.imagem_principal
                   ? <img src={f.imagem_principal} alt={f.titulo} />
-                  : <span>📦</span>}
+                  : <span className="sem-foto-texto">Sem foto</span>}
               </div>
               <div className="anuncio-card-perfil-info">
                 <h3>{f.titulo}</h3>
@@ -730,7 +725,7 @@ const FormAvaliar = ({ compra, aoEnviar, aoCancelar }) => {
       {erro && <span className="avaliar-erro"><IconAlert /> {erro}</span>}
       <div className="avaliar-form-acoes">
         <button type="button" className="btn-perfil-primary" onClick={enviar} disabled={enviando}>
-          {enviando ? 'Enviando...' : 'Enviar avaliação'}
+          {enviando ? 'Enviando…' : 'Enviar avaliação'}
         </button>
         <button type="button" className="btn-perfil-secondary" onClick={aoCancelar} disabled={enviando}>
           Cancelar
@@ -810,7 +805,7 @@ const ConfirmarEntrega = ({ compra, aoConfirmar }) => {
           onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}
         />
         <button type="submit" className="btn-perfil-primary" disabled={enviando || codigo.length !== 6}>
-          {enviando ? 'Confirmando...' : 'Confirmar recebimento'}
+          {enviando ? 'Confirmando…' : 'Confirmar recebimento'}
         </button>
       </div>
       {erro && <span className="avaliar-erro"><IconAlert /> {erro}</span>}
@@ -919,11 +914,10 @@ const SecaoCompras = () => {
 
       <FiltroHistorico {...{ status, setStatus, dataInicio, setDataInicio, dataFim, setDataFim }} />
 
-      {carregando && <p className="perfil-loading">Carregando compras...</p>}
+      {carregando && <p className="perfil-loading">Carregando compras…</p>}
 
       {!carregando && compras?.length === 0 && (
         <div className="painel-empty">
-          <div className="painel-empty-icon">🛍️</div>
           <h4>{status || dataInicio || dataFim ? 'Nenhuma compra encontrada com esses filtros' : 'Você ainda não fez nenhuma compra'}</h4>
           <p>Quando você comprar algo, o histórico aparece aqui.</p>
           <Link to="/explorar" className="painel-cta-btn painel-empty-btn">
@@ -939,7 +933,7 @@ const SecaoCompras = () => {
               <Link to={`/anuncio/${c.anuncio_id}`} className="compra-card-perfil-img">
                 {c.anuncio_imagem
                   ? <img src={c.anuncio_imagem} alt={c.anuncio_titulo} />
-                  : <span>📦</span>}
+                  : <span className="sem-foto-texto">Sem foto</span>}
               </Link>
               <div className="compra-card-perfil-info">
                 <Link to={`/anuncio/${c.anuncio_id}`}><h3>{c.anuncio_titulo}</h3></Link>
@@ -1027,11 +1021,10 @@ const SecaoVendas = () => {
 
       <FiltroHistorico {...{ status, setStatus, dataInicio, setDataInicio, dataFim, setDataFim }} />
 
-      {carregando && <p className="perfil-loading">Carregando vendas...</p>}
+      {carregando && <p className="perfil-loading">Carregando vendas…</p>}
 
       {!carregando && vendas?.length === 0 && (
         <div className="painel-empty">
-          <div className="painel-empty-icon">💰</div>
           <h4>{status || dataInicio || dataFim ? 'Nenhuma venda encontrada com esses filtros' : 'Você ainda não vendeu nada'}</h4>
           <p>Quando alguém comprar um dos seus anúncios, o histórico aparece aqui.</p>
         </div>
@@ -1044,7 +1037,7 @@ const SecaoVendas = () => {
               <Link to={`/anuncio/${v.anuncio_id}`} className="compra-card-perfil-img">
                 {v.anuncio_imagem
                   ? <img src={v.anuncio_imagem} alt={v.anuncio_titulo} />
-                  : <span>📦</span>}
+                  : <span className="sem-foto-texto">Sem foto</span>}
               </Link>
               <div className="compra-card-perfil-info">
                 <Link to={`/anuncio/${v.anuncio_id}`}><h3>{v.anuncio_titulo}</h3></Link>
@@ -1133,11 +1126,10 @@ const SecaoMinhasDenuncias = () => {
         <p>Acompanhe o retorno da nossa equipe sobre as denúncias que você enviou.</p>
       </div>
 
-      {carregando && <p className="perfil-loading">Carregando denúncias...</p>}
+      {carregando && <p className="perfil-loading">Carregando denúncias…</p>}
 
       {!carregando && denuncias?.length === 0 && (
         <div className="painel-empty">
-          <div className="painel-empty-icon">🚩</div>
           <h4>Você ainda não fez nenhuma denúncia</h4>
           <p>Se algo parecer errado com um anúncio ou usuário, use o botão de denúncia na página dele.</p>
         </div>
@@ -1191,7 +1183,7 @@ const SecaoPagamentos = ({ usuario, setUsuario, mpParam, limparMpParam }) => {
   );
 
   // Ao voltar do Mercado Pago, atualiza o status na tela e limpa o
-  // ?mp=... da URL pra não reaparecer se a página for recarregada.
+  // ?mp=… da URL pra não reaparecer se a página for recarregada.
   useEffect(() => {
     if (!mpParam) return;
     if (mpParam === 'conectado') {
@@ -1245,7 +1237,7 @@ const SecaoPagamentos = ({ usuario, setUsuario, mpParam, limparMpParam }) => {
         <div className="painel-cta-icon"><I.wallet /></div>
         {conectado ? (
           <>
-            <h3>Conta conectada ✓</h3>
+            <h3>Conta conectada</h3>
             <p>
               Suas vendas são pagas direto na sua conta do Mercado Pago.
               A plataforma retém apenas a comissão de intermediação sobre cada venda.
@@ -1265,7 +1257,7 @@ const SecaoPagamentos = ({ usuario, setUsuario, mpParam, limparMpParam }) => {
               disabled={conectando}
               style={{ border: 'none', cursor: 'pointer' }}
             >
-              <I.wallet /> {conectando ? 'Abrindo Mercado Pago...' : 'Conectar minha conta Mercado Pago'}
+              <I.wallet /> {conectando ? 'Abrindo Mercado Pago…' : 'Conectar minha conta Mercado Pago'}
             </button>
           </>
         )}
@@ -1298,7 +1290,7 @@ const SecaoAvaliacoes = () => {
         <p>O que quem comprou de você achou da negociação.</p>
       </div>
 
-      {carregando && <p className="perfil-loading">Carregando avaliações...</p>}
+      {carregando && <p className="perfil-loading">Carregando avaliações…</p>}
 
       {!carregando && dados?.total > 0 && (
         <div className="avaliacoes-resumo">
@@ -1312,7 +1304,6 @@ const SecaoAvaliacoes = () => {
 
       {!carregando && dados?.avaliacoes?.length === 0 && (
         <div className="painel-empty">
-          <div className="painel-empty-icon">⭐</div>
           <h4>Você ainda não recebeu avaliações</h4>
           <p>Quando alguém comprar de você e avaliar a negociação, aparece aqui.</p>
         </div>
@@ -1497,7 +1488,7 @@ const SecaoDados = ({ usuario, setUsuario }) => {
 
         <div className="perfil-actions">
           <button type="submit" className="btn-perfil-primary" disabled={salvando}>
-            {salvando ? 'Salvando...' : (<>Salvar alterações <IconCheck /></>)}
+            {salvando ? 'Salvando…' : (<>Salvar alterações <IconCheck /></>)}
           </button>
         </div>
       </form>
@@ -1531,7 +1522,7 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
 
     if (numeros.length !== 8) { setCepStatus({ estado: '', msg: '' }); return; }
 
-    setCepStatus({ estado: 'carregando', msg: 'Consultando CEP...' });
+    setCepStatus({ estado: 'carregando', msg: 'Consultando CEP…' });
     fetch(`https://viacep.com.br/ws/${numeros}/json/`)
       .then((r) => r.json())
       .then((dados) => {
@@ -1644,7 +1635,7 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
               <IconPin />
               <select className="perfil-select" value={form.bairro}
                 onChange={(e) => setForm({ ...form, bairro: e.target.value })}>
-                <option value="">Selecione...</option>
+                <option value="">Selecione…</option>
                 {BAIRROS.map((b) => <option key={b}>{b}</option>)}
               </select>
               <span className="perfil-select-arrow"><IconChevron /></span>
@@ -1656,7 +1647,7 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
           <label className="perfil-field-label">Logradouro</label>
           <div className="perfil-input-wrap">
             <IconHome />
-            <input className="perfil-input" type="text" placeholder="Rua, Av., Travessa..."
+            <input className="perfil-input" type="text" placeholder="Rua, Av., Travessa…"
               value={form.logradouro}
               onChange={(e) => setForm({ ...form, logradouro: e.target.value })} />
           </div>
@@ -1676,7 +1667,7 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
             <label className="perfil-field-label">Complemento</label>
             <div className="perfil-input-wrap">
               <IconHome />
-              <input className="perfil-input" type="text" placeholder="Apto, Bloco..."
+              <input className="perfil-input" type="text" placeholder="Apto, Bloco…"
                 value={form.complemento}
                 onChange={(e) => setForm({ ...form, complemento: e.target.value })} />
             </div>
@@ -1685,7 +1676,7 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
 
         <div className="perfil-actions">
           <button type="submit" className="btn-perfil-primary" disabled={salvando}>
-            {salvando ? 'Salvando...' : (<>Salvar endereço <IconCheck /></>)}
+            {salvando ? 'Salvando…' : (<>Salvar endereço <IconCheck /></>)}
           </button>
         </div>
       </form>
@@ -1829,7 +1820,7 @@ const SecaoSeguranca = () => {
 
         <div className="perfil-actions">
           <button type="submit" className="btn-perfil-primary" disabled={salvando}>
-            {salvando ? 'Atualizando...' : (<>Alterar senha <IconShield /></>)}
+            {salvando ? 'Atualizando…' : (<>Alterar senha <IconShield /></>)}
           </button>
         </div>
       </form>
@@ -1949,10 +1940,10 @@ const SecaoLGPD = ({ usuario }) => {
           </p>
           <div className="lgpd-export-btns">
             <button className="btn-perfil-secondary" onClick={() => exportarDados('json')} disabled={!!exportando}>
-              {exportando === 'json' ? 'Gerando arquivo...' : 'Baixar meus dados (.json)'}
+              {exportando === 'json' ? 'Gerando arquivo…' : 'Baixar meus dados (.json)'}
             </button>
             <button className="btn-perfil-secondary" onClick={() => exportarDados('csv')} disabled={!!exportando}>
-              {exportando === 'csv' ? 'Gerando arquivo...' : 'Baixar meus dados (.csv)'}
+              {exportando === 'csv' ? 'Gerando arquivo…' : 'Baixar meus dados (.csv)'}
             </button>
           </div>
           <small>Os dados incluem nome, e-mail, CPF, telefone, endereço e preferências.</small>
@@ -1978,7 +1969,7 @@ const SecaoLGPD = ({ usuario }) => {
                 Para continuar usando a plataforma normalmente, reaceite a versão vigente.
               </p>
               <button className="btn-perfil-secondary" onClick={reaceitarTermos} disabled={aceitando}>
-                {aceitando ? 'Registrando...' : 'Reaceitar termos vigentes'}
+                {aceitando ? 'Registrando…' : 'Reaceitar termos vigentes'}
               </button>
             </>
           )}
@@ -2032,7 +2023,7 @@ const SecaoLGPD = ({ usuario }) => {
                 Cancelar
               </button>
               <button className="btn-perfil-danger" onClick={excluirConta} disabled={excluindo}>
-                {excluindo ? 'Excluindo...' : 'Sim, excluir conta'}
+                {excluindo ? 'Excluindo…' : 'Sim, excluir conta'}
               </button>
             </div>
           </div>
