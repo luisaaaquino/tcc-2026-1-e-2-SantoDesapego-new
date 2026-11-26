@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const pool = require('../db');
 const { autenticar } = require('../middleware/auth');
+const { situacaoDaConta } = require('../utils/situacaoConta');
 const {
   getAuthorizationUrl,
   exchangeCodeForToken,
@@ -44,6 +45,11 @@ router.get('/api/mp/callback', async (req, res) => {
   try {
     const payload = jwt.verify(state, process.env.JWT_SECRET);
     const vendedorId = payload.id;
+
+    // Conta excluída ou suspensa nos 10 minutos do "state" não reconecta
+    if (await situacaoDaConta(vendedorId) !== 'ativa') {
+      return res.redirect(`${FRONTEND_URL}/perfil?mp=erro`);
+    }
 
     const tokenMp = await exchangeCodeForToken(code);
     const expiraEm = new Date(Date.now() + tokenMp.expires_in * 1000);

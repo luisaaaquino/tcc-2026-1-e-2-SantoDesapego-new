@@ -1,23 +1,39 @@
 const jwt  = require('jsonwebtoken');
 const pool = require('../db');
+const { situacaoDaConta } = require('../utils/situacaoConta');
+
+// Mesma mensagem que o front (src/utils/sessao.js) reconhece para limpar a
+// sessão e levar ao login — no login, a conta suspensa recebe o aviso dela.
+const ERRO_TOKEN = 'Token inválido ou expirado.';
 
 // ============================================================
 // MIDDLEWARE — verifica JWT em rotas protegidas
+// Além da assinatura do token, confere no banco se a conta ainda
+// existe e não está suspensa [RN10 / RF20]: excluir ou suspender
+// uma conta vale na hora, sem esperar o token de 7 dias vencer.
 // ============================================================
-const autenticar = (req, res, next) => {
+const autenticar = async (req, res, next) => {
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith('Bearer ')) {
     return res.status(401).json({ erro: 'Token de autenticação não enviado.' });
   }
-  const token = auth.slice(7);
+  let payload;
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
-    req.userId = payload.id;
-    req.userEmail = payload.email;
-    next();
+    payload = jwt.verify(auth.slice(7), process.env.JWT_SECRET);
   } catch (erro) {
-    return res.status(401).json({ erro: 'Token inválido ou expirado.' });
+    return res.status(401).json({ erro: ERRO_TOKEN });
   }
+  try {
+    if (await situacaoDaConta(payload.id) !== 'ativa') {
+      return res.status(401).json({ erro: ERRO_TOKEN });
+    }
+  } catch (erro) {
+    console.error('Erro ao conferir a situação da conta:', erro);
+    return res.status(500).json({ erro: 'Erro ao verificar a sessão.' });
+  }
+  req.userId = payload.id;
+  req.userEmail = payload.email;
+  next();
 };
 
 // ============================================================
@@ -26,15 +42,18 @@ const autenticar = (req, res, next) => {
 // visitante está logado, precisam saber quem ele é (ex: [RF10] pra
 // marcar "favoritado") sem exigir login pra acessar a rota.
 // ============================================================
-const autenticarOpcional = (req, res, next) => {
+const autenticarOpcional = async (req, res, next) => {
   const auth = req.headers.authorization;
   if (auth && auth.startsWith('Bearer ')) {
     try {
       const payload = jwt.verify(auth.slice(7), process.env.JWT_SECRET);
-      req.userId = payload.id;
-      req.userEmail = payload.email;
+      // Conta excluída ou suspensa navega como visitante
+      if (await situacaoDaConta(payload.id) === 'ativa') {
+        req.userId = payload.id;
+        req.userEmail = payload.email;
+      }
     } catch {
-      // Token inválido/expirado — segue como visitante anônimo, sem erro
+      // Token inválido/expirado (ou falha na consulta) — segue como visitante anônimo, sem erro
     }
   }
   next();
