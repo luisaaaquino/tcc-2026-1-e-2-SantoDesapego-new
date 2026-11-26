@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import GavetaPerfil from '../componentes/GavetaPerfil';
 import './Home.css';
 import Mapa from '../componentes/Mapa';
 import SeletorBairro, { BAIRROS } from '../componentes/SeletorBairro';
@@ -322,26 +323,15 @@ const Home = () => {
       <div className={`mobile-drawer${menuAberto ? ' open' : ''}`} aria-hidden={!menuAberto}>
         <div className="mobile-drawer-backdrop" onClick={fecharMenu} />
         <nav className="mobile-drawer-panel" aria-label="Menu principal">
-          {usuario && (
-            <Link to="/perfil" className="drawer-user" onClick={fecharMenu}>
-              <span className="drawer-avatar">
-                {usuario.foto_perfil
-                  ? <img src={usuario.foto_perfil} alt="" />
-                  : usuario.nome[0].toUpperCase()}
-              </span>
-              <span>{usuario.nome}<small>Ver meu perfil</small></span>
-            </Link>
-          )}
+          <GavetaPerfil usuario={usuario} onNavegar={fecharMenu} />
           <Link to="/explorar" onClick={fecharMenu}>Explorar desapegos</Link>
           <a href="#como-funciona" onClick={fecharMenu}>Como funciona</a>
           <Link to="/sobre" onClick={fecharMenu}>Sobre nós</Link>
           <Link to="/central-ajuda" onClick={fecharMenu}>Central de ajuda</Link>
-          {usuario ? (
+          {usuario && (
             <button type="button" className="drawer-logout" onClick={() => { fecharMenu(); handleLogout(); }}>
               <IconLogout /> Sair
             </button>
-          ) : (
-            <Link to="/login" onClick={fecharMenu}>Entrar</Link>
           )}
           <Link to={linkAnunciar} className="btn-home-primary drawer-cta" onClick={fecharMenu}>
             Anunciar

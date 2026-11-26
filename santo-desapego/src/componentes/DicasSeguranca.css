@@ -76,3 +76,27 @@
 @media (max-width: 860px) {
   .dicas-seg-completa { grid-template-columns: 1fr; gap: 1rem; }
 }
+
+/* Celular: os três grupos de dicas viram carrossel de arrastar para o
+   lado (o próximo aparece pela metade), em vez de três listas empilhadas */
+@media (max-width: 768px) {
+  .dicas-seg-completa {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    margin: 0 -1.25rem;
+    padding: 0.25rem 1.25rem 0.75rem;
+    scroll-padding-inline: 1.25rem;
+  }
+  .dicas-seg-completa::-webkit-scrollbar { display: none; }
+  .dicas-seg-grupo {
+    flex: 0 0 85%;
+    scroll-snap-align: start;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--cream);
+  }
+}

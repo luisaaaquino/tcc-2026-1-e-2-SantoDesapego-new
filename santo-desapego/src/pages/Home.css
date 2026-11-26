@@ -796,3 +796,61 @@
 /* Rodapé alinhado à mesma largura do conteúdo da página */
 .footer-wrap,
 .footer-tcc { max-width: 76rem; }
+
+/* ==========================================================
+   CELULAR — menos rolagem (mesmo padrão da página Sobre)
+   ========================================================== */
+@media (max-width: 768px) {
+  /* Itens de grid não encolhem abaixo do próprio conteúdo sem
+     min-width: 0 — sem isso as faixas de rolar para o lado esticavam
+     a coluna (e o mapa) além da largura da tela. */
+  .inicio-bairros > *,
+  .inicio .inicio-como .mo-pc__grid > *,
+  .inicio .inicio-como .mo-pc__text > * { min-width: 0; }
+
+  /* O kit do "Como funciona" dá altura mínima de uma tela inteira à
+     seção parada; no celular isso deixava um vão vazio. */
+  main.inicio > .inicio-como[data-moment][data-moment]:not(.is-live) { min-height: 0; }
+
+  /* Os três passos viram carrossel de arrastar para o lado */
+  .inicio .inicio-como:not(.is-live) .mo-pc__steps {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    margin: 0 -1rem;
+    padding: 0.25rem 1rem 0.75rem;
+    scroll-padding-inline: 1rem;
+  }
+  .inicio .inicio-como:not(.is-live) .mo-pc__steps::-webkit-scrollbar { display: none; }
+  .inicio .inicio-como:not(.is-live) .mo-pc__step {
+    flex: 0 0 85%;
+    scroll-snap-align: start;
+    align-content: start;
+    padding: 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--paper);
+  }
+  .inicio .inicio-como:not(.is-live) .mo-pc__visual.mo-pc__visual--lit {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+  }
+  .inicio .inicio-como .janela { font-size: 0.82rem; }
+
+  /* Bairros numa faixa só, de rolar para o lado (como as categorias) */
+  .inicio-bairros-lista {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 0 -1rem;
+    padding: 0 1rem 0.25rem;
+  }
+  .inicio-bairros-lista::-webkit-scrollbar { display: none; }
+  .inicio-bairro { flex-shrink: 0; white-space: nowrap; }
+}
+
+/* Rodapé sem a lista de integrantes: a licença fica logo abaixo da
+   linha do .footer-tcc, sem uma segunda linha em cima dela */
+.footer-tcc .cc-license { border-top: 0; padding-top: 0; }

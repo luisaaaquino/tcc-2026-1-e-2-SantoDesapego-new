@@ -545,3 +545,45 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   -webkit-mask: var(--icone) center / contain no-repeat;
           mask: var(--icone) center / contain no-repeat;
 }
+
+/* ── Celular: cabeçalho das páginas internas numa linha só ────
+   Perfil, Anúncio, Checkout, Mensagens, Admin, Login, Cadastro...
+   usam logo + botões ("Voltar para a home", "Meu perfil"...). Abaixo
+   de 600px eles não cabiam ao lado do logo e desciam para uma segunda
+   linha, dobrando a altura do cabeçalho. Aqui o botão que tem ícone
+   mostra só o ícone (o texto continua no HTML, então leitores de tela
+   seguem lendo "Voltar para a home"), e tudo fica numa linha. */
+@media (max-width: 600px) {
+  header .nav-top:not(.home-nav):not(.sobre-nav) {
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+  }
+  header .nav-top:not(.home-nav):not(.sobre-nav) .nav-actions {
+    flex-wrap: nowrap;
+    gap: 0.4rem;
+    margin-left: auto;
+    min-width: 0;
+  }
+  header .nav-actions .nav-btn:has(svg) {
+    font-size: 0 !important;
+    gap: 0;
+    width: 2.6rem;
+    height: 2.6rem;
+    padding: 0 !important;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  header .nav-actions .nav-btn:has(svg) svg {
+    width: 18px !important;
+    height: 18px !important;
+    color: var(--ink);
+  }
+  header .nav-top:not(.home-nav):not(.sobre-nav) .logo { flex-shrink: 0; }
+}
+
+/* ── Celular: os botões flutuantes (acessibilidade, assistente,
+   VLibras) não cobrem o fim da página: o rodapé ganha um respiro
+   embaixo do tamanho deles. ── */
+@media (max-width: 768px) {
+  .home-footer, .site-footer { padding-bottom: 5.5rem; }
+}

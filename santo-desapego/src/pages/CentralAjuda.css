@@ -292,7 +292,8 @@
      Escopado em .ajuda-wrapper: .nav-actions é compartilhada por
      outras páginas com header simples (Anúncio, Checkout, Perfil...)
      — sem esse escopo, essa regra apagava o botão "Voltar" delas. */
-  .ajuda-wrapper .nav-actions a.nav-btn:not(.nav-login-btn) { display: none !important; }
+  /* No celular fica o sino + "Explorar"; "Sobre nós" continua no rodapé */
+  .ajuda-wrapper .nav-actions a.nav-btn[href="/sobre"] { display: none !important; }
 }
 
 /* ── Acessibilidade ─────────────────────────────────────── */

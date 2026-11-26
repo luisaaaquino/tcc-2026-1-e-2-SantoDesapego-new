@@ -427,3 +427,125 @@
 .admin-tabs.m-has-ind .admin-tab { position: relative; z-index: 1; }
 .admin-tabs.m-has-ind .admin-tab.active { background: transparent; }
 .admin-tabs .m-tab-ind { background: var(--ink); }
+
+/* Celular: menos espaço interno na caixa do painel (cartão dentro de
+   cartão), sobrando mais largura para os números e gráficos */
+@media (max-width: 600px) {
+  .admin-content { padding: 1.25rem 1rem; }
+}
+
+/* ── Celular: cada linha da tabela vira um cartão recolhido ────
+   Fechado, o cartão é uma linha só: o nome (1ª célula) e o resumo
+   (Status, Data ou nº de anúncios — data-resumo, marcado em Admin.jsx).
+   Um toque abre os outros campos, com o nome da coluna antes de cada
+   valor (data-label), e os botões de ação embaixo. No computador a
+   tabela continua igual. */
+@media (max-width: 768px) {
+  .admin-table-wrap { overflow-x: visible; border: 0; border-radius: 0; }
+  .admin-table, .admin-table tbody { display: block; width: 100%; }
+  .admin-table thead { display: none; }
+  .admin-table tbody { display: grid; gap: 0.4rem; }
+
+  .admin-table tr {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 0.75rem;
+    align-items: center;
+    padding: 0.7rem 2.4rem 0.7rem 0.9rem;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+  }
+  /* setinha de abrir/fechar */
+  .admin-table tr::after {
+    content: '';
+    position: absolute;
+    right: 0.95rem;
+    top: 1.05rem;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid var(--ink-muted);
+    border-bottom: 2px solid var(--ink-muted);
+    transform: rotate(45deg);
+    transition: transform 0.2s var(--ease);
+  }
+  .admin-table tr[data-aberta]::after { transform: translateY(3px) rotate(-135deg); }
+  .admin-table tr[data-aberta] { border-color: var(--line-strong, var(--border)); box-shadow: var(--sombra-1); }
+  .admin-table tr:hover td { background: none; }
+
+  /* todas as células ocupam a linha inteira, com o rótulo à esquerda */
+  .admin-table td {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: start;
+    padding: 0.35rem 0;
+    border-top: 0;
+    overflow-wrap: anywhere;
+  }
+  .admin-table td::before {
+    content: attr(data-label);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ink-muted);
+    padding-top: 0.1rem;
+  }
+  .admin-table td > :is(span, .badge-status, .status-badge) { justify-self: start; }
+
+  /* nome: 1ª coluna da linha fechada */
+  .admin-table td:first-child {
+    grid-column: 1;
+    grid-row: 1;
+    display: block;
+    padding: 0;
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .admin-table tr[data-aberta] td:first-child { white-space: normal; }
+  .admin-table td:first-child::before { content: none; }
+  .admin-table td:first-child:focus-visible { outline-offset: 4px; border-radius: 4px; }
+
+  /* resumo: 2ª coluna da linha fechada, sem rótulo */
+  .admin-table td[data-resumo] {
+    grid-column: 2;
+    grid-row: 1;
+    display: block;
+    padding: 0;
+    font-size: 0.82rem;
+    color: var(--ink-muted);
+    white-space: nowrap;
+  }
+  .admin-table td[data-resumo]::before { content: none; }
+  .admin-table td[data-resumo="Anúncios"]::after { content: ' anúncio(s)'; }
+
+  /* fechado: esconde o resto */
+  .admin-table tr:not([data-aberta]) td:not(:first-child):not([data-resumo]) { display: none; }
+  .admin-table tr[data-aberta] td:first-child { margin-bottom: 0.4rem; }
+
+  /* células sem título de coluna (ações) */
+  .admin-table td[data-label=""] { display: block; }
+  .admin-table td[data-label=""]::before { content: none; }
+  .admin-table td.col-desc { max-width: none; }
+  .admin-table tr[data-aberta] td.col-acoes {
+    display: flex;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-soft);
+  }
+  .admin-table td.col-acoes::before { content: none; }
+  .admin-table td.col-acoes > * { flex: 1 1 auto; }
+
+  /* linha de "nada encontrado": sem seta, sem toque */
+  .admin-table tr:has(td[colspan]) { display: block; padding: 1rem; cursor: default; }
+  .admin-table tr:has(td[colspan])::after { content: none; }
+  .admin-table td.admin-vazio { display: block; text-align: center; color: var(--ink-muted); white-space: normal; }
+}

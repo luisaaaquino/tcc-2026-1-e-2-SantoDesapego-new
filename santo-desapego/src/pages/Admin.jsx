@@ -229,7 +229,80 @@ const Paginacao = ({ paginacao, pagina, setPagina }) => {
 /* ════════════════════════════════════════════════════════════
    COMPONENTE PRINCIPAL
    ════════════════════════════════════════════════════════════ */
+// No celular cada linha das tabelas vira um cartão recolhido (Admin.css):
+// mostra só o nome e um resumo (status, data ou nº de anúncios); um toque
+// abre os detalhes e os botões. Este hook, sem mexer no JSX de cada tabela:
+//  - copia o texto do <th> para data-label de cada <td> (rótulo do campo);
+//  - marca a célula de resumo (data-resumo) e deixa a primeira célula
+//    focável, com aria-expanded, para abrir/fechar pelo teclado também;
+//  - repete quando as tabelas mudam (troca de aba, busca, nova página).
+const COLUNA_RESUMO = ['Status', 'Data', 'Anúncios'];
+const ehCelular = () => window.matchMedia('(max-width: 768px)').matches;
+
+const useRotulosDasTabelas = () => {
+  useEffect(() => {
+    const rotular = () => {
+      document.querySelectorAll('table.admin-table').forEach((tabela) => {
+        const titulos = [...tabela.querySelectorAll('thead th')].map((th) => th.textContent.trim());
+        const resumo = COLUNA_RESUMO.map((t) => titulos.indexOf(t)).find((i) => i >= 0);
+        tabela.querySelectorAll('tbody tr').forEach((tr) => {
+          const celulas = [...tr.children];
+          celulas.forEach((td, i) => {
+            const rotulo = td.colSpan > 1 ? '' : (titulos[i] || '');
+            if (td.getAttribute('data-label') !== rotulo) td.setAttribute('data-label', rotulo);
+            if (i === resumo && td.colSpan === 1) td.setAttribute('data-resumo', titulos[i]);
+            else td.removeAttribute('data-resumo');
+          });
+          const primeira = celulas[0];
+          if (primeira && primeira.colSpan === 1 && !primeira.hasAttribute('tabindex')) {
+            primeira.setAttribute('tabindex', '0');
+            primeira.setAttribute('aria-expanded', tr.hasAttribute('data-aberta') ? 'true' : 'false');
+          }
+        });
+      });
+    };
+
+    const alternar = (tr) => {
+      const aberta = !tr.hasAttribute('data-aberta');
+      if (aberta) tr.setAttribute('data-aberta', ''); else tr.removeAttribute('data-aberta');
+      tr.firstElementChild?.setAttribute('aria-expanded', aberta ? 'true' : 'false');
+    };
+    const aoClicar = (e) => {
+      if (!ehCelular()) return;
+      const tr = e.target.closest('table.admin-table tbody tr');
+      if (!tr || tr.querySelector('td[colspan]')) return;
+      // botões, links e campos dentro da linha fazem a ação deles, não abrem/fecham
+      if (e.target.closest('button, a, input, select, textarea, label')) return;
+      alternar(tr);
+    };
+    const aoTeclar = (e) => {
+      if (!ehCelular() || (e.key !== 'Enter' && e.key !== ' ')) return;
+      const td = e.target.closest('table.admin-table tbody tr > td:first-child[tabindex]');
+      if (!td) return;
+      e.preventDefault();
+      alternar(td.parentElement);
+    };
+
+    rotular();
+    let quadro = 0;
+    const obs = new MutationObserver(() => {
+      cancelAnimationFrame(quadro);
+      quadro = requestAnimationFrame(rotular);
+    });
+    obs.observe(document.body, { childList: true, subtree: true });
+    document.addEventListener('click', aoClicar);
+    document.addEventListener('keydown', aoTeclar);
+    return () => {
+      obs.disconnect();
+      cancelAnimationFrame(quadro);
+      document.removeEventListener('click', aoClicar);
+      document.removeEventListener('keydown', aoTeclar);
+    };
+  }, []);
+};
+
 const Admin = () => {
+  useRotulosDasTabelas();
   const navigate = useNavigate();
   const [usuario, setUsuario] = useState(null);
   const [carregando, setCarregando] = useState(true);

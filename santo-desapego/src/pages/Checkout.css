@@ -62,6 +62,14 @@
   font-weight: 600;
 }
 
+/* Celular: as três etapas em colunas iguais (número em cima, nome
+   embaixo), numa linha só, em vez de quebrar com um traço solto */
+@media (max-width: 520px) {
+  .checkout-etapas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.25rem; flex-wrap: nowrap; }
+  .checkout-etapas li { flex-direction: column; gap: 0.35rem; text-align: center; font-size: 0.78rem; line-height: 1.25; }
+  .checkout-etapas li + li::before { display: none; }
+}
+
 .checkout-etapas li.atual { color: var(--ink); }
 .checkout-etapas li.atual span {
   background: var(--forest);

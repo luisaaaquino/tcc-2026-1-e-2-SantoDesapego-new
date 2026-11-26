@@ -44,12 +44,6 @@ const RodapeSite = ({ usuario, onAbrirLegal }) => {
       </div>
 
       <div className="footer-tcc">
-        <p className="footer-autores">
-          <span>Luisa Aquino</span>
-          <span>Maria Erica Cruz</span>
-          <span>Paulo Santana</span>
-        </p>
-
         <div className="cc-license">
           <Link to="/">Santo Desapego</Link> © 2026 by{' '}
           <span className="cc-authors">Paulo Santana, Maria Erica Cruz e Luisa Aquino</span>{' '}

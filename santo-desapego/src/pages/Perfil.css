@@ -1155,3 +1155,22 @@
 .perfil-tabs.m-has-ind .perfil-tab.active { background: transparent; }
 .perfil-tabs .m-tab-ind { background: var(--forest); }
 .perfil-tabs:has(.perfil-tab.danger.active) .m-tab-ind { background: var(--terracotta); }
+
+/* Celular: "Quer anunciar algo?" e "Procurando algo?" lado a lado num
+   carrossel; a caixa do conteúdo perde um pouco do espaço interno
+   (era um cartão dentro de outro, comendo a largura da tela). */
+@media (max-width: 768px) {
+  .painel-cta-grid {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    margin-inline: -1rem;
+    padding: 0.25rem 1rem 0.75rem;
+    scroll-padding-inline: 1rem;
+  }
+  .painel-cta-grid::-webkit-scrollbar { display: none; }
+  .painel-cta-grid > .painel-cta { flex: 0 0 82%; scroll-snap-align: start; }
+  .perfil-content { padding: 1.25rem 1rem; }
+}

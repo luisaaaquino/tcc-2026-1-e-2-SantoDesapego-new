@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import GavetaPerfil from '../componentes/GavetaPerfil';
 import './Sobre.css';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import LegalModal from '../componentes/LegalModal';
 import RodapeSite from '../componentes/RodapeSite';
-import { IconLogout } from '../componentes/Icones';
+import { IconLogout, IconCheck, IconArrowRight, IconPin, IconSearch, IconChat } from '../componentes/Icones';
+import { BAIRROS } from '../componentes/SeletorBairro';
 
 /* ── Dados — altere aqui sem tocar no JSX ──────────────────── */
 
@@ -31,30 +33,10 @@ const TEAM = [
 ];
 
 const VALORES = [
-  {
-    num: '01',
-    title: 'Vizinhança em primeiro lugar',
-    desc: 'Acreditamos que a melhor transação é a que acontece a pé. Validamos CEPs para garantir que tudo fique dentro do distrito de Santo Amaro.',
-    accent: 'terracotta',
-  },
-  {
-    num: '02',
-    title: 'Nada vira lixo antes da hora',
-    desc: 'Cada sofá, livro ou bicicleta anunciada é um item a menos no aterro — e uma história a mais na casa de alguém.',
-    accent: 'forest',
-  },
-  {
-    num: '03',
-    title: 'Confiança se constrói',
-    desc: 'Avaliações mútuas após cada transação criam uma reputação real, de vizinho para vizinho.',
-    accent: 'mustard',
-  },
-  {
-    num: '04',
-    title: 'Tecnologia com propósito',
-    desc: 'Um projeto acadêmico que usa código para responder a uma pergunta concreta: como o bairro pode consumir melhor?',
-    accent: 'ink',
-  },
+  { num: '01', title: 'Vizinhança primeiro', desc: 'A melhor venda é a que se resolve a pé.', accent: 'terracotta' },
+  { num: '02', title: 'Nada vira lixo', desc: 'Cada item anunciado é um a menos no aterro.', accent: 'forest' },
+  { num: '03', title: 'Confiança se constrói', desc: 'Avaliações de vizinho para vizinho.', accent: 'mustard' },
+  { num: '04', title: 'Tecnologia com propósito', desc: 'Código a serviço do bairro.', accent: 'ink' },
 ];
 
 const MARCOS = [
@@ -65,12 +47,68 @@ const MARCOS = [
 ];
 
 
+// Os três jeitos de manter a venda no bairro (ilustração do "Por que existe")
+const PILARES = [
+  { Icone: IconPin, titulo: 'Só CEP da região', texto: 'Para anunciar, o CEP precisa ser de Santo Amaro e arredores.' },
+  { Icone: IconSearch, titulo: 'Busca por bairro', texto: 'Os anúncios mais perto de você aparecem primeiro.' },
+  { Icone: IconChat, titulo: 'Entrega entre vizinhos', texto: 'Vocês combinam pelo chat e se encontram no bairro.' },
+];
+
+// Faz cada [data-revelar] aparecer suavemente quando entra na tela.
+// Sem IntersectionObserver ou com "reduzir movimento", tudo já aparece.
+const useRevelarAoRolar = (ref) => {
+  useEffect(() => {
+    const raiz = ref.current;
+    if (!raiz) return undefined;
+    const itens = raiz.querySelectorAll('[data-revelar]');
+    const reduzir = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduzir || typeof IntersectionObserver === 'undefined') {
+      itens.forEach((el) => el.setAttribute('data-visivel', ''));
+      return undefined;
+    }
+    const obs = new IntersectionObserver((entradas) => {
+      entradas.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.setAttribute('data-visivel', '');
+          obs.unobserve(e.target);
+        }
+      });
+    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.12 });
+    itens.forEach((el) => obs.observe(el));
+    return () => obs.disconnect();
+  }, [ref]);
+};
+
+const useContador = (alvo, duracao = 1100) => {
+  const [valor, setValor] = useState(0);
+  useEffect(() => {
+    const reduzir = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    let quadro;
+    const inicio = performance.now();
+    const passo = (agora) => {
+      const t = reduzir ? 1 : Math.min(1, (agora - inicio) / duracao);
+      const suave = 1 - (1 - t) ** 3;
+      setValor(Math.round(alvo * suave));
+      if (t < 1) quadro = requestAnimationFrame(passo);
+    };
+    quadro = requestAnimationFrame(passo);
+    return () => cancelAnimationFrame(quadro);
+  }, [alvo, duracao]);
+  return valor;
+};
+
 /* ════════════════════════════════════════════════════════════
    COMPONENTE
    ════════════════════════════════════════════════════════════ */
 const Sobre = () => {
   const navigate = useNavigate();
   const [usuario, setUsuario] = useState(null);
+
+  // ── Interações da página
+  const [marcoAtivo, setMarcoAtivo] = useState(2);
+  const totalBairros = useContador(BAIRROS.length);
+  const mainRef = useRef(null);
+  useRevelarAoRolar(mainRef);
 
   // ── Menu mobile (hambúrguer + gaveta) — mesmo padrão da Home/Explorar.
   // Abaixo de 768px o .sobre-nav-links (Início/Explorar/Sobre nós) some
@@ -182,26 +220,15 @@ const Sobre = () => {
       <div className={`mobile-drawer${menuAberto ? ' open' : ''}`} aria-hidden={!menuAberto}>
         <div className="mobile-drawer-backdrop" onClick={fecharMenu} />
         <nav className="mobile-drawer-panel" aria-label="Menu principal">
-          {usuario && (
-            <Link to="/perfil" className="drawer-user" onClick={fecharMenu}>
-              <span className="drawer-avatar">
-                {usuario.foto_perfil
-                  ? <img src={usuario.foto_perfil} alt="" />
-                  : usuario.nome[0].toUpperCase()}
-              </span>
-              <span>{usuario.nome}<small>Ver meu perfil</small></span>
-            </Link>
-          )}
+          <GavetaPerfil usuario={usuario} onNavegar={fecharMenu} />
           <Link to="/" onClick={fecharMenu}>Início</Link>
           <Link to="/explorar" onClick={fecharMenu}>Explorar desapegos</Link>
           <Link to="/sobre" onClick={fecharMenu}>Sobre nós</Link>
           <Link to="/central-ajuda" onClick={fecharMenu}>Central de ajuda</Link>
-          {usuario ? (
+          {usuario && (
             <button type="button" className="drawer-logout" onClick={() => { fecharMenu(); handleLogout(); }}>
               <IconLogout /> Sair
             </button>
-          ) : (
-            <Link to="/login" onClick={fecharMenu}>Entrar</Link>
           )}
           <Link to={linkAnunciar} className="btn-home-primary drawer-cta" onClick={fecharMenu}>
             Anunciar
@@ -209,72 +236,217 @@ const Sobre = () => {
         </nav>
       </div>
 
-      <main className="sobre">
+      <main className="sobre" ref={mainRef}>
 
-        <section className="sobre-abertura">
-          <h1>Sobre o Santo Desapego</h1>
-          <p className="sobre-lede">
-            O Santo Desapego é um marketplace de usados para quem mora em Santo Amaro
-            e região. Nasceu como Trabalho de Conclusão de Curso no Centro Universitário
-            Senac Santo Amaro: o que sobra numa casa encontra quem precisa a poucos
-            quarteirões de distância.
-          </p>
-        </section>
-
-        <section className="sobre-bloco">
-          <h2>Por que existe</h2>
-          <div className="sobre-texto">
-            <p>
-              A ideia nasceu de uma cena comum: móveis bons na calçada esperando o
-              caminhão de lixo, enquanto a poucos metros dali alguém procurava
-              exatamente aquilo em um marketplace grande, comprando de outro estado.
+        {/* ── Abertura ── */}
+        <section className="sobre-abertura" aria-labelledby="titulo-sobre">
+          <div className="sobre-abertura-texto">
+            <h1 id="titulo-sobre">
+              Um marketplace do tamanho do{' '}
+              <span className="sobre-destaque">
+                bairro
+                <svg viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true">
+                  <path d="M3 14 C 50 4, 120 4, 197 11" />
+                </svg>
+              </span>
+            </h1>
+            <p className="sobre-lede">
+              Usados de vizinho para vizinho em Santo Amaro e região. O que sobra numa
+              casa chega a quem precisa, a poucas quadras.
             </p>
-            <p>
-              Os grandes marketplaces conectam o Brasil inteiro, mas não o quarteirão.
-              O Santo Desapego faz o caminho contrário: anúncios só com CEP da região,
-              busca e ordenação por bairro e a entrega combinada entre vizinhos.
-            </p>
+            <div className="sobre-acoes">
+              <Link to="/explorar" className="btn-primary">Ver os desapegos <IconArrowRight size={16} /></Link>
+              <a href="#quem-faz" className="nav-btn">Conhecer a equipe</a>
+            </div>
           </div>
-        </section>
 
-        <section className="sobre-bloco">
-          <h2>Trajetória do projeto</h2>
-          <ol className="sobre-linha">
-            {MARCOS.map((m) => (
-              <li key={m.data}>
-                <span className="sobre-linha-data">{m.data}</span>
-                <div>
-                  <h3>{m.titulo}</h3>
-                  <p>{m.desc}</p>
+          <dl className="sobre-numeros" aria-label="O Santo Desapego em números">
+            <div className="sobre-numero sobre-numero--destaque">
+              <dd aria-label={String(BAIRROS.length)}>{totalBairros}</dd>
+              <dt>bairros atendidos</dt>
+              <div className="sobre-letreiro" aria-hidden="true">
+                <div className="sobre-letreiro-faixa">
+                  {[...BAIRROS, ...BAIRROS].map((b, i) => <span key={i}>{b}</span>)}
                 </div>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <section className="sobre-bloco">
-          <h2>No que a gente acredita</h2>
-          <dl className="sobre-valores">
-            {VALORES.map((v) => (
-              <div key={v.title}>
-                <dt>{v.title}</dt>
-                <dd>{v.desc}</dd>
               </div>
-            ))}
+            </div>
+            <div className="sobre-numero">
+              <dd>5%</dd>
+              <dt>de taxa, só quando a venda acontece</dt>
+            </div>
+            <div className="sobre-numero">
+              <dd>R$&nbsp;0</dd>
+              <dt>para anunciar</dt>
+            </div>
           </dl>
         </section>
 
-        <section className="sobre-bloco">
-          <h2>Quem faz</h2>
+        {/* ── Por que existe: a cena + mini mapa animado ── */}
+        <section className="sobre-bloco sobre-porque" aria-labelledby="titulo-porque" data-revelar>
+          <div className="sobre-porque-texto">
+            <span className="sobre-sobretitulo">Por que existe</span>
+            <h2 id="titulo-porque">Os grandes marketplaces conectam o Brasil. A gente conecta o quarteirão.</h2>
+            <ol className="sobre-historia">
+              <li>
+                <span className="sobre-historia-rotulo">A cena</span>
+                <p>
+                  Móveis bons na calçada esperando o caminhão de lixo, enquanto a poucos
+                  metros dali alguém procurava exatamente aquilo num marketplace grande,
+                  comprando de outro estado.
+                </p>
+              </li>
+              <li>
+                <span className="sobre-historia-rotulo sobre-historia-rotulo--verde">A resposta</span>
+                <p>
+                  O Santo Desapego faz o caminho contrário: o que sobra numa casa encontra
+                  quem precisa a poucas quadras.
+                </p>
+              </li>
+            </ol>
+          </div>
+
+          <div className="sobre-mapinha">
+            <figure className="sobre-mapinha-quadro" aria-hidden="true">
+              <svg viewBox="0 0 400 280" preserveAspectRatio="xMidYMid slice">
+                {/* quarteirões */}
+                <g className="mapinha-quadras">
+                  <rect x="20" y="20" width="90" height="70" rx="6" />
+                  <rect x="130" y="20" width="120" height="70" rx="6" />
+                  <rect x="270" y="20" width="110" height="70" rx="6" />
+                  <rect x="20" y="110" width="90" height="70" rx="6" />
+                  <rect x="130" y="110" width="50" height="70" rx="6" />
+                  <rect x="200" y="110" width="50" height="70" rx="6" />
+                  <rect x="270" y="110" width="110" height="70" rx="6" />
+                  <rect x="20" y="200" width="90" height="70" rx="6" />
+                  <rect x="130" y="200" width="120" height="70" rx="6" />
+                  <rect x="270" y="200" width="110" height="70" rx="6" />
+                </g>
+                {/* rota curta: pelas ruas, entre vizinhos */}
+                <path className="mapinha-rota" d="M120 190 H190 V100 H260" />
+                {/* pinos */}
+                <g className="mapinha-pino mapinha-pino--a" transform="translate(120 190)">
+                  <circle className="mapinha-onda" r="10" />
+                  <circle r="9" />
+                </g>
+                <g className="mapinha-pino mapinha-pino--b" transform="translate(260 100)">
+                  <circle className="mapinha-onda" r="10" />
+                  <circle r="9" />
+                </g>
+              </svg>
+              <span className="mapinha-etiqueta mapinha-etiqueta--a">Sofá na calçada</span>
+              <span className="mapinha-etiqueta mapinha-etiqueta--b">Vizinho procurando</span>
+              <span className="mapinha-etiqueta mapinha-etiqueta--rota">a poucas quadras</span>
+            </figure>
+
+            <ul className="sobre-pilares">
+              {PILARES.map(({ Icone, titulo, texto }, i) => (
+                <li key={titulo} style={{ '--i': i }}>
+                  <span className="sobre-pilar-icone" aria-hidden="true"><Icone size={18} /></span>
+                  <div>
+                    <h3>{titulo}</h3>
+                    <p>{texto}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        {/* ── Trajetória: linha do tempo clicável ── */}
+        <section className="sobre-bloco" aria-labelledby="titulo-trajetoria" data-revelar>
+          <span className="sobre-sobretitulo">Trajetória</span>
+          <h2 id="titulo-trajetoria">Da pergunta à plataforma</h2>
+
+          <div className="sobre-tempo">
+            <ol
+              className="sobre-tempo-marcos"
+              style={{ '--p': marcoAtivo / (MARCOS.length - 1) }}
+            >
+              {MARCOS.map((m, i) => (
+                <li key={m.data}>
+                  <button
+                    type="button"
+                    className={`${i === marcoAtivo ? 'ativo' : ''}${i < marcoAtivo ? ' passado' : ''}`}
+                    aria-pressed={i === marcoAtivo}
+                    aria-controls="sobre-tempo-detalhe"
+                    onClick={() => setMarcoAtivo(i)}
+                  >
+                    <span className="sobre-tempo-ponto" aria-hidden="true" />
+                    <span className="sobre-tempo-data">{m.data}</span>
+                    <span className="sobre-tempo-titulo">{m.titulo}</span>
+                  </button>
+                </li>
+              ))}
+            </ol>
+            <div id="sobre-tempo-detalhe" className="sobre-tempo-detalhe" aria-live="polite">
+              <div key={marcoAtivo} className="sobre-tempo-detalhe-conteudo">
+                <span className="sobre-tempo-detalhe-data">{MARCOS[marcoAtivo].data}</span>
+                <h3>{MARCOS[marcoAtivo].titulo}</h3>
+                <p>{MARCOS[marcoAtivo].desc}</p>
+              </div>
+              <div className="sobre-tempo-navegar">
+                <button
+                  type="button"
+                  className="nav-btn"
+                  onClick={() => setMarcoAtivo((i) => Math.max(0, i - 1))}
+                  disabled={marcoAtivo === 0}
+                >
+                  Anterior
+                </button>
+                <button
+                  type="button"
+                  className="nav-btn"
+                  onClick={() => setMarcoAtivo((i) => Math.min(MARCOS.length - 1, i + 1))}
+                  disabled={marcoAtivo === MARCOS.length - 1}
+                >
+                  Próximo
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Valores ── */}
+        <section className="sobre-bloco" aria-labelledby="titulo-valores">
+          <span className="sobre-sobretitulo" data-revelar>No que a gente acredita</span>
+          <h2 id="titulo-valores" data-revelar>Quatro princípios que guiaram cada tela</h2>
+          <ul className="sobre-valores">
+            {VALORES.map((v, i) => (
+              <li
+                key={v.title}
+                className={`sobre-valor sobre-valor--${v.accent}`}
+                data-revelar
+                style={{ '--atraso': `${i * 70}ms` }}
+              >
+                <span className="sobre-valor-num" aria-hidden="true">{v.num}</span>
+                <h3>{v.title}</h3>
+                <p>{v.desc}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* ── Equipe ── */}
+        <section className="sobre-bloco" id="quem-faz" aria-labelledby="titulo-equipe">
+          <span className="sobre-sobretitulo" data-revelar>Quem faz</span>
+          <h2 id="titulo-equipe" data-revelar>Três estudantes, um bairro</h2>
+          <p className="sobre-intro" data-revelar>Passe o mouse em cada pessoa para ver o que ela faz no projeto.</p>
           <ul className="sobre-equipe">
-            {TEAM.map((pessoa) => (
-              <li key={pessoa.nome}>
-                <span className="sobre-equipe-iniciais" aria-hidden="true">
+            {TEAM.map((pessoa, i) => (
+              <li
+                key={pessoa.nome}
+                className={`sobre-pessoa sobre-pessoa--${pessoa.accent}`}
+                data-revelar
+                tabIndex={0}
+                style={{ '--atraso': `${i * 90}ms` }}
+              >
+                <span className="sobre-pessoa-iniciais" aria-hidden="true">
                   {pessoa.nome.split(' ').map((n) => n[0]).slice(0, 2).join('')}
                 </span>
-                <div>
-                  <h3>{pessoa.nome}</h3>
-                  <p className="sobre-equipe-papel">{pessoa.papel}</p>
+                <h3>{pessoa.nome}</h3>
+                <p className="sobre-pessoa-papel">{pessoa.papel}</p>
+                <div className="sobre-pessoa-bio">
+                  <span className="sobre-pessoa-bio-rotulo">No projeto</span>
                   <p>{pessoa.bio}</p>
                 </div>
               </li>
@@ -282,9 +454,18 @@ const Sobre = () => {
           </ul>
         </section>
 
-        <section className="sobre-fim">
-          <p>Tem algo parado em casa? Anunciar leva poucos minutos.</p>
-          <Link to={linkAnunciar} className="btn-primary">Anunciar um item</Link>
+        {/* ── Chamada final ── */}
+        <section className="sobre-fim" data-revelar>
+          <div>
+            <h2>Tem algo parado em casa?</h2>
+            <p>Anunciar leva poucos minutos e não custa nada. Alguém a poucas quadras pode estar procurando.</p>
+          </div>
+          <div className="sobre-fim-acoes">
+            <Link to={linkAnunciar} className="btn-primary">Anunciar um item</Link>
+            <Link to="/explorar" className="sobre-fim-link">
+              <IconCheck size={16} /> Ver o que já está à venda
+            </Link>
+          </div>
         </section>
 
       </main>
