@@ -401,7 +401,8 @@ describe('RF18 - Notificações ao Usuário', () => {
 
     expect(criarNotificacao).toHaveBeenCalledWith(
       VENDEDOR, 'nova_mensagem', 'Nova mensagem de Ana', expect.stringContaining('Bicicleta'),
-      '/mensagens', expect.objectContaining({ citacao: 'Ainda está disponível?' }),
+      // o link abre direto a conversa em que a mensagem foi enviada
+      '/mensagens?conversa=3', expect.objectContaining({ citacao: 'Ainda está disponível?' }),
     );
   });
 });

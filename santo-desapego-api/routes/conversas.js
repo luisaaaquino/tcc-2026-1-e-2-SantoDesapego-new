@@ -289,7 +289,8 @@ router.post('/api/conversas/:id/mensagens', autenticar, async (req, res) => {
       'nova_mensagem',
       `Nova mensagem de ${remetente_nome}`,
       `${remetente_nome} enviou uma mensagem sobre o anúncio "${anuncio_titulo}": "${conteudo.trim().slice(0, 140)}"`,
-      '/mensagens',
+      // abre direto a conversa (antes caía na lista e a pessoa tinha que procurar)
+      `/mensagens?conversa=${conversaId}`,
       { citacao: conteudo.trim().slice(0, 500) }
     );
 

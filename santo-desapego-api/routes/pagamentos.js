@@ -159,7 +159,9 @@ const registrarPagamento = async ({ dados, anuncio, compradorId, sellerAccessTok
       'pagamento_confirmado',
       'Pagamento confirmado',
       `Seu pagamento de "${anuncio.titulo}" foi aprovado e fica retido até você confirmar o recebimento. Combine a entrega com o vendedor pelo chat. Ao receber a peça, peça o código de entrega ao vendedor e digite em "Compras realizadas".`,
-      '/mensagens'
+      // leva para "Compras realizadas", onde o comprador acompanha a
+      // compra e digita o código de entrega (antes abria o chat)
+      '/perfil?aba=compras'
     );
   }
 

@@ -220,6 +220,10 @@ describe('RF18 - Notificações ao Usuário', () => {
 
     const tipos = notificacoesGravadas().map(([usuario, tipo]) => [usuario, tipo]);
     expect(tipos).toEqual(expect.arrayContaining([[VENDEDOR, 'pagamento_confirmado'], [COMPRADOR, 'pagamento_confirmado']]));
+
+    // Clicar na notificação leva cada um à aba certa do perfil
+    const links = notificacoesGravadas().map(([usuario, , , , link]) => [usuario, link]);
+    expect(links).toEqual(expect.arrayContaining([[VENDEDOR, '/perfil?aba=vendas'], [COMPRADOR, '/perfil?aba=compras']]));
   });
 
   test('confirmar a mesma compra de novo não duplica as notificações', async () => {
