@@ -244,6 +244,22 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .nav-btn svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--ink-muted); }
 .nav-btn:hover { background: var(--cream-soft); border-color: var(--cream-deep); }
+/* "← Voltar" à esquerda, no começo do conteúdo (componente LinkVoltar) */
+.link-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 1.25rem;
+  padding: 0.3rem 0;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  text-decoration: none;
+  transition: color 0.15s var(--ease);
+}
+.link-voltar svg { flex-shrink: 0; transition: transform 0.15s var(--ease); }
+.link-voltar:hover { color: var(--terracotta); }
+.link-voltar:hover svg { transform: translateX(-3px); }
 /* Ação principal (terracota) — "Anunciar", "Comprar" */
 .btn-sell,
 .btn-primary {

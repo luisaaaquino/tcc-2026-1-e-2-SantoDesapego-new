@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import './Anuncio.css';
 import NotificacoesSino from '../componentes/NotificacoesSino';
-import SiteHeader from '../componentes/SiteHeader';
-import { IconHeart, IconArrowLeft } from '../componentes/Icones';
+import SiteHeader, { LinkVoltar } from '../componentes/SiteHeader';
+import { IconHeart } from '../componentes/Icones';
 import CarrosselAnuncios from '../componentes/CarrosselAnuncios';
 import DicasSeguranca from '../componentes/DicasSeguranca';
 
@@ -319,10 +319,7 @@ const Anuncio = () => {
 
       <div className="anuncio-container">
         {/* Voltar fica à esquerda, onde a pessoa procura primeiro */}
-        <Link to="/explorar" className="anuncio-voltar">
-          <IconArrowLeft />
-          Voltar para o Explorar
-        </Link>
+        <LinkVoltar to="/explorar">Voltar para o Explorar</LinkVoltar>
 
         <div className="anuncio-grid">
 

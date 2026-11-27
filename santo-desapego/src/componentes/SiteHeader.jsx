@@ -24,4 +24,14 @@ export const NavBackButton = ({ to, children }) => (
   </Link>
 );
 
+/* "← Voltar" no começo do conteúdo, à esquerda — onde a pessoa
+   procura primeiro quando quer voltar uma tela (usado no anúncio
+   e no checkout, no lugar do botão no canto direito do topo) */
+export const LinkVoltar = ({ to, children }) => (
+  <Link to={to} className="link-voltar">
+    <IconArrowLeft />
+    {children}
+  </Link>
+);
+
 export default SiteHeader;

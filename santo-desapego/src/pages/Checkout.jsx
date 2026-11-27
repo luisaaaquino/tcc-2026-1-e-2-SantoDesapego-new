@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import './Checkout.css';
 import NotificacoesSino from '../componentes/NotificacoesSino';
-import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
+import SiteHeader, { LinkVoltar } from '../componentes/SiteHeader';
 
 import { API_URL } from '../config';
 
@@ -87,7 +87,6 @@ const Checkout = () => {
   const Header = () => (
     <SiteHeader>
       <NotificacoesSino />
-      <NavBackButton to={`/anuncio/${id}`}>Voltar para o anúncio</NavBackButton>
     </SiteHeader>
   );
 
@@ -123,6 +122,7 @@ const Checkout = () => {
       <Header />
 
       <div className="checkout-container">
+        <LinkVoltar to={`/anuncio/${id}`}>Voltar para o anúncio</LinkVoltar>
 
         {/* ── Etapas ── */}
         <ol className="checkout-etapas">
