@@ -35,6 +35,7 @@ const cepDentroDeSantoAmaro = (cepNumeros) => {
 };
 
 import { API_URL } from '../config';
+import { salvarSessao } from '../utils/sessao';
 
 // ============================================================
 //  Validação real de CPF — checa os 2 dígitos verificadores
@@ -338,8 +339,8 @@ const Cadastro = () => {
             <VerificacaoCodigo
               verificacao={verificacao}
               aoVerificar={(dados) => {
-                localStorage.setItem('sd_token',   dados.token);
-                localStorage.setItem('sd_usuario', JSON.stringify(dados.usuario));
+                // conta recém-criada: entra já lembrando (como era antes)
+                salvarSessao(dados.token, dados.usuario, { lembrar: true });
                 navigate('/');
               }}
               aoVoltar={() => navigate('/login')}

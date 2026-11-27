@@ -8,6 +8,7 @@ import VerificacaoCodigo from '../componentes/VerificacaoCodigo';
 import { API_URL, GOOGLE_CLIENT_ID } from '../config';
 import { PlacaBairro } from '../componentes/CartaoAnuncio';
 import { formatarPreco } from '../utils/formato';
+import { salvarSessao, emailLembrado } from '../utils/sessao';
 
 // ============================================================
 //  Componente interno (precisa ficar dentro do Provider)
@@ -15,10 +16,11 @@ import { formatarPreco } from '../utils/formato';
 const LoginContent = () => {
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    remember: false,
+  // "Lembrar de mim": se a pessoa marcou da última vez, o e-mail já vem
+  // preenchido e a opção já vem marcada
+  const [formData, setFormData] = useState(() => {
+    const email = emailLembrado();
+    return { email, password: '', remember: !!email };
   });
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -104,8 +106,7 @@ const LoginContent = () => {
           return;
         }
 
-        localStorage.setItem('sd_token',   dados.token);
-        localStorage.setItem('sd_usuario', JSON.stringify(dados.usuario));
+        salvarSessao(dados.token, dados.usuario, { lembrar: formData.remember, email: dados.usuario?.email });
         navigate('/');
       } catch (erro) {
         console.error('Erro Google:', erro);
@@ -171,8 +172,7 @@ const LoginContent = () => {
               <VerificacaoCodigo
                 verificacao={verificacao}
                 aoVerificar={(dados) => {
-                  localStorage.setItem('sd_token',   dados.token);
-                  localStorage.setItem('sd_usuario', JSON.stringify(dados.usuario));
+                  salvarSessao(dados.token, dados.usuario, { lembrar: formData.remember, email: formData.email.trim() });
                   navigate('/');
                 }}
                 aoVoltar={() => setVerificacao(null)}

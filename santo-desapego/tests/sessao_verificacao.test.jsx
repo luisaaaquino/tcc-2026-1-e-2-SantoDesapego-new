@@ -45,6 +45,41 @@ describe('RF02 - Autenticação e Gestão de Sessão', () => {
     expect(localStorage.length).toBe(0);
   });
 
+  describe('"Lembrar de mim"', () => {
+    // simula o navegador sendo fechado: ele apaga os cookies de sessão
+    const fecharNavegador = () => { document.cookie = 'sd_sessao_visita=; path=/; max-age=0'; };
+    beforeEach(() => { localStorage.clear(); fecharNavegador(); });
+
+    test('marcado: a sessão continua depois de fechar o navegador e o e-mail fica salvo', () => {
+      sessao.salvarSessao('tok', { nome: 'Ana' }, { lembrar: true, email: 'ana@teste.com' });
+      fecharNavegador();
+      sessao.encerrarSessaoSemLembrar();
+      expect(localStorage.getItem('sd_token')).toBe('tok');
+      expect(sessao.emailLembrado()).toBe('ana@teste.com');
+    });
+
+    test('desmarcado: a sessão vale enquanto o navegador está aberto', () => {
+      sessao.salvarSessao('tok', { nome: 'Ana' }, { lembrar: false, email: 'ana@teste.com' });
+      sessao.encerrarSessaoSemLembrar(); // recarregou a página / abriu outra aba
+      expect(localStorage.getItem('sd_token')).toBe('tok');
+    });
+
+    test('desmarcado: ao fechar o navegador, a sessão acaba e o e-mail não fica salvo', () => {
+      sessao.salvarSessao('tok', { nome: 'Ana' }, { lembrar: false, email: 'ana@teste.com' });
+      fecharNavegador();
+      sessao.encerrarSessaoSemLembrar();
+      expect(localStorage.getItem('sd_token')).toBeNull();
+      expect(localStorage.getItem('sd_usuario')).toBeNull();
+      expect(sessao.emailLembrado()).toBe('');
+    });
+
+    test('quem entrou antes desta mudança (sem a opção gravada) continua logado', () => {
+      localStorage.setItem('sd_token', 'tok-antigo');
+      sessao.encerrarSessaoSemLembrar();
+      expect(localStorage.getItem('sd_token')).toBe('tok-antigo');
+    });
+  });
+
   describe('sessão que vence com o site aberto', () => {
     const instalar = (resposta) => {
       vi.stubGlobal('fetch', vi.fn(async () => resposta));
