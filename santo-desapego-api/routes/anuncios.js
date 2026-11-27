@@ -1,9 +1,9 @@
 const express = require('express');
 const pool = require('../db');
 const { autenticar, autenticarOpcional } = require('../middleware/auth');
-const { validarCEPSantoAmaro, conteudoTemPalavrasProibidas } = require('../utils/validacao');
+const { conteudoTemPalavrasProibidas } = require('../utils/validacao');
 const { distanciaEntreBairros } = require('../utils/geolocalizacao');
-const { validarDadosAnuncio, inserirAnuncio } = require('../services/anuncioService');
+const { validarDadosAnuncio, inserirAnuncio, enderecoParaAnunciar } = require('../services/anuncioService');
 
 const router = express.Router();
 
@@ -12,10 +12,15 @@ const router = express.Router();
 // ============================================================
 router.post('/api/anuncios', autenticar, async (req, res) => {
   try {
-    const erro = await validarDadosAnuncio(req.body);
+    // [RN01] CEP e bairro vêm do cadastro do vendedor, não do formulário
+    const endereco = await enderecoParaAnunciar(req.userId);
+    if (endereco.erro) return res.status(400).json({ erro: endereco.erro });
+    const dados = { ...req.body, cep: endereco.cep, bairro: endereco.bairro };
+
+    const erro = await validarDadosAnuncio(dados);
     if (erro) return res.status(400).json({ erro });
 
-    const anuncio = await inserirAnuncio({ vendedorId: req.userId, ...req.body });
+    const anuncio = await inserirAnuncio({ vendedorId: req.userId, ...dados });
     console.log(`📦 Anúncio #${anuncio.id} criado por usuário #${req.userId}`);
 
     return res.status(201).json({
@@ -52,9 +57,13 @@ router.put('/api/anuncios/:id', autenticar, async (req, res) => {
     const {
       titulo, descricao, preco,
       estado_conservacao, categoria_id,
-      cep, bairro,
       imagens
     } = req.body;
+
+    // [RN01] Na edição também: o anúncio acompanha o endereço do cadastro
+    const endereco = await enderecoParaAnunciar(req.userId);
+    if (endereco.erro) return res.status(400).json({ erro: endereco.erro });
+    const { cep, bairro } = endereco;
 
     // Mesmas validações do cadastro do anúncio
     if (!titulo || titulo.trim().length < 5)
@@ -69,14 +78,6 @@ router.put('/api/anuncios/:id', autenticar, async (req, res) => {
       return res.status(400).json({ erro: 'Estado de conservação inválido.' });
     if (!categoria_id)
       return res.status(400).json({ erro: 'Selecione uma categoria.' });
-
-    // Sem CEP, validarCEPSantoAmaro quebraria (cep.replace) e a rota devolveria erro 500
-    if (!cep) return res.status(400).json({ erro: 'CEP não informado.' });
-    if (!validarCEPSantoAmaro(cep)) {
-      return res.status(400).json({
-        erro: 'Anúncios só podem ser publicados em CEPs de Santo Amaro e regiões limítrofes (zona sul de SP). [RN01]'
-      });
-    }
 
     const palavraProibida = conteudoTemPalavrasProibidas(`${titulo} ${descricao}`);
     if (palavraProibida) {

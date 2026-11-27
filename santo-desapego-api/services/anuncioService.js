@@ -70,6 +70,26 @@ async function validarDadosAnuncio({ titulo, descricao, preco, estado_conservaca
 }
 
 /**
+ * RN01 — o anúncio fica sempre no endereço do cadastro do vendedor.
+ * O CEP e o bairro não vêm do formulário: assim quem mora fora da área
+ * atendida não consegue anunciar digitando um CEP de Santo Amaro.
+ * Devolve { cep, bairro } ou { erro } (mensagem pronta para a tela).
+ */
+const ERRO_SEM_ENDERECO = 'Cadastre seu endereço antes de anunciar: vá em Perfil → Endereço.';
+const ERRO_FORA_DA_AREA = 'Seu endereço cadastrado fica fora da área atendida. Só é possível anunciar com endereço em Santo Amaro e regiões limítrofes (CEP de 04600-000 a 04799-999). Se você se mudou, atualize em Perfil → Endereço. [RN01]';
+
+function conferirEnderecoParaAnunciar({ cep, bairro } = {}) {
+  if (!cep) return { erro: ERRO_SEM_ENDERECO };
+  if (!validarCEPSantoAmaro(cep)) return { erro: ERRO_FORA_DA_AREA };
+  return { cep: cep.replace(/\D/g, ''), bairro: bairro || null };
+}
+
+async function enderecoParaAnunciar(usuarioId) {
+  const perfil = await pool.query('SELECT cep, bairro FROM usuarios WHERE id = $1', [usuarioId]);
+  return conferirEnderecoParaAnunciar(perfil.rows[0]);
+}
+
+/**
  * Insere o anúncio + imagens numa transação (ACID). Assume que os dados já
  * passaram por `validarDadosAnuncio`.
  */
@@ -112,4 +132,4 @@ async function inserirAnuncio({ vendedorId, titulo, descricao, preco, estado_con
   }
 }
 
-module.exports = { validarDadosAnuncio, inserirAnuncio };
+module.exports = { validarDadosAnuncio, inserirAnuncio, conferirEnderecoParaAnunciar, enderecoParaAnunciar };

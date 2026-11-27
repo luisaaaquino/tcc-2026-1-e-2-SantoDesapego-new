@@ -41,6 +41,11 @@ const clienteTransacao = (respostas = {}) => {
 
 const sqlsExecutados = (fn) => fn.mock.calls.map(([sql]) => sql);
 
+// [RN01] Endereço do cadastro do vendedor (é dele que sai o CEP do anúncio)
+const enderecoNoPerfil = (cep = '04710150', bairro = 'Santo Amaro Centro') => {
+  pool.query.mockImplementation(async (sql) => (/FROM usuarios/.test(sql) ? linhas({ cep, bairro }) : linhas({ id: 3 })));
+};
+
 beforeEach(() => {
   jest.clearAllMocks();
   pool.query.mockReset();
@@ -49,7 +54,7 @@ beforeEach(() => {
 /* ─────────────────────────────────────────────────────────── */
 describe('RF06 - Anúncio de Produtos', () => {
   test('vendedor logado publica anúncio manual e ele nasce ativo', async () => {
-    pool.query.mockResolvedValue(linhas({ id: 3 }));
+    enderecoNoPerfil();
     clienteTransacao({ 'INSERT INTO anuncios': linhas({ id: 50, titulo: 'Bicicleta aro 29', status: 'ativo' }) });
 
     const res = await request(app).post('/api/anuncios').set('Authorization', tokenDe(VENDEDOR)).send(anuncioValido());
@@ -58,12 +63,42 @@ describe('RF06 - Anúncio de Produtos', () => {
     expect(res.body.anuncio.status).toBe('ativo');
   });
 
+  test('[RN01] o anúncio usa o CEP e o bairro do cadastro, não os do formulário', async () => {
+    enderecoNoPerfil('04710150', 'Santo Amaro Centro');
+    const client = clienteTransacao({ 'INSERT INTO anuncios': linhas({ id: 50, status: 'ativo' }) });
+
+    // tenta mandar outro CEP/bairro pelo formulário
+    const res = await request(app).post('/api/anuncios').set('Authorization', tokenDe(VENDEDOR))
+      .send(anuncioValido({ cep: '04650-000', bairro: 'Interlagos' }));
+
+    expect(res.status).toBe(201);
+    const insert = client.query.mock.calls.find(([sql]) => /INSERT INTO anuncios/.test(sql));
+    expect(insert[1]).toEqual(expect.arrayContaining(['04710150', 'Santo Amaro Centro']));
+    expect(insert[1]).not.toContain('04650000');
+  });
+
+  test('[RN01] quem tem endereço fora da área não anuncia, mesmo digitando um CEP de Santo Amaro', async () => {
+    enderecoNoPerfil('01310100', 'Bela Vista');
+    const res = await request(app).post('/api/anuncios').set('Authorization', tokenDe(VENDEDOR))
+      .send(anuncioValido({ cep: '04710-150' }));
+    expect(res.status).toBe(400);
+    expect(res.body.erro).toMatch(/fora da área atendida.*\[RN01\]/);
+  });
+
+  test('[RN01] sem endereço no cadastro não dá para anunciar', async () => {
+    enderecoNoPerfil(null, null);
+    const res = await request(app).post('/api/anuncios').set('Authorization', tokenDe(VENDEDOR)).send(anuncioValido());
+    expect(res.status).toBe(400);
+    expect(res.body.erro).toMatch(/Perfil → Endereço/);
+  });
+
   test('visitante sem login não publica anúncio', async () => {
     const res = await request(app).post('/api/anuncios').send(anuncioValido());
     expect(res.status).toBe(401);
   });
 
   test('título com menos de 5 caracteres é recusado', async () => {
+    enderecoNoPerfil();
     const res = await request(app).post('/api/anuncios').set('Authorization', tokenDe(VENDEDOR))
       .send(anuncioValido({ titulo: 'Bike' }));
     expect(res.status).toBe(400);
@@ -292,6 +327,8 @@ describe('RF12 - Gestão do Ciclo de Vida do Anúncio', () => {
   const editar = (usuario, dados) => request(app).put('/api/anuncios/50')
     .set('Authorization', tokenDe(usuario)).send(dados);
 
+  beforeEach(() => enderecoNoPerfil());
+
   test('vendedor edita o próprio anúncio', async () => {
     const client = clienteTransacao({
       'SELECT vendedor_id': linhas({ vendedor_id: VENDEDOR, status: 'ativo' }),
@@ -334,17 +371,30 @@ describe('RF12 - Gestão do Ciclo de Vida do Anúncio', () => {
     expect((await editar(VENDEDOR, anuncioValido())).status).toBe(400);
   });
 
-  test('edição passa pelas mesmas regras do cadastro (CEP fora da área)', async () => {
+  test('edição passa pelas mesmas regras do cadastro (endereço fora da área)', async () => {
+    enderecoNoPerfil('01310100', 'Bela Vista');
     clienteTransacao({ 'SELECT vendedor_id': linhas({ vendedor_id: VENDEDOR, status: 'ativo' }) });
-    const res = await editar(VENDEDOR, anuncioValido({ cep: '01310-100' }));
+    const res = await editar(VENDEDOR, anuncioValido());
     expect(res.status).toBe(400);
     expect(res.body.erro).toMatch(/\[RN01\]/);
   });
 
-  test('edição sem CEP é recusada com mensagem de validação', async () => {
+  test('edição sem endereço no cadastro é recusada com mensagem de validação', async () => {
+    enderecoNoPerfil(null, null);
     clienteTransacao({ 'SELECT vendedor_id': linhas({ vendedor_id: VENDEDOR, status: 'ativo' }) });
-    const res = await editar(VENDEDOR, anuncioValido({ cep: undefined }));
+    const res = await editar(VENDEDOR, anuncioValido());
     expect(res.status).toBe(400);
+    expect(res.body.erro).toMatch(/Perfil → Endereço/);
+  });
+
+  test('[RN01] na edição, o CEP do formulário é ignorado e vale o do cadastro', async () => {
+    const client = clienteTransacao({
+      'SELECT vendedor_id': linhas({ vendedor_id: VENDEDOR, status: 'ativo' }),
+      'UPDATE anuncios SET': linhas({ id: 50 }),
+    });
+    await editar(VENDEDOR, anuncioValido({ cep: '04650-000', bairro: 'Interlagos' }));
+    const update = client.query.mock.calls.find(([sql]) => /UPDATE anuncios SET/.test(sql));
+    expect(update[1]).toEqual(expect.arrayContaining(['04710150', 'Santo Amaro Centro']));
   });
 
   test('pausa um anúncio ativo', async () => {

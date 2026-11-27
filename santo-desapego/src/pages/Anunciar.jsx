@@ -7,8 +7,14 @@ import { API_URL } from '../config';
 import { redimensionarImagem } from '../utils/imagem';
 import AgenteAnuncioChat from '../componentes/AgenteAnuncioChat';
 import AnuncioRapidoIA from '../componentes/AnuncioRapidoIA';
-import { BAIRROS } from '../componentes/SeletorBairro';
 import { IconCamera } from '../componentes/Icones';
+
+// [RN01] O anúncio sempre fica no endereço do cadastro do vendedor:
+// só anuncia quem tem CEP de Santo Amaro e regiões limítrofes
+const cepDentroDaArea = (cep) => {
+  const prefixo = parseInt(String(cep || '').replace(/\D/g, '').slice(0, 5), 10);
+  return prefixo >= 4600 && prefixo <= 4799;
+};
 
 // ── Limites do TCC [RNF19] ────────────────────────────────
 const MAX_IMAGENS  = 6;
@@ -99,12 +105,13 @@ const Anunciar = () => {
               estado_conservacao: anuncio.estado_conservacao || '',
               categoria_principal: principal ? String(principal.id) : '',
               categoria_id: ehSubcategoria ? String(anuncio.categoria_id) : '',
-              cep: maskCEP(anuncio.cep || ''),
-              bairro: anuncio.bairro || '',
+              // [RN01] na edição também vale o endereço atual do cadastro
+              cep: maskCEP(perfil.data.usuario.cep || ''),
+              bairro: perfil.data.usuario.bairro || '',
             });
             setImagens(anuncio.imagens || []);
           } else {
-            // Pré-preenche CEP e bairro do cadastro (só na criação)
+            // [RN01] CEP e bairro vêm do cadastro e não podem ser trocados aqui
             setForm((f) => ({
               ...f,
               cep: maskCEP(perfil.data.usuario.cep || ''),
@@ -248,13 +255,6 @@ const Anunciar = () => {
     if (precoNum > 999999.99)
       return 'Preço muito alto. Máximo: R$ 999.999,99.';
 
-    const cepNumeros = form.cep.replace(/\D/g, '');
-    if (cepNumeros.length !== 8)
-      return 'Informe um CEP válido (8 dígitos).';
-
-    if (!form.bairro)
-      return 'Selecione o bairro.';
-
     if (imagens.length === 0)
       return 'Envie pelo menos 1 foto do produto.';
 
@@ -293,8 +293,7 @@ const Anunciar = () => {
           preco: precoParaNumero(form.preco),
           estado_conservacao: form.estado_conservacao,
           categoria_id: parseInt(categoria_id_final),
-          cep: form.cep.replace(/\D/g, ''),
-          bairro: form.bairro,
+          // CEP e bairro não vão: a API usa os do cadastro [RN01]
           imagens,
         }),
       });
@@ -321,6 +320,8 @@ const Anunciar = () => {
   };
 
   // ── Renderização ──
+  const foraDaArea = !!usuario && !cepDentroDaArea(usuario.cep);
+
   if (carregando) {
     return (
       <div className="anunciar-wrapper">
@@ -397,7 +398,7 @@ const Anunciar = () => {
 
         {/* Toggle "Preencher manualmente" / "Conversar com IA" / "Anúncio
             rápido" — só na criação (editar um anúncio continua só manual) */}
-        {!editando && (
+        {!editando && !foraDaArea && (
           <div className="anunciar-modo-toggle">
             <button type="button" className={modo === 'manual' ? 'active' : ''} onClick={() => { setModo('manual'); setAvisoIA(null); }}>
               Preencher manualmente
@@ -411,7 +412,20 @@ const Anunciar = () => {
           </div>
         )}
 
-        {modo === 'ia' && !editando ? (
+        {foraDaArea ? (
+          /* [RN01] Endereço do cadastro fora da área (ou sem CEP): nenhum
+             dos três modos fica disponível — a API também recusa */
+          <div className="anunciar-card anunciar-bloqueio" role="status">
+            <h2>{usuario?.cep ? 'Seu endereço fica fora da área atendida' : 'Cadastre seu endereço para anunciar'}</h2>
+            <p>
+              {usuario?.cep
+                ? <>O anúncio usa o endereço do seu cadastro (CEP {form.cep}), e o Santo Desapego só aceita anúncios de Santo Amaro e regiões limítrofes (CEP de 04600-000 a 04799-999).</>
+                : <>O anúncio usa o endereço do seu cadastro, e o seu ainda está sem CEP.</>}
+            </p>
+            <p>Se você mora na região, atualize seu endereço e volte aqui.</p>
+            <Link to="/perfil?aba=endereco" className="btn-anunciar-publish">Atualizar meu endereço</Link>
+          </div>
+        ) : modo === 'ia' && !editando ? (
           <div className="anunciar-card">
             <AgenteAnuncioChat onPublicado={setSubmitted} />
           </div>
@@ -601,36 +615,24 @@ const Anunciar = () => {
               </div>
 
               <div className="anunciar-alert info" style={{ marginBottom: '1rem' }}>
-                <span>O Santo Desapego é hiperlocal — só aceitamos anúncios de Santo Amaro e bairros vizinhos da zona sul de SP.</span>
+                <span>
+                  O anúncio usa o endereço do seu cadastro. Para mudar, atualize em{' '}
+                  <Link to="/perfil?aba=endereco">Perfil › Endereço</Link>.
+                </span>
               </div>
 
+              {/* [RN01] Somente leitura: o CEP e o bairro vêm do cadastro */}
               <div className="anunciar-row">
                 <div className="anunciar-field">
-                  <label className="anunciar-field-label" htmlFor="anuncio-cep">
-                    CEP <span className="required">*</span>
-                  </label>
-                  <input type="text" id="anuncio-cep" className="anunciar-input"
-                    placeholder="04000-000" value={form.cep}
-                    onChange={(e) => setForm({ ...form, cep: maskCEP(e.target.value) })}
-                    maxLength={9} required />
-                  <span className="anunciar-field-hint">CEPs aceitos: 04600-000 a 04799-999.</span>
+                  <label className="anunciar-field-label" htmlFor="anuncio-cep">CEP</label>
+                  <input type="text" id="anuncio-cep" className="anunciar-input anunciar-input-fixo"
+                    value={form.cep} readOnly aria-readonly="true" />
                 </div>
 
                 <div className="anunciar-field">
-                  <label className="anunciar-field-label" htmlFor="anuncio-bairro">
-                    Bairro <span className="required">*</span>
-                  </label>
-                  <div className="anunciar-select-wrap">
-                    <select id="anuncio-bairro" className="anunciar-select"
-                      value={form.bairro}
-                      onChange={(e) => setForm({ ...form, bairro: e.target.value })}
-                      required>
-                      <option value="">Selecione…</option>
-                      {[...BAIRROS, 'Outro bairro'].map((b) => (
-                        <option key={b}>{b}</option>
-                      ))}
-                    </select>
-                  </div>
+                  <label className="anunciar-field-label" htmlFor="anuncio-bairro">Bairro</label>
+                  <input type="text" id="anuncio-bairro" className="anunciar-input anunciar-input-fixo"
+                    value={form.bairro || 'Não informado no cadastro'} readOnly aria-readonly="true" />
                 </div>
               </div>
             </div>

@@ -66,7 +66,15 @@ describe('RF06 - Anúncio de Produtos', () => {
     const client = clienteBanco({ 'SELECT cep, bairro': linhas({ cep: null }) });
     const res = await conversar({ mensagem: 'geladeira' });
     expect(res.status).toBe(400);
-    expect(res.body.erro).toMatch(/CEP/);
+    expect(res.body.erro).toMatch(/Perfil → Endereço/);
+    expect(sqlsDe(client)).toContain('ROLLBACK');
+  });
+
+  test('IA: [RN01] endereço do cadastro fora da área não começa a conversa', async () => {
+    const client = clienteBanco({ 'SELECT cep, bairro': linhas({ cep: '01310100', bairro: 'Bela Vista' }) });
+    const res = await conversar({ mensagem: 'geladeira' });
+    expect(res.status).toBe(400);
+    expect(res.body.erro).toMatch(/fora da área atendida/);
     expect(sqlsDe(client)).toContain('ROLLBACK');
   });
 

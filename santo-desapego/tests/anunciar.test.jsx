@@ -61,10 +61,39 @@ describe('RF06 - Anúncio de Produtos', () => {
     expect(await screen.findByTestId('rota-atual')).toHaveTextContent('/login');
   });
 
-  test('o CEP e o bairro do anúncio já vêm do cadastro do vendedor', async () => {
+  test('[RN01] o CEP e o bairro vêm do cadastro e não podem ser trocados', async () => {
     await abrir();
-    expect(campo('04000-000')).toHaveValue('04710-150');
-    expect(screen.getAllByRole('combobox')[2]).toHaveValue('Campo Belo');
+    const cep = screen.getByLabelText('CEP');
+    const bairro = screen.getByLabelText('Bairro');
+    expect(cep).toHaveValue('04710-150');
+    expect(bairro).toHaveValue('Campo Belo');
+    expect(cep).toHaveAttribute('readonly');
+    expect(bairro).toHaveAttribute('readonly');
+    expect(screen.getByRole('link', { name: /Perfil › Endereço/ })).toHaveAttribute('href', '/perfil?aba=endereco');
+  });
+
+  test('[RN01] com endereço fora da área, nenhum modo de anúncio fica disponível', async () => {
+    logar({ id: 2, nome: 'Caio' });
+    simularFetch({
+      '/api/categorias': respostaJson({ categorias: CATEGORIAS }),
+      '/api/usuario/perfil': respostaJson({ usuario: { id: 2, nome: 'Caio', cep: '01310100', bairro: 'Bela Vista' } }),
+    });
+    renderComRota(<Anunciar />, { rota: '/anunciar', caminho: '/anunciar' });
+
+    expect(await screen.findByText('Seu endereço fica fora da área atendida')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Conversar com IA/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Publicar anúncio/ })).toBeNull();
+    expect(screen.getByRole('link', { name: /Atualizar meu endereço/ })).toHaveAttribute('href', '/perfil?aba=endereco');
+  });
+
+  test('[RN01] sem CEP no cadastro, pede para cadastrar o endereço', async () => {
+    logar({ id: 2, nome: 'Caio' });
+    simularFetch({
+      '/api/categorias': respostaJson({ categorias: CATEGORIAS }),
+      '/api/usuario/perfil': respostaJson({ usuario: { id: 2, nome: 'Caio', cep: null, bairro: null } }),
+    });
+    renderComRota(<Anunciar />, { rota: '/anunciar', caminho: '/anunciar' });
+    expect(await screen.findByText('Cadastre seu endereço para anunciar')).toBeInTheDocument();
   });
 
   test('oferece preencher à mão, conversar com a IA ou fazer o anúncio rápido', async () => {
@@ -85,7 +114,8 @@ describe('RF06 - Anúncio de Produtos', () => {
       titulo: 'Sofá 3 lugares retrátil',
       descricao: 'Sofá cinza, 3 lugares, retrátil e reclinável, sem rasgos.',
       preco: 850.5, estado_conservacao: 'usado', categoria_id: 11,
-      cep: '04710150', bairro: 'Campo Belo', imagens: ['data:image/jpeg;base64,foto1.jpg'],
+      // CEP e bairro não são enviados: a API usa os do cadastro [RN01]
+      imagens: ['data:image/jpeg;base64,foto1.jpg'],
     });
   });
 

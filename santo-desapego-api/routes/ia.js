@@ -4,6 +4,7 @@ const { autenticar } = require('../middleware/auth');
 const { rodarAgente, decidirPendencia, estadoInicial, gerarRascunhoRapido } = require('../services/agenteAnuncioService');
 const { registrarClique, gerarSugestaoCompra } = require('../services/agenteCompraService');
 const { responderDuvida } = require('../services/ragService');
+const { conferirEnderecoParaAnunciar } = require('../services/anuncioService');
 
 const router = express.Router();
 
@@ -73,14 +74,13 @@ router.post('/api/ia/agente-anuncio', autenticar, verificarSuspensao, async (req
 
     if (!conversaId) {
       const perfil = await client.query('SELECT cep, bairro FROM usuarios WHERE id = $1', [req.userId]);
-      const { cep, bairro } = perfil.rows[0] || {};
-      if (!cep) {
+      // [RN01] sem endereço ou fora da área atendida, nem começa a conversa
+      const endereco = conferirEnderecoParaAnunciar(perfil.rows[0]);
+      if (endereco.erro) {
         await client.query('ROLLBACK');
-        return res.status(400).json({
-          erro: 'Complete seu CEP no perfil antes de anunciar com IA. Vá em Perfil → Endereço.',
-        });
+        return res.status(400).json({ erro: endereco.erro });
       }
-      estado = await estadoInicial({ cep, bairro });
+      estado = await estadoInicial({ cep: endereco.cep, bairro: endereco.bairro });
       const nova = await client.query(
         `INSERT INTO conversas_ia_anuncio (vendedor_id, estado) VALUES ($1, $2) RETURNING id`,
         [req.userId, JSON.stringify(estado)]
@@ -195,14 +195,11 @@ router.post('/api/ia/anuncio-rapido', autenticar, verificarSuspensao, async (req
     }
 
     const perfil = await pool.query('SELECT cep, bairro FROM usuarios WHERE id = $1', [req.userId]);
-    const { cep, bairro } = perfil.rows[0] || {};
-    if (!cep) {
-      return res.status(400).json({
-        erro: 'Complete seu CEP no perfil antes de anunciar com IA. Vá em Perfil → Endereço.',
-      });
-    }
+    // [RN01] sem endereço ou fora da área atendida, não gera o rascunho
+    const endereco = conferirEnderecoParaAnunciar(perfil.rows[0]);
+    if (endereco.erro) return res.status(400).json({ erro: endereco.erro });
 
-    const resultado = await gerarRascunhoRapido({ mensagem: mensagem.trim().slice(0, 1000), cep, bairro });
+    const resultado = await gerarRascunhoRapido({ mensagem: mensagem.trim().slice(0, 1000), cep: endereco.cep, bairro: endereco.bairro });
     return res.json(resultado);
   } catch (erro) {
     console.error('Erro no anúncio rápido (IA):', erro);

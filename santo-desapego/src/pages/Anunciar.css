@@ -490,3 +490,18 @@
 
 /* Revisão visual (2026-11): aba ativa em cor neutra */
 .anunciar-modo-toggle button.active { background: var(--ink); color: #fff; }
+
+/* ── [RN01] CEP e bairro vêm do cadastro (somente leitura) ── */
+.anunciar-input.anunciar-input-fixo {
+  background: var(--cream-soft);
+  color: var(--ink-soft);
+  cursor: default;
+}
+.anunciar-input.anunciar-input-fixo:focus { box-shadow: none; border-color: var(--border); }
+.anunciar-alert.info a { color: inherit; font-weight: 600; text-decoration: underline; }
+
+/* Endereço fora da área: aviso no lugar do formulário */
+.anunciar-bloqueio { text-align: center; }
+.anunciar-bloqueio h2 { font-size: 1.25rem; font-weight: 600; color: var(--ink); margin-bottom: 0.75rem; }
+.anunciar-bloqueio p { color: var(--ink-soft); line-height: 1.6; max-width: 34rem; margin: 0 auto 0.75rem; }
+.anunciar-bloqueio .btn-anunciar-publish { display: inline-block; margin-top: 0.75rem; text-decoration: none; }
