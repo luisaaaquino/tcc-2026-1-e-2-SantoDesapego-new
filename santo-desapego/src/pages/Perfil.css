@@ -1152,7 +1152,11 @@
    indicador faz o fundo (verde; vermelho na aba de exclusão). */
 .perfil-tabs.m-has-ind { position: relative; isolation: isolate; }
 .perfil-tabs.m-has-ind .perfil-tab { position: relative; z-index: 1; }
-.perfil-tabs.m-has-ind .perfil-tab.active { background: transparent; }
+/* Texto e ícone brancos sobre o fundo verde/vermelho do item
+   selecionado (antes ficavam pretos e quase não dava para ler) */
+.perfil-tabs.m-has-ind .perfil-tab.active,
+.perfil-tabs.m-has-ind .perfil-tab.danger.active { background: transparent; color: var(--paper); }
+.perfil-tabs.m-has-ind .perfil-tab.active svg { color: var(--paper); }
 .perfil-tabs .m-tab-ind { background: var(--forest); }
 .perfil-tabs:has(.perfil-tab.danger.active) .m-tab-ind { background: var(--terracotta); }
 
