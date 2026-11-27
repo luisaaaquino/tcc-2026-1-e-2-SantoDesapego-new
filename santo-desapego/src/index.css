@@ -314,7 +314,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     .btn-perfil-primary, .btn-perfil-secondary, .btn-perfil-danger, .btn-admin-mini, .btn-admin-add,
     .painel-cta-btn, .painel-empty-btn, .btn-anuncio-mini, .btn-anuncio-comprar, .btn-anuncio-proposta,
     .btn-modal-cancel, .btn-modal-confirm, .avaliar-btn, .verificacao-btn, .search-btn,
-    .nao-encontrada-btn, .btn-anunciar-publish, .btn-anunciar-cancel, .explorar-carregar-mais,
+    .nao-encontrada-btn, .btn-anunciar-publish, .btn-anunciar-cancel, .explorar-pagina,
     .btn-success, .btn-submit, .btn-checkout, .checkout-cancelar, .msg-btn-explorar) {
   transition: background-color var(--m-out, 120ms) var(--m-ease, ease), color var(--m-out, 120ms) var(--m-ease, ease),
               border-color var(--m-out, 120ms) var(--m-ease, ease), box-shadow var(--m-out, 120ms) var(--m-ease, ease),
@@ -325,7 +325,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
       .btn-perfil-primary, .btn-perfil-secondary, .btn-perfil-danger, .btn-admin-mini, .btn-admin-add,
       .painel-cta-btn, .painel-empty-btn, .btn-anuncio-mini, .btn-anuncio-comprar, .btn-anuncio-proposta,
       .btn-modal-cancel, .btn-modal-confirm, .avaliar-btn, .verificacao-btn, .search-btn,
-      .nao-encontrada-btn, .btn-anunciar-publish, .btn-anunciar-cancel, .explorar-carregar-mais,
+      .nao-encontrada-btn, .btn-anunciar-publish, .btn-anunciar-cancel, .explorar-pagina,
       .btn-success, .btn-submit, .btn-checkout, .checkout-cancelar, .msg-btn-explorar):not(:disabled):hover {
     transform: translateY(-1px);
     transition-duration: var(--m-in, 150ms);
@@ -335,7 +335,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
     .btn-perfil-primary, .btn-perfil-secondary, .btn-perfil-danger, .btn-admin-mini, .btn-admin-add,
     .painel-cta-btn, .painel-empty-btn, .btn-anuncio-mini, .btn-anuncio-comprar, .btn-anuncio-proposta,
     .btn-modal-cancel, .btn-modal-confirm, .avaliar-btn, .verificacao-btn, .search-btn,
-    .nao-encontrada-btn, .btn-anunciar-publish, .btn-anunciar-cancel, .explorar-carregar-mais,
+    .nao-encontrada-btn, .btn-anunciar-publish, .btn-anunciar-cancel, .explorar-pagina,
     .btn-success, .btn-submit, .btn-checkout, .checkout-cancelar, .msg-btn-explorar):not(:disabled):active {
   transform: translateY(1px) scale(0.985);
   transition-duration: var(--m-press, 90ms);
@@ -364,7 +364,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
       .btn-perfil-primary, .btn-perfil-secondary, .btn-perfil-danger, .btn-admin-mini, .btn-admin-add,
       .painel-cta-btn, .painel-empty-btn, .btn-anuncio-mini, .btn-anuncio-comprar, .btn-anuncio-proposta,
       .btn-modal-cancel, .btn-modal-confirm, .avaliar-btn, .verificacao-btn, .search-btn,
-      .nao-encontrada-btn, .btn-anunciar-publish, .btn-anunciar-cancel, .explorar-carregar-mais,
+      .nao-encontrada-btn, .btn-anunciar-publish, .btn-anunciar-cancel, .explorar-pagina,
       .btn-success, .btn-submit, .btn-checkout, .checkout-cancelar, .msg-btn-explorar):is(:hover, :active) {
     transform: none !important;
   }

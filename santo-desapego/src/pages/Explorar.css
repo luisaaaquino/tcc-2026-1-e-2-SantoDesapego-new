@@ -284,28 +284,36 @@
 }
 
 /* Botão aplicar filtros */
-.explorar-carregar-mais {
-  display: block;
-  margin: 2.5rem auto 0;
-  padding: 0.85rem 2rem;
-  background: var(--ink);
-  color: var(--cream);
-  border: none;
-  border-radius: var(--radius-pill);
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
+/* ── Paginação numerada (30 por página) ── */
+.explorar-paginacao {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 2.5rem;
+}
+.explorar-pagina {
+  min-width: 2.5rem;
+  height: 2.5rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--paper);
+  color: var(--ink);
   font-family: inherit;
-  margin-top: 1.5rem;
-  box-shadow: none;
-  transition-property: background-color, border-color, color, opacity; transition-duration: 0.2s;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), color 0.15s var(--ease), background-color 0.15s var(--ease);
 }
-.explorar-carregar-mais:hover:not(:disabled) {
-  background: var(--terracotta);
-  box-shadow: none;
-  transform: none;
+.explorar-pagina:hover:not(:disabled):not(.atual) { border-color: var(--ink); }
+.explorar-pagina.atual { background: var(--ink); border-color: var(--ink); color: var(--cream); font-weight: 600; cursor: default; }
+.explorar-pagina:disabled:not(.atual) { opacity: 0.45; cursor: not-allowed; }
+.explorar-pagina-reticencias { padding: 0 0.25rem; color: var(--ink-muted); }
+@media (max-width: 480px) {
+  .explorar-pagina-texto { display: none; } /* no celular, só as setas ‹ › */
 }
-.explorar-carregar-mais:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* ── Grid de produtos ───────────────────────────────────── */
 .explorar-content {

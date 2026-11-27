@@ -13,6 +13,22 @@ import CartaoAnuncio from '../componentes/CartaoAnuncio';
 
 const API_URL = `${API_BASE}/api`;
 
+const POR_PAGINA = 30;
+
+// Números que aparecem na paginação: sempre a primeira e a última página,
+// e as vizinhas da atual; o resto vira "…". Ex.: 1 … 4 5 6 … 12
+const paginasVisiveis = (atual, total) => {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const lista = [1];
+  const ini = Math.max(2, atual - 1);
+  const fim = Math.min(total - 1, atual + 1);
+  if (ini > 2) lista.push('…');
+  for (let p = ini; p <= fim; p++) lista.push(p);
+  if (fim < total - 1) lista.push('…');
+  lista.push(total);
+  return lista;
+};
+
 const Explorar = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -29,8 +45,12 @@ const Explorar = () => {
   const [precoMaxAplicado, setPrecoMaxAplicado] = useState(5000); // valor usado no filtro
   const [condicoes, setCondicoes] = useState([]);
   const [bairroFiltro, setBairroFiltro] = useState('');
-  const [limite, setLimite] = useState(12);
+  // Paginação numerada: 30 anúncios por página (antes era "carregar mais",
+  // que virava uma rolagem sem fim)
+  const [pagina, setPagina] = useState(1);
   const [totalItens, setTotalItens] = useState(0);
+  const totalPaginas = Math.max(1, Math.ceil(totalItens / POR_PAGINA));
+  const topoListaRef = useRef(null);
 
   // ── Menu mobile (hambúrguer + gaveta) — mesmo padrão da Home
   const [menuAberto, setMenuAberto] = useState(false);
@@ -110,19 +130,20 @@ const Explorar = () => {
     }
   }, [searchParams]);
 
-  // Busca anúncios quando algum filtro real muda — reinicia a paginação
+  // Busca anúncios quando algum filtro real muda — volta para a página 1
   useEffect(() => {
-    setLimite(12);
-    buscarAnuncios(12);
+    setPagina(1);
+    buscarAnuncios(1);
   }, [ordenacao, categoriaAtiva, bairroFiltro, searchParams, condicoes.join(','), precoMaxAplicado]);
 
-  const buscarAnuncios = async (limiteParam) => {
+  const buscarAnuncios = async (paginaParam) => {
     const idDestaBusca = ++buscaIdRef.current;
     setCarregando(true);
     try {
       const params = new URLSearchParams();
       params.append('ordenacao', ordenacao);
-      params.append('limite', limiteParam || limite);
+      params.append('limite', POR_PAGINA);
+      params.append('pagina', paginaParam);
 
       if (categoriaAtiva) params.append('categoria_id', categoriaAtiva);
       if (bairroFiltro) params.append('bairro', bairroFiltro);
@@ -156,10 +177,20 @@ const Explorar = () => {
     }
   };
 
-  const carregarMais = () => {
-    const novoLimite = limite + 12;
-    setLimite(novoLimite);
-    buscarAnuncios(novoLimite);
+  // Troca de página e sobe até o topo da lista, para a pessoa não cair
+  // no meio da página nova
+  const irParaPagina = (nova) => {
+    if (nova < 1 || nova > totalPaginas || nova === pagina) return;
+    setPagina(nova);
+    buscarAnuncios(nova);
+    // Desconta a altura real do cabeçalho fixo (busca + barra de categorias),
+    // senão a primeira linha de anúncios fica escondida atrás dele
+    const lista = topoListaRef.current;
+    if (lista) {
+      const cabecalho = document.querySelector('.site-header')?.offsetHeight || 0;
+      const topo = lista.getBoundingClientRect().top + window.scrollY - cabecalho - 24;
+      window.scrollTo({ top: Math.max(0, topo), behavior: 'smooth' });
+    }
   };
 
   // [RF10] Favorita/desfavorita direto no card, sem sair da listagem
@@ -496,7 +527,7 @@ const Explorar = () => {
           </aside>
 
           {/* ── Grid de produtos ── */}
-          <div className="explorar-content">
+          <div className="explorar-content" ref={topoListaRef}>
             {carregando && anuncios.length === 0 ? (
               <div className="explorar-loading">Carregando…</div>
             ) : anuncios.length > 0 ? (
@@ -520,10 +551,28 @@ const Explorar = () => {
               </div>
             )}
 
-            {anuncios.length > 0 && anuncios.length < totalItens && (
-              <button className="explorar-carregar-mais" onClick={carregarMais} disabled={carregando}>
-                {carregando ? 'Carregando…' : `Carregar mais anúncios (${anuncios.length} de ${totalItens})`}
-              </button>
+            {totalPaginas > 1 && (
+              <nav className="explorar-paginacao" aria-label="Páginas de anúncios">
+                <button type="button" className="explorar-pagina explorar-pagina-seta"
+                  onClick={() => irParaPagina(pagina - 1)} disabled={pagina === 1 || carregando} aria-label="Página anterior">
+                  ‹<span className="explorar-pagina-texto"> Anterior</span>
+                </button>
+                {paginasVisiveis(pagina, totalPaginas).map((p, i) => (p === '…' ? (
+                  <span key={`r${i}`} className="explorar-pagina-reticencias" aria-hidden="true">…</span>
+                ) : (
+                  <button key={p} type="button"
+                    className={`explorar-pagina${p === pagina ? ' atual' : ''}`}
+                    aria-current={p === pagina ? 'page' : undefined}
+                    aria-label={`Página ${p}`}
+                    onClick={() => irParaPagina(p)} disabled={carregando && p !== pagina}>
+                    {p}
+                  </button>
+                )))}
+                <button type="button" className="explorar-pagina explorar-pagina-seta"
+                  onClick={() => irParaPagina(pagina + 1)} disabled={pagina === totalPaginas || carregando} aria-label="Próxima página">
+                  <span className="explorar-pagina-texto">Próxima </span>›
+                </button>
+              </nav>
             )}
           </div>
         </div>
