@@ -67,6 +67,20 @@ describe('RF24 - Seção "Para você" (recomendações da Home)', () => {
     expect(res.body.anuncios).toHaveLength(5);
   });
 
+  test.each([
+    ['20', 20],   // tela do anúncio pede 20
+    ['99', 20],   // acima do máximo: corta em 20
+    ['0', 1],     // abaixo do mínimo: sobe para 1
+    ['abc', 5],   // inválido: usa o padrão da Home
+  ])('?limite=%s devolve %i anúncios', async (pedido, esperado) => {
+    pool.query
+      .mockResolvedValueOnce(linhas({ bairro: null }))
+      .mockResolvedValueOnce(linhas({ familia: 1, familia_nome: 'Móveis', preco: '100.00' }))
+      .mockResolvedValueOnce(linhas(...Array.from({ length: 30 }, (_, i) => anuncio(i + 1, 50, 'Campo Belo', i))));
+    const res = await request(app).get(`/api/recomendacoes?limite=${pedido}`).set('Authorization', tokenDe(7));
+    expect(res.body.anuncios).toHaveLength(esperado);
+  });
+
   test('erro no banco responde 500 sem derrubar a página', async () => {
     pool.query.mockRejectedValueOnce(new Error('banco fora do ar'));
     const res = await request(app).get('/api/recomendacoes').set('Authorization', tokenDe(7));

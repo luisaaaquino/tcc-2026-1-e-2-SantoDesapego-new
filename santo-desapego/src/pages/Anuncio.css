@@ -14,32 +14,49 @@
 }
 
 .anuncio-container {
-  max-width: 1080px;
+  max-width: 1200px; /* um pouco mais largo para caberem 5 sugestões por vez */
   margin: 2rem auto;
   padding: 0 1.5rem 6rem;
   width: 100%;
   flex: 1;
 }
 
-/* ── Trilha ─────────────────────────────────────────────── */
-.anuncio-trilha {
-  display: flex;
-  flex-wrap: wrap;
+/* ── Voltar (à esquerda, acima das fotos) ───────────────── */
+.anuncio-voltar {
+  display: inline-flex;
+  align-items: center;
   gap: 0.45rem;
   margin-bottom: 1.25rem;
-  font-size: 0.85rem;
-  color: var(--ink-muted);
+  padding: 0.3rem 0;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  text-decoration: none;
+  transition: color 0.15s var(--ease);
 }
-.anuncio-trilha a { color: inherit; text-decoration: none; }
-.anuncio-trilha a:hover { color: var(--terracotta); }
+.anuncio-voltar svg { transition: transform 0.15s var(--ease); }
+.anuncio-voltar:hover { color: var(--terracotta); }
+.anuncio-voltar:hover svg { transform: translateX(-3px); }
 
-/* ── Grid principal ─────────────────────────────────────── */
+/* ── Grid principal ─────────────────────────────────────────
+   Esquerda: fotos e, logo abaixo, a descrição.
+   Direita: painel de compra ocupando as duas linhas.
+   A 2ª linha fica com a sobra de altura, para a descrição
+   encostar nas fotos em vez de ser empurrada para baixo. */
 .anuncio-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-  gap: 2rem;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "galeria   painel"
+    "descricao painel";
+  column-gap: 2rem;
+  row-gap: 1.5rem;
   align-items: start;
 }
+.anuncio-galeria   { grid-area: galeria; }
+.anuncio-descricao { grid-area: descricao; }
+.anuncio-painel    { grid-area: painel; }
 
 /* ── Galeria ────────────────────────────────────────────── */
 .galeria-principal {
@@ -64,6 +81,34 @@
   color: var(--ink-muted);
   font-size: 0.9rem;
 }
+.galeria-principal:focus-visible { outline: 2px solid var(--terracotta); outline-offset: 3px; }
+
+/* Setas sobre a foto: sempre visíveis no celular; no computador,
+   aparecem ao passar o mouse ou ao navegar pelo teclado */
+.galeria-seta {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  color: var(--ink);
+  cursor: pointer;
+  transition: opacity 0.2s var(--ease), background-color 0.15s var(--ease);
+}
+.galeria-seta.esquerda { left: 0.75rem; }
+.galeria-seta.direita  { right: 0.75rem; }
+.galeria-seta:hover { background: var(--paper); border-color: var(--ink); }
+@media (hover: hover) and (pointer: fine) {
+  .galeria-seta { opacity: 0; }
+  .galeria-principal:hover .galeria-seta,
+  .galeria-principal:focus-within .galeria-seta { opacity: 1; }
+}
+
 .galeria-contador {
   position: absolute;
   right: 0.75rem;
@@ -328,9 +373,15 @@
 .denuncia-modal-actions { display: flex; justify-content: flex-end; gap: 0.6rem; }
 .denuncia-sucesso { text-align: center; padding: 1rem 0; }
 
+/* ── Sugestões (carrossel no fim da tela) ───────────────── */
+.anuncio-sugestoes {
+  margin-top: 3.5rem;
+  padding-top: 2.5rem;
+  border-top: 1px solid var(--border);
+}
+
 /* ── Descrição ──────────────────────────────────────────── */
 .anuncio-descricao {
-  margin-top: 2.5rem;
   background: var(--paper);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -393,7 +444,13 @@
 .anuncio-barra { display: none; }
 
 @media (max-width: 880px) {
-  .anuncio-grid { grid-template-columns: 1fr; }
+  /* No celular: fotos → compra → descrição (o preço e o botão
+     de comprar aparecem antes do texto longo) */
+  .anuncio-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    grid-template-areas: "galeria" "painel" "descricao";
+  }
   .anuncio-painel { position: static; }
   .anuncio-descricao { padding: 1.5rem 1.25rem; }
 

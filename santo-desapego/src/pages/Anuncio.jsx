@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import './Anuncio.css';
 import NotificacoesSino from '../componentes/NotificacoesSino';
-import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
-import { IconHeart } from '../componentes/Icones';
+import SiteHeader from '../componentes/SiteHeader';
+import { IconHeart, IconArrowLeft } from '../componentes/Icones';
+import CarrosselAnuncios from '../componentes/CarrosselAnuncios';
 import DicasSeguranca from '../componentes/DicasSeguranca';
 
 import { API_URL, EMAILS } from '../config';
@@ -112,6 +113,7 @@ const Anuncio = () => {
   useEffect(() => {
     setCarregando(true);
     setErro('');
+    setFoto(0); // ao abrir outro anúncio pelas sugestões, começa da 1ª foto
 
     const token = localStorage.getItem('sd_token');
     fetch(`${API_URL}/api/anuncios/${id}`, {
@@ -159,6 +161,44 @@ const Anuncio = () => {
       })
       .finally(() => setCarregando(false));
   }, [id]);
+
+  // ── Sugestões no fim da tela: até 20 anúncios, em grupos de 5.
+  // Logado: primeiro o "Para você" (histórico de navegação). Depois
+  // completa com a mesma subcategoria e, por fim, os mais recentes.
+  // Nunca repete e nunca mostra o próprio anúncio aberto.
+  const [sugestoes, setSugestoes] = useState({ anuncios: [], personalizadas: false });
+  const anuncioId = anuncio?.id;
+  const categoriaId = anuncio?.categoria_id;
+
+  useEffect(() => {
+    if (!anuncioId) return;
+    let cancelado = false;
+    const token = localStorage.getItem('sd_token');
+    const json = (url, opcoes) => fetch(url, opcoes).then((r) => (r.ok ? r.json() : {})).catch(() => ({}));
+
+    Promise.all([
+      token
+        ? json(`${API_URL}/api/recomendacoes?limite=20`, { headers: { Authorization: `Bearer ${token}` } })
+        : Promise.resolve({}),
+      categoriaId ? json(`${API_URL}/api/anuncios?categoria_id=${categoriaId}&limite=21`) : Promise.resolve({}),
+      json(`${API_URL}/api/anuncios?ordenacao=recentes&limite=30`),
+    ]).then(([paraVoce, mesmaCategoria, recentes]) => {
+      if (cancelado) return;
+      const vistos = new Set([anuncioId]);
+      const lista = [];
+      for (const a of [...(paraVoce.anuncios || []), ...(mesmaCategoria.anuncios || []), ...(recentes.anuncios || [])]) {
+        if (lista.length === 20) break;
+        if (vistos.has(a.id)) continue;
+        vistos.add(a.id);
+        lista.push(a);
+      }
+      setSugestoes({ anuncios: lista, personalizadas: (paraVoce.anuncios || []).some((a) => a.id !== anuncioId) });
+    });
+    return () => { cancelado = true; };
+  }, [anuncioId, categoriaId]);
+
+  // ── Galeria: setas, teclado (← →) e arrastar com o dedo no celular
+  const toqueInicio = useRef(null);
 
   const [abrindoChat, setAbrindoChat] = useState(false);
   const [erroAcao, setErroAcao] = useState('');
@@ -233,7 +273,6 @@ const Anuncio = () => {
   const Header = () => (
     <SiteHeader>
       <NotificacoesSino />
-      <NavBackButton to="/explorar">Voltar para o Explorar</NavBackButton>
     </SiteHeader>
   );
 
@@ -266,6 +305,11 @@ const Anuncio = () => {
     : [anuncio.imagem_principal || null]
   ).map((img) => (typeof img === 'string' || !img ? img : img.imagem || img.url || null));
   const estado   = ESTADO_LABEL[anuncio.estado_conservacao] || { name: anuncio.estado_conservacao || '—' };
+  // Passa para a foto anterior/próxima; da última volta para a primeira
+  const trocarFoto = (passo) => {
+    if (imagens.length < 2) return;
+    setFoto((atual) => (atual + passo + imagens.length) % imagens.length);
+  };
   const vendedor = anuncio.usuario?.nome || anuncio.vendedor?.nome || anuncio.usuario_nome || 'Vendedor';
   const categoria = anuncio.categoria?.nome || anuncio.categoria_nome || '';
 
@@ -274,21 +318,44 @@ const Anuncio = () => {
       <Header />
 
       <div className="anuncio-container">
-        <nav className="anuncio-trilha" aria-label="Navegação">
-          <Link to="/explorar">Explorar</Link>
-          {categoria && <><span aria-hidden="true">/</span><span>{categoria}</span></>}
-        </nav>
+        {/* Voltar fica à esquerda, onde a pessoa procura primeiro */}
+        <Link to="/explorar" className="anuncio-voltar">
+          <IconArrowLeft />
+          Voltar para o Explorar
+        </Link>
 
         <div className="anuncio-grid">
 
-          {/* ── Galeria ─────────────────────────────── */}
-          <section className="anuncio-galeria">
-            <div className="galeria-principal">
+          {/* ── Galeria (carrossel das até 6 fotos) ───── */}
+          <section className="anuncio-galeria" aria-label="Fotos do anúncio">
+            <div
+              className="galeria-principal"
+              tabIndex={imagens.length > 1 ? 0 : undefined}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowLeft') trocarFoto(-1);
+                if (e.key === 'ArrowRight') trocarFoto(1);
+              }}
+              onTouchStart={(e) => { toqueInicio.current = e.touches[0].clientX; }}
+              onTouchEnd={(e) => {
+                if (toqueInicio.current === null) return;
+                const deslocamento = e.changedTouches[0].clientX - toqueInicio.current;
+                toqueInicio.current = null;
+                if (Math.abs(deslocamento) > 40) trocarFoto(deslocamento < 0 ? 1 : -1);
+              }}
+            >
               {imagens[foto]
-                ? <img src={imagens[foto]} alt={anuncio.titulo} />
+                ? <img src={imagens[foto]} alt={`${anuncio.titulo}, foto ${foto + 1} de ${imagens.length}`} />
                 : <div className="galeria-vazia">Sem foto</div>}
               {imagens.length > 1 && (
-                <span className="galeria-contador">{foto + 1}/{imagens.length}</span>
+                <>
+                  <button type="button" className="galeria-seta esquerda" onClick={() => trocarFoto(-1)} aria-label="Foto anterior">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>
+                  </button>
+                  <button type="button" className="galeria-seta direita" onClick={() => trocarFoto(1)} aria-label="Próxima foto">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+                  </button>
+                  <span className="galeria-contador" aria-live="polite">{foto + 1}/{imagens.length}</span>
+                </>
               )}
             </div>
 
@@ -307,6 +374,18 @@ const Anuncio = () => {
                 ))}
               </div>
             )}
+          </section>
+
+          {/* ── Descrição: logo abaixo das fotos, perto do produto ── */}
+          <section className="anuncio-descricao">
+            <h2>Sobre a peça</h2>
+            <p>{anuncio.descricao}</p>
+
+            <dl className="anuncio-ficha">
+              <div><dt>Estado</dt><dd>{estado.name}</dd></div>
+              <div><dt>Categoria</dt><dd>{categoria || '—'}</dd></div>
+              <div><dt>Bairro</dt><dd>{anuncio.bairro}</dd></div>
+            </dl>
           </section>
 
           {/* ── Painel de compra ────────────────────── */}
@@ -383,17 +462,19 @@ const Anuncio = () => {
           </aside>
         </div>
 
-        {/* ── Descrição ─────────────────────────────── */}
-        <section className="anuncio-descricao">
-          <h2>Sobre a peça</h2>
-          <p>{anuncio.descricao}</p>
-
-          <dl className="anuncio-ficha">
-            <div><dt>Estado</dt><dd>{estado.name}</dd></div>
-            <div><dt>Categoria</dt><dd>{categoria || '—'}</dd></div>
-            <div><dt>Bairro</dt><dd>{anuncio.bairro}</dd></div>
-          </dl>
-        </section>
+        {/* ── Sugestões: 20 anúncios, 5 por vez, voltando ao início no fim ── */}
+        {sugestoes.anuncios.length > 0 && (
+          <div className="anuncio-sugestoes">
+            <CarrosselAnuncios
+              id="sugestoes"
+              titulo={sugestoes.personalizadas ? 'Para você' : 'Você também pode gostar'}
+              subtitulo={sugestoes.personalizadas
+                ? 'Com base nos anúncios que você viu por aqui.'
+                : 'Outros desapegos de Santo Amaro.'}
+              anuncios={sugestoes.anuncios}
+            />
+          </div>
+        )}
       </div>
 
       {/* ── Barra fixa no celular ───────────────────── */}

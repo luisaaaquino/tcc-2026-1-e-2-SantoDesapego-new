@@ -15,9 +15,10 @@ const { distanciaEntreBairros } = require('../utils/geolocalizacao');
 
 const JANELA_DIAS = 14;          // mesma janela do Agente A
 const FATOR_TETO_PRECO = 1.5;    // aceita até 50% acima do maior preço visto
-const LIMITE = 5;
+const LIMITE = 5;               // Home: uma linha de 5
+const LIMITE_MAXIMO = 20;       // tela do anúncio: carrossel com até 20
 
-async function recomendarParaVoce({ usuarioId, bairroPerfil }) {
+async function recomendarParaVoce({ usuarioId, bairroPerfil, limite = LIMITE }) {
   // O que a pessoa viu: família da categoria e preço
   const { rows: vistos } = await pool.query(
     `SELECT COALESCE(c.categoria_pai, c.id) AS familia, cp.nome AS familia_nome, cl.preco
@@ -60,10 +61,10 @@ async function recomendarParaVoce({ usuarioId, bairroPerfil }) {
     .map((a) => ({ ...a, _p: pontuar(a) }))
     .sort((x, y) => x._p.fora - y._p.fora || x._p.dist - y._p.dist
       || new Date(y.data_criacao) - new Date(x.data_criacao))
-    .slice(0, LIMITE)
+    .slice(0, limite)
     .map(({ _p, ...a }) => a);
 
   return { anuncios, categorias: nomes };
 }
 
-module.exports = { recomendarParaVoce, JANELA_DIAS, FATOR_TETO_PRECO, LIMITE };
+module.exports = { recomendarParaVoce, JANELA_DIAS, FATOR_TETO_PRECO, LIMITE, LIMITE_MAXIMO };

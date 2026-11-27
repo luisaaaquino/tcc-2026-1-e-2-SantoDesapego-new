@@ -1,0 +1,58 @@
+/* Carrossel de anúncios (sugestões no fim da tela do anúncio).
+   O trilho anda um grupo inteiro por clique: 100% da janela + o vão. */
+.carrossel {
+  --carrossel-gap: 1rem;
+}
+.carrossel-topo {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.carrossel-topo h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.3rem, 2.2vw, 1.6rem);
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.carrossel-subtitulo { margin-top: 0.3rem; font-size: 0.9rem; color: var(--ink-muted); }
+
+.carrossel-controles { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+.carrossel-posicao { font-size: 0.85rem; color: var(--ink-muted); margin-right: 0.35rem; font-variant-numeric: tabular-nums; }
+.carrossel-seta {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), background-color 0.15s var(--ease);
+}
+.carrossel-seta:hover { border-color: var(--ink); background: var(--cream-soft); }
+
+.carrossel-janela { overflow: hidden; }
+.carrossel-trilho {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - (var(--por-vista) - 1) * var(--carrossel-gap)) / var(--por-vista));
+  gap: var(--carrossel-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  transition: transform 0.45s var(--ease);
+}
+.carrossel-trilho > li { min-width: 0; display: flex; }
+.carrossel-trilho > li > * { flex: 1; }
+
+@media (max-width: 600px) {
+  .carrossel { --carrossel-gap: 0.75rem; }
+  .carrossel-posicao { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .carrossel-trilho { transition: none; }
+}
