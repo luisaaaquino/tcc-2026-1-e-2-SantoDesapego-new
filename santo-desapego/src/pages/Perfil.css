@@ -12,6 +12,19 @@
   background: var(--cream);
 }
 
+/* "← Voltar para a home" à esquerda, alinhado com o menu lateral */
+.perfil-voltar {
+  max-width: 1200px;
+  width: 100%;
+  margin: 1.5rem auto 0;
+  padding: 0 2rem;
+}
+.perfil-voltar .link-voltar { margin-bottom: 0; }
+.perfil-voltar + .perfil-layout { margin-top: 1rem; }
+@media (max-width: 900px) {
+  .perfil-voltar { padding: 0 1rem; }
+}
+
 .perfil-layout {
   display: grid;
   grid-template-columns: 280px 1fr;

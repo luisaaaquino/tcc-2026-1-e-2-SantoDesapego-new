@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import './Perfil.css';
 import NotificacoesSino from '../componentes/NotificacoesSino';
-import SiteHeader, { NavBackButton } from '../componentes/SiteHeader';
+import SiteHeader, { LinkVoltar } from '../componentes/SiteHeader';
 import { BAIRROS as BAIRROS_SANTO_AMARO } from '../componentes/SeletorBairro';
 import {
   IconUser, IconMail, IconLock, IconPin, IconPhone, IconHome, IconID,
@@ -163,8 +163,11 @@ const Perfil = () => {
 
       <SiteHeader>
         <NotificacoesSino />
-        <NavBackButton to="/">Voltar para a home</NavBackButton>
       </SiteHeader>
+
+      <div className="perfil-voltar">
+        <LinkVoltar to="/">Voltar para a home</LinkVoltar>
+      </div>
 
       <div className="perfil-layout">
 
