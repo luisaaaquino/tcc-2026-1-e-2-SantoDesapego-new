@@ -67,10 +67,13 @@
   background: var(--cream-soft);
   overflow: hidden;
 }
+/* contain: mostra a foto inteira, seja ela deitada ou em pé
+   (com cover, foto em pé — geladeira, vestido — era cortada e
+   só aparecia o meio do produto). A sobra fica no fundo neutro. */
 .galeria-principal img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
 }
 .galeria-vazia {
