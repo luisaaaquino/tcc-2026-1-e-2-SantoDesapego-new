@@ -12,6 +12,11 @@ const appFavoritos = montarApp(require('../routes/favoritos'));
 const appAdmin = montarApp(require('../routes/admin'));
 
 const USUARIO = 1;
+
+// Endereço atual no cadastro (lido antes de salvar o perfil) [RN01]
+const enderecoAtual = (extra = {}) => ({
+  cep: '04710150', bairro: 'Campo Belo', endereco_trocas: 0, endereco_trocado_em: null, ...extra,
+});
 const ADMIN = 100;
 const SENHA = 'Desapego@2026';
 const HASH_SENHA = bcrypt.hashSync(SENHA, 4);
@@ -138,11 +143,11 @@ describe('RF04 - Gestão de Dados Pessoais (LGPD)', () => {
   });
 
   test('atualiza os dados cadastrais do perfil', async () => {
-    pool.query.mockResolvedValueOnce(linhas({ id: USUARIO, nome: 'Ana' }));
+    pool.query.mockResolvedValueOnce(linhas(enderecoAtual())).mockResolvedValueOnce(linhas({ id: USUARIO, nome: 'Ana' }));
     const res = await request(appUsuario).put('/api/usuario/perfil').set('Authorization', tokenDe(USUARIO))
       .send({ nome: ' Ana ', sobrenome: 'Lima', bairro: 'Campo Belo' });
     expect(res.status).toBe(200);
-    expect(pool.query.mock.calls[0][1].slice(0, 2)).toEqual(['Ana', 'Lima']);
+    expect(pool.query.mock.calls[1][1].slice(0, 2)).toEqual(['Ana', 'Lima']);
   });
 
   test('[RF01] CEP inválido na edição do endereço é recusado', async () => {
@@ -154,11 +159,56 @@ describe('RF04 - Gestão de Dados Pessoais (LGPD)', () => {
   });
 
   test('[RF01] CEP válido na edição do endereço é gravado só com os números', async () => {
-    pool.query.mockResolvedValueOnce(linhas({ id: USUARIO, nome: 'Ana' }));
+    pool.query.mockResolvedValueOnce(linhas(enderecoAtual())).mockResolvedValueOnce(linhas({ id: USUARIO, nome: 'Ana' }));
     const res = await request(appUsuario).put('/api/usuario/perfil').set('Authorization', tokenDe(USUARIO))
       .send({ nome: 'Ana', sobrenome: 'Lima', cep: '04710-150' });
     expect(res.status).toBe(200);
-    expect(pool.query.mock.calls[0][1][3]).toBe('04710150');
+    expect(pool.query.mock.calls[1][1][3]).toBe('04710150');
+  });
+
+  /* ── [RN01] Limite de troca de endereço ── */
+  const salvarEndereco = (cep, bairro, logradouro = 'Rua A') => request(appUsuario).put('/api/usuario/perfil')
+    .set('Authorization', tokenDe(USUARIO)).send({ nome: 'Ana', sobrenome: 'Lima', cep, bairro, logradouro });
+  const diasAtras = (d) => new Date(Date.now() - d * 24 * 60 * 60 * 1000);
+  const trocouCep = () => pool.query.mock.calls[1]?.[1]?.[10];
+
+  test('[RN01] preencher o CEP pela primeira vez não conta como troca', async () => {
+    pool.query.mockResolvedValueOnce(linhas(enderecoAtual({ cep: null, bairro: null }))).mockResolvedValueOnce(linhas({ id: USUARIO }));
+    expect((await salvarEndereco('04710150', 'Campo Belo')).status).toBe(200);
+    expect(trocouCep()).toBe(false);
+  });
+
+  test('[RN01] a 1ª troca de CEP é liberada na hora (corrigir erro de cadastro)', async () => {
+    pool.query.mockResolvedValueOnce(linhas(enderecoAtual())).mockResolvedValueOnce(linhas({ id: USUARIO, endereco_trocas: 1, endereco_trocado_em: new Date() }));
+    const res = await salvarEndereco('04650000', 'Interlagos');
+    expect(res.status).toBe(200);
+    expect(trocouCep()).toBe(true);
+    expect(res.body.usuario.endereco_liberado_em).toBeTruthy(); // a próxima já fica para daqui a 30 dias
+  });
+
+  test('[RN01] a 2ª troca antes de 30 dias é recusada e informa a data liberada', async () => {
+    pool.query.mockResolvedValueOnce(linhas(enderecoAtual({ endereco_trocas: 1, endereco_trocado_em: diasAtras(10) })));
+    const res = await salvarEndereco('04650000', 'Interlagos');
+    expect(res.status).toBe(429);
+    expect(res.body.erro).toMatch(/próxima troca de CEP ou bairro fica liberada em \d{2}\/\d{2}\/\d{4}/);
+    expect(pool.query).toHaveBeenCalledTimes(1); // nada foi gravado
+  });
+
+  test('[RN01] depois de 30 dias a troca volta a ser liberada', async () => {
+    pool.query.mockResolvedValueOnce(linhas(enderecoAtual({ endereco_trocas: 1, endereco_trocado_em: diasAtras(31) }))).mockResolvedValueOnce(linhas({ id: USUARIO }));
+    expect((await salvarEndereco('04650000', 'Interlagos')).status).toBe(200);
+    expect(trocouCep()).toBe(true);
+  });
+
+  test('[RN01] mudar só logradouro, número ou complemento não conta e não é bloqueado', async () => {
+    pool.query.mockResolvedValueOnce(linhas(enderecoAtual({ endereco_trocas: 3, endereco_trocado_em: diasAtras(1) }))).mockResolvedValueOnce(linhas({ id: USUARIO }));
+    expect((await salvarEndereco('04710-150', 'Campo Belo', 'Rua Nova, 200')).status).toBe(200);
+    expect(trocouCep()).toBe(false);
+  });
+
+  test('[RN01] trocar só o bairro também conta como troca', async () => {
+    pool.query.mockResolvedValueOnce(linhas(enderecoAtual({ endereco_trocas: 1, endereco_trocado_em: diasAtras(2) })));
+    expect((await salvarEndereco('04710150', 'Santo Amaro Centro')).status).toBe(429);
   });
 
   test('perfil sem nome ou sobrenome é recusado', async () => {
@@ -376,10 +426,10 @@ describe('RF13 - Painel do Vendedor', () => {
 describe('RF22 - Newsletter', () => {
   test.each([[true, true], [false, false], ['sim', false]])(
     'opt-in da newsletter enviado como %s grava %s', async (enviado, gravado) => {
-      pool.query.mockResolvedValueOnce(linhas({ id: USUARIO }));
+      pool.query.mockResolvedValueOnce(linhas(enderecoAtual())).mockResolvedValueOnce(linhas({ id: USUARIO }));
       await request(appUsuario).put('/api/usuario/perfil').set('Authorization', tokenDe(USUARIO))
         .send({ nome: 'Ana', sobrenome: 'Lima', recebe_newsletter: enviado });
-      expect(pool.query.mock.calls[0][1][8]).toBe(gravado);
+      expect(pool.query.mock.calls[1][1][8]).toBe(gravado);
     },
   );
 });

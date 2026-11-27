@@ -1518,6 +1518,12 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
   const [salvando, setSalvando] = useState(false);
   const [feedback, setFeedback] = useState(null);
 
+  // [RN01] Limite de troca de endereço: a 1ª troca de CEP/bairro é livre,
+  // depois só a cada 30 dias. Enquanto não libera, CEP e bairro ficam travados.
+  const liberadoEm = usuario.endereco_liberado_em ? new Date(usuario.endereco_liberado_em) : null;
+  const cepTravado = !!liberadoEm && liberadoEm > new Date();
+  const primeiraTroca = !!usuario.cep && !cepTravado && (usuario.endereco_trocas || 0) === 0;
+
   // [RF01] CEP consultado no ViaCEP, igual ao cadastro: confere se existe
   // e já preenche logradouro e bairro
   const [cepStatus, setCepStatus] = useState({ estado: '', msg: '' });
@@ -1597,6 +1603,9 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
           numero: form.numero.trim(),
           complemento: form.complemento.trim(),
           bairro: form.bairro,
+          // [RN01] a API devolve a contagem atualizada e a próxima liberação
+          endereco_trocas: dados.usuario?.endereco_trocas ?? usuario.endereco_trocas,
+          endereco_liberado_em: dados.usuario?.endereco_liberado_em ?? null,
         });
         setFeedback({ tipo: 'success', msg: 'Endereço atualizado com sucesso!' });
       }
@@ -1621,6 +1630,25 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
         </div>
       )}
 
+      {/* [RN01] Aviso sobre o limite de troca de CEP/bairro */}
+      {cepTravado ? (
+        <div className="perfil-alert info" role="status">
+          <IconAlert />
+          <span>
+            Você já trocou seu CEP recentemente. A próxima troca de CEP ou bairro fica liberada em{' '}
+            <strong>{liberadoEm.toLocaleDateString('pt-BR')}</strong>. Logradouro, número e complemento podem ser alterados normalmente.
+          </span>
+        </div>
+      ) : primeiraTroca && (
+        <div className="perfil-alert info" role="status">
+          <IconAlert />
+          <span>
+            Você pode corrigir seu CEP agora. Depois dessa primeira troca, é preciso esperar 30 dias entre uma troca e outra,
+            porque o CEP define onde você pode anunciar.
+          </span>
+        </div>
+      )}
+
       <form onSubmit={salvar} className="perfil-form">
         <div className="perfil-form-row">
           <div className="perfil-field">
@@ -1629,6 +1657,7 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
               <IconPin />
               <input className="perfil-input" type="text" placeholder="00000-000"
                 value={form.cep} onChange={(e) => formatCEP(e.target.value)} maxLength={9}
+                disabled={cepTravado}
                 aria-invalid={cepStatus.estado === 'erro'} aria-describedby="perfil-cep-status" />
             </div>
             {cepStatus.msg && (
@@ -1641,7 +1670,7 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
             <label className="perfil-field-label">Bairro</label>
             <div className="perfil-input-wrap">
               <IconPin />
-              <select className="perfil-select" value={form.bairro}
+              <select className="perfil-select" value={form.bairro} disabled={cepTravado}
                 onChange={(e) => setForm({ ...form, bairro: e.target.value })}>
                 <option value="">Selecione…</option>
                 {BAIRROS.map((b) => <option key={b}>{b}</option>)}

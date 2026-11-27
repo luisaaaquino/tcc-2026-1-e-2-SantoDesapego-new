@@ -30,6 +30,11 @@ CREATE TABLE usuarios (
   reset_senha_expira TIMESTAMP,
   anonimizada_em     TIMESTAMP,
 
+  -- [RN01] Limite de troca de endereço (migration 011): 1ª troca livre,
+  -- depois só a cada 30 dias
+  endereco_trocas     INTEGER   NOT NULL DEFAULT 0,
+  endereco_trocado_em TIMESTAMP,
+
   -- Mercado Pago Marketplace [split de pagamento] — credenciais OAuth da
   -- conta MP do próprio vendedor, usadas pra criar a preference da venda
   -- dele e reter a comissão da plataforma via marketplace_fee.

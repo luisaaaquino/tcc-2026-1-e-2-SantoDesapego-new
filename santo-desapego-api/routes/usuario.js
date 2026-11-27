@@ -5,6 +5,7 @@ const { autenticar } = require('../middleware/auth');
 const { validarSenhaForte, validarCEP } = require('../utils/validacao');
 const { TERMOS_VERSAO_ATUAL } = require('../utils/termos');
 const { excluirOuAnonimizarUsuario } = require('../utils/usuarios');
+const { enderecoMudou, trocaLiberadaEm } = require('../utils/trocaEndereco');
 const { MARKETPLACE_FEE_PERCENT } = require('../services/mercadoPagoService');
 
 const router = express.Router();
@@ -87,7 +88,8 @@ router.get('/api/usuario/perfil', autenticar, async (req, res) => {
       `SELECT id, nome, sobrenome, cpf, telefone, email,
               cep, logradouro, numero, complemento, bairro,
               recebe_newsletter, aceita_termos, foto_perfil, papel,
-              termos_versao, termos_aceitos_em, mp_conectado
+              termos_versao, termos_aceitos_em, mp_conectado,
+              endereco_trocas, endereco_trocado_em
        FROM usuarios WHERE id = $1`, [req.userId]
     );
 
@@ -96,6 +98,8 @@ router.get('/api/usuario/perfil', autenticar, async (req, res) => {
     }
 
     const usuario = resultado.rows[0];
+    // [RN01] Quando a próxima troca de CEP/bairro fica liberada (null = agora)
+    usuario.endereco_liberado_em = trocaLiberadaEm(usuario);
     // [RF03] Sinaliza se o usuário aceitou uma versão anterior dos Termos
     usuario.termos_versao_atual = TERMOS_VERSAO_ATUAL;
     usuario.termos_atualizados = usuario.termos_versao !== TERMOS_VERSAO_ATUAL;
@@ -191,26 +195,51 @@ router.put('/api/usuario/perfil', autenticar, async (req, res) => {
       return res.status(400).json({ erro: 'CEP inválido. Use o formato 00000-000.' });
     }
 
+    // [RN01] Limite de troca de endereço: 1ª troca de CEP/bairro livre,
+    // depois só a cada 30 dias (preencher o CEP pela 1ª vez não conta)
+    const atual = (await pool.query(
+      'SELECT cep, bairro, endereco_trocas, endereco_trocado_em FROM usuarios WHERE id = $1',
+      [req.userId]
+    )).rows[0];
+    if (!atual) return res.status(404).json({ erro: 'Usuário não encontrado.' });
+
+    const contaComoTroca = !!atual.cep && enderecoMudou(atual, { cep, bairro });
+    if (contaComoTroca) {
+      const liberadoEm = trocaLiberadaEm(atual);
+      if (liberadoEm) {
+        return res.status(429).json({
+          erro: `Você já trocou seu CEP recentemente. Para manter os anúncios confiáveis, a próxima troca de CEP ou bairro fica liberada em ${liberadoEm.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}. Logradouro, número e complemento podem ser alterados normalmente.`,
+          endereco_liberado_em: liberadoEm,
+        });
+      }
+    }
+
     const resultado = await pool.query(
       `UPDATE usuarios SET
          nome = $1, sobrenome = $2, telefone = $3,
          cep = $4, logradouro = $5, numero = $6,
          complemento = $7, bairro = $8,
-         recebe_newsletter = $9
+         recebe_newsletter = $9,
+         endereco_trocas     = endereco_trocas + CASE WHEN $11 THEN 1 ELSE 0 END,
+         endereco_trocado_em = CASE WHEN $11 THEN NOW() ELSE endereco_trocado_em END
        WHERE id = $10
-       RETURNING id, nome, sobrenome, email, bairro, foto_perfil`,
+       RETURNING id, nome, sobrenome, email, bairro, foto_perfil, endereco_trocas, endereco_trocado_em`,
       [
         nome.trim(), sobrenome.trim(), telefone || null,
         cep ? String(cep).replace(/\D/g, '') : null, logradouro || null, numero || null,
         complemento || null, bairro || null,
         recebe_newsletter === true,
-        req.userId
+        req.userId,
+        contaComoTroca,
       ]
     );
 
+    const usuario = resultado.rows[0];
+    usuario.endereco_liberado_em = trocaLiberadaEm(usuario);
+
     return res.json({
       mensagem: 'Perfil atualizado com sucesso!',
-      usuario: resultado.rows[0]
+      usuario
     });
   } catch (erro) {
     console.error('Erro ao atualizar perfil:', erro);

@@ -37,7 +37,8 @@
       "routes/usuario.js",
       "routes/favoritos.js",
       "routes/admin.js",
-      "utils/log.js"
+      "utils/log.js",
+      "utils/trocaEndereco.js"
     ],
     "coverageDirectory": "tests/relatorio/cobertura",
     "coverageReporters": ["text", "json-summary", "html"]

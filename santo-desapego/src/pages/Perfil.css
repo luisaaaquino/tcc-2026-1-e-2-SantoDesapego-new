@@ -1191,3 +1191,17 @@
   .painel-cta-grid > .painel-cta { flex: 0 0 82%; scroll-snap-align: start; }
   .perfil-content { padding: 1.25rem 1rem; }
 }
+
+/* [RN01] Aviso do limite de troca de endereço e campos travados */
+.perfil-alert.info {
+  background: var(--cream-soft);
+  border: 1px solid var(--border);
+  color: var(--ink-soft);
+}
+.perfil-alert.info strong { color: var(--ink); }
+.perfil-input:disabled,
+.perfil-select:disabled {
+  background: var(--cream-soft);
+  color: var(--ink-muted);
+  cursor: not-allowed;
+}
