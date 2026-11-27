@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import GavetaPerfil from '../componentes/GavetaPerfil';
 import './Explorar.css';
+import BarraCategorias from '../componentes/BarraCategorias';
 import SeletorBairro, { BAIRROS } from '../componentes/SeletorBairro';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import LegalModal from '../componentes/LegalModal';
@@ -302,6 +303,7 @@ const Explorar = () => {
           </button>
         </div>
 
+        <BarraCategorias ativa={categoriaAtiva} onEscolher={setCategoriaAtiva} />
       </header>
 
       {/* ── Gaveta do menu (mobile) ── */}

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import GavetaPerfil from '../componentes/GavetaPerfil';
 import './Sobre.css';
+import BarraCategorias from '../componentes/BarraCategorias';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import LegalModal from '../componentes/LegalModal';
 import RodapeSite from '../componentes/RodapeSite';
@@ -214,6 +215,7 @@ const Sobre = () => {
             <span /><span /><span />
           </button>
         </div>
+        <BarraCategorias />
       </header>
 
       {/* ── Gaveta do menu (mobile) ── */}

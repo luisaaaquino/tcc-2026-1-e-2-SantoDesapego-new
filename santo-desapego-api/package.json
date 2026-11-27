@@ -25,6 +25,8 @@
       "services/agenteCompraService.js",
       "services/llmClient.js",
       "routes/ia.js",
+      "routes/recomendacoes.js",
+      "services/recomendacaoService.js",
       "routes/auth.js",
       "routes/pagamentos.js",
       "routes/mercadoPago.js",

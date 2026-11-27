@@ -7,10 +7,10 @@ import SeletorBairro, { BAIRROS } from '../componentes/SeletorBairro';
 import NotificacoesSino from '../componentes/NotificacoesSino';
 import LegalModal from '../componentes/LegalModal';
 import RodapeSite from '../componentes/RodapeSite';
+import BarraCategorias from '../componentes/BarraCategorias';
 import CartaoAnuncio from '../componentes/CartaoAnuncio';
-import { IconSearch, IconLogout, IconPin } from '../componentes/Icones';
+import { IconSearch, IconLogout, IconPin, IconTag, IconShield } from '../componentes/Icones';
 import { API_URL } from '../config';
-import { formatarPreco } from '../utils/formato';
 
 /* ── Como funciona: o fluxo real de uma venda, em ordem ───────── */
 const PASSOS = [
@@ -30,6 +30,29 @@ const PASSOS = [
 
 const HOODS = BAIRROS;
 
+/* ── Vantagens (abertura): só o que o site faz de verdade ─────── */
+const VANTAGENS = [
+  {
+    Icone: IconTag,
+    titulo: 'Anúncio pronto com ajuda da IA',
+    texto: 'Conte o que quer vender numa frase ou numa conversa. A IA monta o título e a descrição, e você confere antes de publicar.',
+  },
+  {
+    Icone: IconPin,
+    titulo: 'Tudo perto de você',
+    texto: `Anúncios de ${BAIRROS.length} bairros de Santo Amaro e arredores. Vocês combinam a entrega, sem frete e sem esperar transportadora.`,
+  },
+  {
+    Icone: IconShield,
+    titulo: 'Pagamento protegido',
+    texto: 'O valor fica retido no Mercado Pago e só vai para o vendedor quando você confirma a entrega com o código.',
+  },
+];
+
+// "Móveis", "Móveis e Livros", "Móveis, Livros e Infantil"
+const juntar = (itens) => (itens.length <= 1 ? itens.join('')
+  : `${itens.slice(0, -1).join(', ')} e ${itens[itens.length - 1]}`);
+
 /* ════════════════════════════════════════════════════════════
    COMPONENTE
    ════════════════════════════════════════════════════════════ */
@@ -46,25 +69,25 @@ const Home = () => {
   // ── Estado do usuário logado (lê do localStorage)
   const [usuario, setUsuario] = useState(null);
 
-  // ── Anúncios recentes e categorias (o conteúdo da página)
+  // ── Anúncios recentes (o conteúdo da página)
   const [recentes, setRecentes] = useState(null); // null = carregando
-  const [categorias, setCategorias] = useState([]);
 
-  // ── Moment "pinned-chapters" (skill design-taste-frontend) no Como funciona
-
-  // Fotos da abertura: os três anúncios recentes que têm foto
-  const vitrine = (recentes || []).filter((a) => a.imagem_principal).slice(0, 3);
-  const mostrarVitrine = recentes === null || vitrine.length === 3;
+  // "Para você" [RF24]: só para quem está logado e já viu algum anúncio
+  const [paraVoce, setParaVoce] = useState({ anuncios: [], categorias: [] });
+  useEffect(() => {
+    const token = localStorage.getItem('sd_token');
+    if (!token) return;
+    fetch(`${API_URL}/api/recomendacoes`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setParaVoce({ anuncios: d.anuncios || [], categorias: d.categorias || [] }))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/anuncios?ordenacao=recentes&limite=8`)
+    fetch(`${API_URL}/api/anuncios?ordenacao=recentes&limite=30`)
       .then((r) => r.json())
       .then((d) => setRecentes(d.anuncios || []))
       .catch(() => setRecentes([]));
-    fetch(`${API_URL}/api/categorias`)
-      .then((r) => r.json())
-      .then((d) => setCategorias((d.categorias || []).filter((c) => !c.categoria_pai)))
-      .catch(() => setCategorias([]));
   }, []);
 
   // ── Menu mobile (hambúrguer + gaveta)
@@ -259,6 +282,7 @@ const Home = () => {
           </button>
         </div>
 
+        <BarraCategorias />
       </header>
 
       {/* ── Gaveta do menu (mobile) ── */}
@@ -283,11 +307,11 @@ const Home = () => {
 
       <main className="inicio">
 
-        {/* ── Abertura: o que é, em uma frase, as duas ações e as categorias;
-               ao lado, as fotos dos anúncios mais recentes. Entra uma vez ao
-               carregar (data-enter, camada de movimento da skill). ── */}
+        {/* ── Abertura: o que é, em uma frase, e as duas ações;
+               ao lado, as vantagens do site. Entra uma vez ao carregar
+               (data-enter, camada de movimento da skill). ── */}
         <section
-          className={`inicio-abertura hero bg-topglow${mostrarVitrine ? '' : ' sem-vitrine'}`}
+          className="inicio-abertura hero bg-topglow"
           data-enter
           aria-labelledby="titulo-inicio"
         >
@@ -301,34 +325,40 @@ const Home = () => {
               <Link to={linkAnunciar} className="btn-primary">Anunciar um item</Link>
               <a href="#como-funciona" className="nav-btn">Como funciona</a>
             </div>
-            {/* ── Categorias ── */}
-            {categorias.length > 0 && (
-              <nav className="inicio-categorias" aria-label="Categorias">
-                <Link to="/explorar" className="m-link m-link--bare">Todas</Link>
-                {categorias.map((c) => (
-                  <Link key={c.id} to={`/explorar?categoria_id=${c.id}`} className="m-link m-link--bare">{c.nome}</Link>
-                ))}
-              </nav>
-            )}
           </div>
 
-          {mostrarVitrine && (
-            <div className="inicio-vitrine" data-enter-media>
-              {recentes === null
-                ? [0, 1, 2].map((i) => <span key={i} className="inicio-vitrine-foto" />)
-                : vitrine.map((v, i) => (
-                    <Link
-                      key={v.id}
-                      to={`/anuncio/${v.id}`}
-                      className="inicio-vitrine-foto m-zoom"
-                      aria-label={`${v.titulo}, ${formatarPreco(v.preco)}`}
-                    >
-                      <img src={v.imagem_principal} alt="" loading={i === 0 ? 'eager' : 'lazy'} />
-                    </Link>
-                  ))}
-            </div>
-          )}
+          {/* Vantagens do site: o que cada um ganha usando o Santo Desapego */}
+          <ul className="inicio-vantagens" data-enter-media>
+            {VANTAGENS.map(({ Icone, titulo, texto }) => (
+              <li key={titulo}>
+                <span className="inicio-vantagem-icone"><Icone size={20} /></span>
+                <div>
+                  <strong className="inicio-vantagem-titulo">{titulo}</strong>
+                  <p>{texto}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
         </section>
+
+        {/* ── Para você [RF24]: anúncios das categorias que a pessoa viu,
+               priorizando a faixa de preço e o bairro dela. Sem histórico,
+               a seção não aparece. ── */}
+        {paraVoce.anuncios.length > 0 && (
+          <section className="inicio-recentes inicio-para-voce" aria-labelledby="titulo-para-voce">
+            <div className="inicio-titulo-linha">
+              <div>
+                <h2 id="titulo-para-voce">Para você</h2>
+                <p className="inicio-subtitulo">
+                  Com base nos anúncios que você viu em {juntar(paraVoce.categorias)}.
+                </p>
+              </div>
+            </div>
+            <div className="inicio-grade">
+              {paraVoce.anuncios.map((a) => <CartaoAnuncio key={a.id} anuncio={a} />)}
+            </div>
+          </section>
+        )}
 
         {/* ── Anúncios recentes (o conteúdo principal) ── */}
         <section className="inicio-recentes" aria-labelledby="titulo-recentes">
@@ -345,9 +375,15 @@ const Home = () => {
               <Link to={linkAnunciar} className="btn-primary">Anunciar um item</Link>
             </div>
           ) : (
-            <div className="inicio-grade">
-              {recentes.map((a, i) => <CartaoAnuncio key={a.id} anuncio={a} prioridade={i < 4} />)}
-            </div>
+            <>
+              <div className="inicio-grade">
+                {recentes.map((a, i) => <CartaoAnuncio key={a.id} anuncio={a} prioridade={i < 4} />)}
+              </div>
+              {/* Repete o "ver todos" no fim da grade, para não precisar rolar de volta */}
+              <div className="inicio-ver-mais">
+                <Link to="/explorar" className="nav-btn">Ver todos os anúncios</Link>
+              </div>
+            </>
           )}
         </section>
 

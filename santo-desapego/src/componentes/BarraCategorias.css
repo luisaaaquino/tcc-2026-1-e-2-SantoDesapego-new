@@ -1,0 +1,48 @@
+/* Barra de categorias do cabeçalho (Home, Explorar e Sobre).
+   Fica dentro do .site-header (que é fixo no topo), numa faixa fina
+   abaixo da busca. No celular, rola para o lado. */
+.barra-categorias {
+  border-top: 1px solid var(--border-soft);
+}
+.barra-categorias-trilho {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.barra-categorias-trilho::-webkit-scrollbar { display: none; }
+
+.barra-categoria {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  padding: 0.6rem 0.7rem;
+  border-bottom: 2px solid transparent;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+.barra-categoria svg { color: var(--ink-muted); flex-shrink: 0; transition: color 0.15s var(--ease); }
+.barra-categoria:hover { color: var(--ink); border-bottom-color: var(--cream-deep); }
+.barra-categoria:hover svg { color: var(--terracotta); }
+.barra-categoria.ativa { color: var(--ink); font-weight: 600; border-bottom-color: var(--terracotta); }
+.barra-categoria.ativa svg { color: var(--terracotta); }
+.barra-categoria:first-child { padding-left: 0; }
+
+@media (max-width: 768px) {
+  .barra-categorias-trilho { padding: 0 1rem; }
+  .barra-categoria { padding: 0.55rem 0.6rem; font-size: 0.86rem; }
+}
+
+/* No computador, as categorias ocupam a largura toda do cabeçalho:
+   começam na margem do logo e terminam na do botão "Anunciar"
+   (alinhadas à esquerda sobrava um vão à direita e a barra parecia torta) */
+@media (min-width: 1025px) {
+  .barra-categorias-trilho { justify-content: space-between; }
+  .barra-categoria:last-child { padding-right: 0; }
+}
