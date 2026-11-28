@@ -1527,12 +1527,17 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
   // [RF01] CEP consultado no ViaCEP, igual ao cadastro: confere se existe
   // e já preenche logradouro e bairro
   const [cepStatus, setCepStatus] = useState({ estado: '', msg: '' });
+  // O logradouro vem do CEP e não é editável. Só libera para digitar se o
+  // ViaCEP estiver fora do ar ou o CEP não tiver rua cadastrada.
+  const [logradouroLivre, setLogradouroLivre] = useState(false);
 
   const formatCEP = (value) => {
     let v = value.replace(/\D/g, '').slice(0, 8);
     const numeros = v;
     if (v.length > 5) v = `${v.slice(0, 5)}-${v.slice(5)}`;
-    setForm((prev) => ({ ...prev, cep: v }));
+    // CEP mudou: o logradouro antigo não vale mais (ele vem do CEP)
+    setForm((prev) => ({ ...prev, cep: v, logradouro: '' }));
+    setLogradouroLivre(false);
 
     if (numeros.length !== 8) { setCepStatus({ estado: '', msg: '' }); return; }
 
@@ -1545,9 +1550,10 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
           return;
         }
         const foraDeArea = !cepDentroDeSantoAmaro(numeros);
+        setLogradouroLivre(!dados.logradouro); // CEP sem rua cadastrada: digita à mão
         setForm((prev) => ({
           ...prev,
-          logradouro: dados.logradouro || prev.logradouro,
+          logradouro: dados.logradouro || '',
           bairro: foraDeArea
             ? 'Outro bairro'
             : (BAIRROS_SANTO_AMARO.includes(dados.bairro) ? dados.bairro : prev.bairro),
@@ -1556,8 +1562,11 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
           ? { estado: 'fora', msg: 'CEP fora de Santo Amaro: você pode comprar normalmente, mas não pode publicar anúncios.' }
           : { estado: 'ok', msg: '' });
       })
-      // ViaCEP fora do ar: não trava o usuário (a API ainda confere o formato)
-      .catch(() => setCepStatus({ estado: '', msg: '' }));
+      // ViaCEP fora do ar: não trava o usuário — libera o logradouro para digitar
+      .catch(() => {
+        setLogradouroLivre(true);
+        setCepStatus({ estado: '', msg: 'Não foi possível consultar o CEP agora. Digite o logradouro.' });
+      });
   };
 
   const salvar = async (e) => {
@@ -1571,6 +1580,12 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
     }
     if (cepStatus.estado === 'erro') {
       setFeedback({ tipo: 'error', msg: cepStatus.msg });
+      return;
+    }
+    if (cepNumeros && !form.logradouro.trim()) {
+      setFeedback({ tipo: 'error', msg: logradouroLivre
+        ? 'Digite o logradouro.'
+        : 'Aguarde o CEP preencher o logradouro ou confira o número digitado.' });
       return;
     }
     setSalvando(true);
@@ -1681,13 +1696,20 @@ const SecaoEndereco = ({ usuario, setUsuario }) => {
         </div>
 
         <div className="perfil-field">
-          <label className="perfil-field-label">Logradouro</label>
+          <label className="perfil-field-label" htmlFor="perfil-logradouro">Logradouro</label>
           <div className="perfil-input-wrap">
             <IconHome />
-            <input className="perfil-input" type="text" placeholder="Rua, Av., Travessa…"
+            <input id="perfil-logradouro" className="perfil-input" type="text"
+              placeholder={logradouroLivre ? 'Rua, Av., Travessa…' : 'Preenchido pelo CEP'}
               value={form.logradouro}
+              disabled={!logradouroLivre}
               onChange={(e) => setForm({ ...form, logradouro: e.target.value })} />
           </div>
+          <span className="perfil-field-hint">
+            {logradouroLivre
+              ? 'Não encontramos a rua desse CEP: digite o logradouro.'
+              : 'Preenchido automaticamente a partir do CEP. Para mudar, altere o CEP.'}
+          </span>
         </div>
 
         <div className="perfil-form-row">

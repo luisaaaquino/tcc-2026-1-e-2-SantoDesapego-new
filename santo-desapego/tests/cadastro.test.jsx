@@ -9,6 +9,7 @@ const CADASTRO_OK = respostaJson({ usuario: { id: 1 }, verificacao: { desafio: '
 
 const campo = (placeholder) => screen.getByPlaceholderText(placeholder);
 const campoData = () => screen.getByLabelText(/^Data de nascimento/);
+const campoLogradouro = () => screen.getByLabelText(/^Logradouro/);
 const abrir = (rotas = {}) => {
   const fetchFalso = simularFetch({ viacep: VIACEP_SANTO_AMARO, '/api/auth/cadastro': CADASTRO_OK, ...rotas });
   renderComRota(<Cadastro />, { rota: '/cadastro' });
@@ -34,7 +35,7 @@ const preencher = async (user, dados = {}) => {
   if (d.confirmSenha) await user.type(campo('repita sua senha'), d.confirmSenha);
   if (d.cep) {
     await user.type(campo('04000-000'), d.cep);
-    await waitFor(() => expect(campo('Rua, Av., Travessa…')).not.toHaveValue(''));
+    await waitFor(() => expect(campoLogradouro()).not.toHaveValue(''));
   }
   if (d.numero) await user.type(campo('Ex: 123'), d.numero);
   if (d.termos) await user.click(screen.getByText(/Li e aceito os/));
@@ -51,7 +52,7 @@ describe('RF01 - Gestão de Perfil Geográfico', () => {
     const { user } = abrir();
     await user.type(campo('04000-000'), '04710150');
 
-    await waitFor(() => expect(campo('Rua, Av., Travessa…')).toHaveValue('Rua Padre José de Anchieta'));
+    await waitFor(() => expect(campoLogradouro()).toHaveValue('Rua Padre José de Anchieta'));
     expect(screen.getByRole('combobox')).toHaveValue('Campo Belo');
     expect(campo('04000-000')).toHaveValue('04710-150');
   });
@@ -75,6 +76,36 @@ describe('RF01 - Gestão de Perfil Geográfico', () => {
     const { user } = abrir({ viacep: () => { throw new Error('offline'); } });
     await user.type(campo('04000-000'), '04710150');
     expect(await screen.findByText(/Preencha o endereço manualmente/)).toBeInTheDocument();
+    // sem a consulta, o logradouro é liberado para digitar
+    expect(campoLogradouro()).not.toHaveAttribute('readonly');
+  });
+
+  test('o logradouro vem do CEP e não pode ser editado à mão', async () => {
+    const { user } = abrir();
+    expect(campoLogradouro()).toHaveAttribute('readonly');
+    await user.type(campo('04000-000'), '04710150');
+    await waitFor(() => expect(campoLogradouro()).toHaveValue('Rua Padre José de Anchieta'));
+    await user.type(campoLogradouro(), ' outra rua');
+    expect(campoLogradouro()).toHaveValue('Rua Padre José de Anchieta');
+  });
+
+  test('trocar o CEP troca o logradouro junto', async () => {
+    const { user, fetchFalso } = abrir();
+    await user.type(campo('04000-000'), '04710150');
+    await waitFor(() => expect(campoLogradouro()).toHaveValue('Rua Padre José de Anchieta'));
+
+    fetchFalso.mockImplementation(async () => ({ ok: true, status: 200, json: async () => ({ logradouro: 'Avenida Santo Amaro', bairro: 'Santo Amaro Centro' }) }));
+    await user.clear(campo('04000-000'));
+    expect(campoLogradouro()).toHaveValue('');
+    await user.type(campo('04000-000'), '04506000');
+    await waitFor(() => expect(campoLogradouro()).toHaveValue('Avenida Santo Amaro'));
+  });
+
+  test('CEP sem rua cadastrada libera o logradouro para digitar', async () => {
+    const { user } = abrir({ viacep: respostaJson({ logradouro: '', bairro: 'Campo Belo' }) });
+    await user.type(campo('04000-000'), '04710150');
+    expect(await screen.findByText(/Não encontramos a rua desse CEP/)).toBeInTheDocument();
+    expect(campoLogradouro()).not.toHaveAttribute('readonly');
   });
 
   test('o telefone ganha máscara (11) 98765-4321', async () => {

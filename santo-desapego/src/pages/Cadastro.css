@@ -390,3 +390,11 @@
 @media (min-width: 901px) {
   .cadastro-page .left-panel { padding-top: 4.5rem; }
 }
+
+/* Logradouro preenchido pelo CEP (somente leitura) */
+.field-input.field-input-fixo {
+  background: var(--cream-soft);
+  color: var(--ink-soft);
+  cursor: default;
+}
+.field-input.field-input-fixo:focus { box-shadow: none; border-color: var(--border); }

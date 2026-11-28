@@ -83,6 +83,9 @@ const Cadastro = () => {
   const [cepOk, setCepOk]                   = useState(false);
   const [cepErro, setCepErro]               = useState('');
   const [cepForaArea, setCepForaArea]       = useState(false);
+  // O logradouro vem do CEP e não é editável. Só libera para digitar se o
+  // ViaCEP estiver fora do ar ou o CEP não tiver rua cadastrada.
+  const [logradouroLivre, setLogradouroLivre] = useState(false);
   const [termsChecked, setTermsChecked]     = useState(false);
   // ── Modal de Termos de Uso / Privacidade — aberto pelos links abaixo
   // do checkbox de aceite e pelo rodapé mínimo desta página.
@@ -154,9 +157,11 @@ const Cadastro = () => {
   const formatCEP = (value) => {
     let val = value.replace(/\D/g, '');
     if (val.length > 5) val = val.slice(0, 5) + '-' + val.slice(5, 8);
-    setForm((prev) => ({ ...prev, cep: val }));
+    // CEP mudou: o logradouro antigo não vale mais
+    setForm((prev) => ({ ...prev, cep: val, logradouro: '' }));
     setCepErro('');
     setCepForaArea(false);
+    setLogradouroLivre(false);
 
     const numeros = val.replace(/\D/g, '');
     if (numeros.length !== 8) { setCepOk(false); return; }
@@ -173,9 +178,10 @@ const Cadastro = () => {
         }
         const foraDeArea = !cepDentroDeSantoAmaro(numeros);
 
+        setLogradouroLivre(!dados.logradouro); // CEP sem rua cadastrada: digita à mão
         setForm((prev) => ({
           ...prev,
-          logradouro: dados.logradouro || prev.logradouro,
+          logradouro: dados.logradouro || '',
           bairro: foraDeArea
             // fora de Santo Amaro: já seleciona "Outro bairro" automaticamente
             ? 'Outro bairro'
@@ -186,6 +192,7 @@ const Cadastro = () => {
         setCepForaArea(foraDeArea);
       })
       .catch(() => {
+        setLogradouroLivre(true);
         setCepErro('Não foi possível consultar o CEP agora. Preencha o endereço manualmente.');
       })
       .finally(() => setCepLoading(false));
@@ -226,7 +233,11 @@ const Cadastro = () => {
       return 'CEP inválido. Use o formato 00000-000.';
 
     if (!form.bairro)            return 'Por favor, selecione o bairro.';
-    if (!form.logradouro.trim()) return 'Por favor, preencha o logradouro.';
+    if (!form.logradouro.trim()) {
+      return logradouroLivre
+        ? 'Por favor, preencha o logradouro.'
+        : 'Digite um CEP válido: o logradouro é preenchido a partir dele.';
+    }
     if (!form.numero.trim())     return 'Por favor, preencha o número do endereço.';
 
     if (!termsChecked)
@@ -563,10 +574,19 @@ const Cadastro = () => {
                     <label className="field-label" htmlFor="cad-logradouro">Logradouro <span className="required">*</span></label>
                     <div className="field-input-wrap">
                       <IconHome />
-                      <input type="text" id="cad-logradouro" className="field-input" placeholder="Rua, Av., Travessa…"
+                      <input type="text" id="cad-logradouro"
+                        className={`field-input${logradouroLivre ? '' : ' field-input-fixo'}`}
+                        placeholder={logradouroLivre ? 'Rua, Av., Travessa…' : 'Preenchido pelo CEP'}
                         name="logradouro" value={form.logradouro} onChange={handleChange}
+                        readOnly={!logradouroLivre} aria-readonly={!logradouroLivre}
+                        aria-describedby="cad-logradouro-dica"
                         autoComplete="street-address" required />
                     </div>
+                    <span id="cad-logradouro-dica" className="field-hint">
+                      {logradouroLivre
+                        ? 'Não encontramos a rua desse CEP: digite o logradouro.'
+                        : 'Preenchido automaticamente a partir do CEP.'}
+                    </span>
                   </div>
                 </div>
 
