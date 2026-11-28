@@ -121,12 +121,20 @@ const createSplitPreference = async ({ sellerAccessToken, anuncio, comprador }) 
       email: comprador.email,
     },
 
-    // Só cartão — sem Pix, boleto ou lotérica (mesma regra do checkout atual)
+    // [RF14] Só cartão (crédito, débito ou pré-pago), em até 12x. Ficam de
+    // fora: boleto e lotérica (ticket), Pix (bank_transfer), caixa eletrônico
+    // (atm), "Saldo em conta" do MP (account_money) e "Mercado Parcelado" —
+    // a linha de crédito do próprio MP (tipo digital_currency, meio consumer_credits)
     payment_methods: {
       excluded_payment_types: [
         { id: 'ticket' },
         { id: 'bank_transfer' },
         { id: 'atm' },
+        { id: 'account_money' },
+        { id: 'digital_currency' },
+      ],
+      excluded_payment_methods: [
+        { id: 'consumer_credits' },
       ],
       installments: 12,
     },

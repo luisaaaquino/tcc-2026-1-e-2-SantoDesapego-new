@@ -141,10 +141,15 @@ describe('RF14 - Integração com Gateway de Pagamento', () => {
     expect(res.body).toEqual({ preference_id: 'pref-1', init_point: 'https://mercadopago/checkout' });
   });
 
-  test('o pagamento é só por cartão (sem Pix, boleto ou lotérica), em até 12x', async () => {
+  test('o pagamento é só por cartão (sem Pix, boleto, lotérica, saldo ou Mercado Parcelado), em até 12x', async () => {
     await comprar();
     const { payment_methods } = corpoDaPreferencia();
-    expect(payment_methods.excluded_payment_types.map((t) => t.id)).toEqual(['ticket', 'bank_transfer', 'atm']);
+    expect(payment_methods.excluded_payment_types.map((t) => t.id))
+      .toEqual(['ticket', 'bank_transfer', 'atm', 'account_money', 'digital_currency']);
+    expect(payment_methods.excluded_payment_methods.map((m) => m.id)).toEqual(['consumer_credits']);
+    // cartão de crédito, débito e pré-pago continuam liberados
+    expect(payment_methods.excluded_payment_types.map((t) => t.id))
+      .not.toEqual(expect.arrayContaining(['credit_card']));
     expect(payment_methods.installments).toBe(12);
   });
 
