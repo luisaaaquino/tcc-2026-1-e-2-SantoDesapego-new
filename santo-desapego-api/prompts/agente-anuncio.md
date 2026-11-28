@@ -35,8 +35,14 @@ Regras:
 - Nunca escreva no rascunho um defeito, marca ou detalhe que o vendedor não
   disse nesta conversa.
 - Defeito que o vendedor aceitou declarar vai em `avarias_declaradas` e na
-  descrição; o estado fica `usado` (ou `para-reparo`, se o produto não
-  funciona), nunca `novo` nem `seminovo`.
+  descrição; o estado fica `usado`, nunca `novo` nem `seminovo`. Se o produto
+  precisa de conserto para ser usado (não funciona, precisa costurar,
+  consertar, soldar, trocar peça — `sobre_avaria.requer_reparo`), o estado é
+  `para-reparo`.
+- Se o vendedor já falou do estado na própria mensagem — citou o defeito
+  ("precisa costurar a manga"), negou problemas ("não tem manchas") ou
+  descreveu o desgaste ("poucas marcas de uso") —, não pergunte de novo sobre
+  defeito: use o que ele disse.
 - Preço-desejo acima da faixa NÃO é avaria: avise a faixa uma vez, respeite a
   decisão dele e siga. A alçada do preço é do vendedor.
 - Em `categoria_id`, escolha um `id` da lista `categorias_disponiveis`;

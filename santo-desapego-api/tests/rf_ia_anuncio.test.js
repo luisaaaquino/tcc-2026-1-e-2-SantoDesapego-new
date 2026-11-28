@@ -124,6 +124,44 @@ describe('RF06 - Anúncio de Produtos', () => {
     expect(avariaDaConversa(estado).declarou_novo).toBe(esperado);
   });
 
+  test.each([
+    'quero vender esse terno de linho por 700 reais, ele está usado, tem poucas marcas de uso, mas não tem manchas',
+    'sofá em ótimo estado, 500 reais',
+    'camisa sem riscos e sem furos, 40 reais',
+  ])('IA: estado já descrito na mensagem não gera a pergunta sobre defeito — "%s"', async (fala) => {
+    const estado = await estadoInicial({ cep: '04710150', bairro: 'Campo Belo' });
+    estado.conversa.push({ papel: 'vendedor', texto: fala });
+    const a = avariaDaConversa(estado);
+    expect(a.tratada).toBe(true);
+    expect(a.mencionada).toBe(false); // nada disso é defeito
+  });
+
+  test('IA: defeito citado na mensagem ("precisa costurar") não gera a pergunta e vira "para reparo"', async () => {
+    const estado = await estadoInicial({ cep: '04710150', bairro: 'Campo Belo' });
+    // o modelo monta o rascunho como "usado" e declara o defeito
+    roteiro(decisao('preencher_rascunho', { rascunho: {
+      ...RASCUNHO, titulo: 'Terno feminino', estado_conservacao: 'usado',
+      avarias_declaradas: ['precisa costurar embaixo do braço direito'],
+    } }), AVALIACAO_OK);
+
+    const r = await rodarAgente({ estado, mensagemVendedor: 'quero vender esse terno por 150 reais, pois precisa costurar embaixo do sovaco direito', vendedorId: VENDEDOR });
+
+    expect(r.estado.conversa.some((m) => m.papel === 'agente' && /Antes de montar o anúncio/.test(m.texto))).toBe(false);
+    expect(r.estado.rascunho.estado_conservacao).toBe('para-reparo'); // o código corrige o estado
+  });
+
+  test.each([
+    ['precisa costurar a manga', true],
+    ['a TV não liga', true],
+    ['está descosturado na barra', true],
+    ['tem um risco pequeno na lateral', false],
+    ['não tem manchas', false],
+  ])('IA: "%s" exige conserto (para reparo)? %s', async (fala, esperado) => {
+    const estado = await estadoInicial({ cep: '04710150', bairro: 'Campo Belo' });
+    estado.conversa.push({ papel: 'vendedor', texto: fala });
+    expect(avariaDaConversa(estado).requer_reparo).toBe(esperado);
+  });
+
   test('IA: rascunho aprovado vira pendência para o vendedor decidir (a IA não publica)', async () => {
     const estado = await estadoAguardandoAprovacao();
 

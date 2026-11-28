@@ -139,10 +139,17 @@ function validarRascunhoRapido(c) {
 /* ════════════════════════════════════════════════════════════
    O que a conversa diz sobre avaria (recalculado, não guardado)
    ════════════════════════════════════════════════════════════ */
-const NEGA = /\b(sem (nenhum )?(defeito|problema|avaria)s?|nenhum (defeito|problema)|n[ãa]o tem (nenhum )?(defeito|problema)|tudo funcionando|funciona (bem|perfeit\w*|100))/gi;
-// Só termos claros de defeito. Palavras como "barulho" ou "mancha" sozinhas
+// O vendedor diz que NÃO tem problema (inclui o que ele afirma que falta:
+// "não tem manchas", "sem riscos") ou elogia o estado ("bem conservado")
+const NEGA = /\b(sem (nenhum[a]? )?(defeito|problema|avaria|mancha|risco|arranh[ãa]o|arranh[õo]e|furo|rasgo|marca)s?|nenhum[a]? (defeito|problema|mancha|risco|arranh[ãa]o)|n[ãa]o tem (nenhum[a]? )?(defeito|problema|avaria|mancha|risco|arranh[ãa]o|arranh[õo]e|furo|rasgo)s?|tudo funcionando|funciona (bem|perfeit\w*|100)|(em |muito )?(bom|[óo]timo|perfeito|excelente) estado|bem (conservad|cuidad)\w*)/gi;
+// O vendedor descreve o desgaste normal de usado — já respondeu sobre o estado,
+// sem ser defeito ("tem poucas marcas de uso")
+const DESCREVE_USO = /\b(marcas? de uso|sinais? de uso|pouco usad\w*|uso normal|desgaste natural)\b/i;
+// Termos claros de defeito. Palavras como "barulho" ou "mancha" sozinhas
 // davam falso positivo (ex.: brinquedo que "faz barulho").
-const MENCIONA = /\b(defeito|avaria|quebrad\w*|rachad\w*|rachadura|trincad\w*|amassad\w*|riscad\w*|rasgad\w*|vaza\w*|n[ãa]o (gela|congela|funciona|liga|acende|esquenta)|demora\w* (pra|para) (gelar|congelar|esquentar|ligar)|barulho estranho|s[óo] n[ãa]o (gela|congela|funciona|liga|acende|esquenta))\b/i;
+const MENCIONA = /\b(defeito|avaria|quebrad\w*|rachad\w*|rachadura|trincad\w*|amassad\w*|riscad\w*|rasgad\w*|rasgo|furad\w*|furo|descosturad\w*|desfiad\w*|manchad\w*|com manchas?|bot[ãa]o (solto|faltando)|z[ií]per (quebrad|estragad|emperrad)\w*|vaza\w*|precisa (de )?(costur\w*|consert\w*|reparo|arrum\w*|sold\w*|colar|trocar)|n[ãa]o (gela|congela|funciona|liga|acende|esquenta|fecha)|demora\w* (pra|para) (gelar|congelar|esquentar|ligar)|barulho estranho|s[óo] n[ãa]o (gela|congela|funciona|liga|acende|esquenta))\b/i;
+// Defeito que exige conserto para o produto ser usado -> estado "para-reparo"
+const PRECISA_REPARO = /\b(precisa (de )?(costur\w*|consert\w*|reparo|arrum\w*|sold\w*|colar|trocar)|descosturad\w*|n[ãa]o (funciona|liga|gela|congela|acende|esquenta|fecha)|s[óo] n[ãa]o (funciona|liga|gela))\b/i;
 const PERGUNTA_AVARIA = /\b(defeito|avaria|problema|funciona|risco|amassad|quebr|rachad|estado)/i;
 // Produto declarado novo de fábrica: "novo", "lacrado", "na caixa", "nunca
 // usado", "com etiqueta"... — já responde sobre defeito, não precisa perguntar.
@@ -155,16 +162,22 @@ function avariaDaConversa(estado) {
   const perguntada = msgs.some((m) => m.papel === 'agente' && PERGUNTA_AVARIA.test(m.texto));
   let negouDefeito = false;
   let declarouNovo = false;
+  let descreveuUso = false;
+  let requerReparo = false;
   const falas = [];
   for (const m of msgs) {
     if (m.papel !== 'vendedor') continue;
-    if (MENCIONA.test(m.texto.replace(NEGA, ''))) falas.push(m.texto);
+    const semNegacoes = m.texto.replace(NEGA, '');
+    if (MENCIONA.test(semNegacoes)) falas.push(m.texto);
     else if (new RegExp(NEGA.source, 'i').test(m.texto)) negouDefeito = true;
+    if (PRECISA_REPARO.test(semNegacoes)) requerReparo = true;
+    if (DESCREVE_USO.test(m.texto)) descreveuUso = true;
     if (DECLARA_NOVO.test(m.texto.replace(NOVO_RELATIVO, ''))) declarouNovo = true;
   }
   return { perguntada, negou_defeito: negouDefeito, declarou_novo: declarouNovo,
+    descreveu_uso: descreveuUso, requer_reparo: requerReparo,
     mencionada: falas.length > 0, falas,
-    tratada: perguntada || negouDefeito || declarouNovo || falas.length > 0 };
+    tratada: perguntada || negouDefeito || declarouNovo || descreveuUso || falas.length > 0 };
 }
 
 function precoPedido(estado) {
@@ -345,7 +358,8 @@ async function decidir(estado, categorias) {
     },
     rascunho_atual: estado.rascunho,
     sobre_avaria: { perguntada: avaria.perguntada, negou_defeito: avaria.negou_defeito,
-      declarou_novo: avaria.declarou_novo, mencionada: avaria.mencionada },
+      declarou_novo: avaria.declarou_novo, descreveu_uso: avaria.descreveu_uso,
+      requer_reparo: avaria.requer_reparo, mencionada: avaria.mencionada },
     categorias_disponiveis: categorias,
   };
   const { conteudo, uso } = await chamadaEstruturada({
@@ -574,6 +588,12 @@ async function rodarAgente({ estado, mensagemVendedor, vendedorId }) {
     passo(estado, 'portao_avaria', { passou: true });
     // cep/bairro nunca vêm do modelo — sempre do perfil do vendedor.
     estado.rascunho = { ...d.rascunho, cep: estado.perfil.cep, bairro: estado.perfil.bairro };
+    // O vendedor disse que o produto precisa de conserto ("precisa costurar",
+    // "não liga"): o estado é "para-reparo", não "usado" (código, não modelo)
+    if (avaria.requer_reparo && estado.rascunho.estado_conservacao !== 'para-reparo') {
+      passo(estado, 'estado_corrigido', { de: estado.rascunho.estado_conservacao, para: 'para-reparo' });
+      estado.rascunho.estado_conservacao = 'para-reparo';
+    }
     await avaliar(estado, categorias);
 
     if (estado.avaliacao.aprovado) {
@@ -701,6 +721,8 @@ async function gerarRascunhoRapido({ mensagem, cep, bairro }) {
 
   const estado = await estadoInicial({ cep, bairro });
   estado.conversa.push({ papel: 'vendedor', texto: mensagem });
+  // Mesma regra do chat: produto que precisa de conserto fica "para-reparo"
+  if (avariaDaConversa(estado).requer_reparo) rascunho.estado_conservacao = 'para-reparo';
   estado.rascunho = rascunho;
   registrarUso(estado, uso);
   if (rascunho.categoria_id) {

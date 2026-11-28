@@ -7,7 +7,9 @@ verdadeiro ou falso:
                       uso ou estado) — basta um deles.
 - `estado_coerente` : o estado de conservação combina com a descrição. Se há
                       defeito declarado, o estado não pode ser `novo` nem
-                      `seminovo`.
+                      `seminovo`. Se o produto precisa de conserto para ser
+                      usado (costura, solda, troca de peça, não funciona),
+                      o estado é `para-reparo`.
 - `sem_invencao`    : nada na descrição contradiz ou vai além do que o vendedor
                       disse na conversa (a conversa vem junto do rascunho).
 
