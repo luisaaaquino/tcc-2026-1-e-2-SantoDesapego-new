@@ -298,7 +298,8 @@ router.get('/api/anuncios', autenticarOpcional, async (req, res) => {
       busca,
       ordenacao = 'recentes',
       pagina = 1,
-      limite = 12
+      limite = 12,
+      excluir_proprios
     } = req.query;
 
     // Cláusula WHERE construída uma única vez e reaproveitada tanto na
@@ -308,6 +309,14 @@ router.get('/api/anuncios', autenticarOpcional, async (req, res) => {
 
     const params = [];
     let paramIndex = 1;
+
+    // ?excluir_proprios=1 (Explorar): quem está logado não vê os próprios
+    // anúncios na vitrine — não dá para comprar de si mesmo [RN18]
+    if (excluir_proprios === '1' && req.userId) {
+      whereClause += ` AND a.vendedor_id <> $${paramIndex}`;
+      params.push(req.userId);
+      paramIndex++;
+    }
 
     if (categoria_id) {
       // Busca anúncios da categoria OU de suas subcategorias

@@ -177,6 +177,26 @@ describe('RF07 - Busca por Filtros', () => {
     expect(params.slice(0, 2)).toEqual(['%geladeir%', '%brastemp%']);
   });
 
+  test('com ?excluir_proprios=1, quem está logado não vê os próprios anúncios', async () => {
+    pool.query.mockImplementation(async (sql) => (/COUNT\(\*\)/.test(sql) ? linhas({ count: '3' }) : linhas()));
+    await request(app).get('/api/anuncios').set('Authorization', tokenDe(VENDEDOR)).query({ excluir_proprios: '1' });
+    const [sql, params] = consultaPrincipal();
+    expect(sql).toMatch(/a\.vendedor_id <> \$1/);
+    expect(params[0]).toBe(VENDEDOR);
+    // a contagem do total usa o mesmo filtro
+    const [sqlContagem] = pool.query.mock.calls.find(([s]) => /SELECT COUNT\(\*\)/.test(s));
+    expect(sqlContagem).toMatch(/a\.vendedor_id <> \$1/);
+  });
+
+  test('sem o parâmetro, ou sem login, a lista continua com todos os anúncios', async () => {
+    await buscar({ excluir_proprios: '1' }); // visitante: não tem "próprios"
+    expect(consultaPrincipal()[0]).not.toMatch(/vendedor_id <>/);
+    pool.query.mockClear();
+    pool.query.mockImplementation(async (sql) => (/COUNT\(\*\)/.test(sql) ? linhas({ count: '3' }) : linhas()));
+    await request(app).get('/api/anuncios').set('Authorization', tokenDe(VENDEDOR));
+    expect(consultaPrincipal()[0]).not.toMatch(/vendedor_id <>/);
+  });
+
   test('busca por texto também olha a categoria e a categoria-pai do anúncio', async () => {
     await buscar({ busca: 'roupa' });
     const [sql, params] = consultaPrincipal();

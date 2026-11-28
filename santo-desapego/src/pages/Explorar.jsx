@@ -144,6 +144,9 @@ const Explorar = () => {
       params.append('ordenacao', ordenacao);
       params.append('limite', POR_PAGINA);
       params.append('pagina', paginaParam);
+      // Logado: a vitrine não mostra os próprios anúncios (não dá para
+      // comprar de si mesmo) — eles ficam em Perfil › Meus anúncios
+      params.append('excluir_proprios', '1');
 
       if (categoriaAtiva) params.append('categoria_id', categoriaAtiva);
       if (bairroFiltro) params.append('bairro', bairroFiltro);
