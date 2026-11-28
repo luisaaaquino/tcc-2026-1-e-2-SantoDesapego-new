@@ -168,3 +168,7 @@
     max-width: none;
   }
 }
+
+/* Atalho para as Mensagens, ao lado do sino (mesmo botão redondo) */
+.atalho-mensagens { text-decoration: none; }
+.atalho-mensagens svg { width: 20px; height: 20px; }

@@ -76,16 +76,36 @@ describe('RF18 - Notificações ao Usuário', () => {
     { id: 2, tipo: 'pagamento_confirmado', titulo: 'Pagamento confirmado', mensagem: 'Combine a entrega', link: '/perfil?aba=vendas', lida: false, criada_em: minutosAtras(180) },
     { id: 3, tipo: 'anuncio_expirando', titulo: 'Anúncio expirando', mensagem: 'Renove', link: null, lida: true, criada_em: minutosAtras(60 * 24 * 2) },
   ];
-  const abrirSino = (notificacoes = NOTIFICACOES, totalNaoLidas = 2) => {
+  const abrirSino = (notificacoes = NOTIFICACOES, totalNaoLidas = 2, { mensagensNaoLidas = 0, rota = '/' } = {}) => {
     logar();
     const fetchFalso = simularFetch({
       'lidas-todas': respostaJson({}),
       '/lida': respostaJson({}),
       '/api/notificacoes': respostaJson({ notificacoes, total_nao_lidas: totalNaoLidas }),
+      '/api/conversas': respostaJson({ conversas: [], total_nao_lidas: mensagensNaoLidas }),
     });
-    renderComRota(<NotificacoesSino />);
+    renderComRota(<NotificacoesSino />, { rota });
     return { user: userEvent.setup(), fetchFalso };
   };
+  const chamadasDe = (fetchFalso, trecho) => fetchFalso.mock.calls.filter(([url]) => String(url).includes(trecho)).length;
+
+  test('ao lado do sino há um atalho direto para as Mensagens, com as não lidas', async () => {
+    abrirSino(NOTIFICACOES, 2, { mensagensNaoLidas: 3 });
+    const atalho = await screen.findByRole('link', { name: 'Mensagens (3 não lidas)' });
+    expect(atalho).toHaveAttribute('href', '/mensagens');
+    expect(atalho).toHaveTextContent('3');
+  });
+
+  test('sem mensagens novas, o atalho aparece sem contador', async () => {
+    abrirSino(NOTIFICACOES, 2, { mensagensNaoLidas: 0 });
+    expect(await screen.findByRole('link', { name: 'Mensagens' })).toBeInTheDocument();
+  });
+
+  test('na própria tela de Mensagens o atalho não aparece', async () => {
+    abrirSino(NOTIFICACOES, 2, { rota: '/mensagens' });
+    await screen.findByRole('button', { name: /Notificações/ });
+    expect(screen.queryByRole('link', { name: /Mensagens/ })).not.toBeInTheDocument();
+  });
 
   test('quem não está logado não vê o sino', () => {
     simularFetch();
@@ -141,9 +161,10 @@ describe('RF18 - Notificações ao Usuário', () => {
   test('a lista é atualizada sozinha a cada 20 segundos', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     const { fetchFalso } = abrirSino();
-    await waitFor(() => expect(fetchFalso).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(chamadasDe(fetchFalso, '/api/notificacoes')).toBe(1));
     await act(async () => { vi.advanceTimersByTime(20000); });
-    expect(fetchFalso).toHaveBeenCalledTimes(2);
+    expect(chamadasDe(fetchFalso, '/api/notificacoes')).toBe(2);
+    expect(chamadasDe(fetchFalso, '/api/conversas')).toBe(2); // o contador de mensagens também
   });
 
   test('login vencido esconde o sino', async () => {

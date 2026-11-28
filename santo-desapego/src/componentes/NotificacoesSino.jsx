@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './NotificacoesSino.css';
 
 import { API_URL } from '../config';
-import { IconChat, IconTag, IconCheck, IconStar, IconAlert } from './Icones';
+import { IconChat, IconTag, IconCheck, IconStar, IconAlert, IconMail } from './Icones';
 const INTERVALO = 20000; // 20s
 
 // Ícone de linha por tipo de notificação (mesmo conjunto do resto do site)
@@ -28,9 +28,12 @@ const tempoRelativo = (dataStr) => {
 
 const NotificacoesSino = () => {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [aberto, setAberto] = useState(false);
   const [notificacoes, setNotificacoes] = useState([]);
   const [totalNaoLidas, setTotalNaoLidas] = useState(0);
+  // Atalho para as Mensagens ao lado do sino, com as mensagens não lidas
+  const [mensagensNaoLidas, setMensagensNaoLidas] = useState(0);
   const [logado, setLogado] = useState(!!localStorage.getItem('sd_token'));
   const [painelTop, setPainelTop] = useState(null);
   const wrapRef = useRef(null);
@@ -50,6 +53,12 @@ const NotificacoesSino = () => {
         setNotificacoes(dados.notificacoes || []);
         setTotalNaoLidas(dados.total_nao_lidas || 0);
       })
+      .catch(() => {});
+
+    // Soma das mensagens não lidas em todas as conversas
+    fetch(`${API_URL}/api/conversas`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((dados) => { if (dados) setMensagensNaoLidas(dados.total_nao_lidas || 0); })
       .catch(() => {});
   }, []);
 
@@ -99,6 +108,19 @@ const NotificacoesSino = () => {
   };
 
   return (
+    <>
+    {/* Mensagens: atalho direto (antes só se chegava pelo sino ou pelo anúncio) */}
+    {pathname !== '/mensagens' && (
+      <Link
+        to="/mensagens"
+        className="sino-btn atalho-mensagens"
+        aria-label={`Mensagens${mensagensNaoLidas > 0 ? ` (${mensagensNaoLidas} não lidas)` : ''}`}
+        title="Mensagens"
+      >
+        <IconMail size={20} />
+        {mensagensNaoLidas > 0 && <span className="sino-badge">{mensagensNaoLidas > 9 ? '9+' : mensagensNaoLidas}</span>}
+      </Link>
+    )}
     <div className="sino-wrap" ref={wrapRef}>
       <button
         type="button"
@@ -161,6 +183,7 @@ const NotificacoesSino = () => {
         </div>
       )}
     </div>
+    </>
   );
 };
 
