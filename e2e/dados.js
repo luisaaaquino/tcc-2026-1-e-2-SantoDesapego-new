@@ -21,6 +21,9 @@ const USUARIOS = {
     cep: '04602000', bairro: 'Campo Belo' },
   vizinho: { nome: 'Bia', sobrenome: 'Ramos', email: 'bia@e2e.santodesapego.com', cpf: cpf('123456789'),
     cep: '04650000', bairro: 'Granja Julieta' },
+  // Mora fora de Santo Amaro e região (Av. Paulista): não pode anunciar (RN01)
+  foraDaArea: { nome: 'Edu', sobrenome: 'Prado', email: 'edu@e2e.santodesapego.com', cpf: cpf('456789123'),
+    cep: '01310100', bairro: 'Bela Vista' },
   admin: { nome: 'Dora', sobrenome: 'Admin', email: 'admin@e2e.santodesapego.com', cpf: cpf('987654321'),
     cep: '04710150', bairro: 'Santo Amaro Centro', papel: 'administrador' },
 };

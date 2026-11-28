@@ -20,7 +20,7 @@ const preencherCadastro = async (page, dados) => {
   await page.getByPlaceholder('Mínimo 8 caracteres').fill(SENHA);
   await page.getByPlaceholder('repita sua senha').fill(SENHA);
   await page.getByPlaceholder('04000-000').pressSequentially('04710150');
-  await expect(page.getByPlaceholder('Rua, Av., Travessa...')).toHaveValue('Rua Padre José de Anchieta');
+  await expect(page.locator('#cad-logradouro')).toHaveValue('Rua Padre José de Anchieta');
   await page.getByPlaceholder('Ex: 123').fill('250');
   await page.locator('.checkbox-custom').first().click();
 };
@@ -36,7 +36,7 @@ test.describe('RF01 - Gestão de Perfil Geográfico', () => {
     await digitarCodigo(page, await esperarCodigo(NOVA.email, 0));
 
     await expect(page).toHaveURL('/');
-    await expect(page.getByText('Olá, Lia!').first()).toBeVisible();
+    await expect(page.getByTitle('Meu perfil').filter({ hasText: 'Lia' }).first()).toBeVisible();
   });
 
   test('o mesmo CPF não pode ser cadastrado duas vezes', async ({ page }) => {

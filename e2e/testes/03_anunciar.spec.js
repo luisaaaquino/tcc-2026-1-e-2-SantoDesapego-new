@@ -1,6 +1,8 @@
 const { test, expect } = require('@playwright/test');
 const { USUARIOS, IMAGEM } = require('../dados');
-const { entrar } = require('../utilitarios');
+const { entrar, novaPessoa, fecharPessoas } = require('../utilitarios');
+
+test.afterEach(fecharPessoas);
 
 const FOTO = { name: 'bicicleta.png', mimeType: 'image/png', buffer: Buffer.from(IMAGEM.split(',')[1], 'base64') };
 
@@ -17,7 +19,7 @@ const preencherAnuncio = async (page, titulo) => {
 };
 
 test.describe('RF06 - Anúncio de Produtos', () => {
-  test('vendedor publica um anúncio com foto e ele aparece na busca', async ({ page }) => {
+  test('vendedor publica um anúncio com foto e ele aparece na busca', async ({ page, browser }) => {
     await entrar(page, USUARIOS.vendedor);
     await page.goto('/anunciar');
     await preencherAnuncio(page, 'Patinete elétrico Xiaomi');
@@ -25,9 +27,11 @@ test.describe('RF06 - Anúncio de Produtos', () => {
 
     await expect(page.getByRole('heading', { name: /Seu anúncio está no ar/ })).toBeVisible();
 
-    await page.goto('/explorar?busca=patinete');
-    await expect(page.locator('.ecard-titulo')).toHaveText(['Patinete elétrico Xiaomi']);
-    await expect(page.locator('.ecard-preco')).toHaveText(/R\$\s?1\.350,90/);
+    // O vendedor não vê os próprios anúncios no Explorar: quem confere é um visitante
+    const visitante = await novaPessoa(browser);
+    await visitante.goto('/explorar?busca=patinete');
+    await expect(visitante.locator('.cartao-anuncio-titulo')).toHaveText(['Patinete elétrico Xiaomi']);
+    await expect(visitante.locator('.cartao-anuncio-preco')).toHaveText(/R\$\s?1\.350,90/);
   });
 
   test('o anúncio novo aparece no painel do vendedor', async ({ page }) => {
@@ -38,16 +42,13 @@ test.describe('RF06 - Anúncio de Produtos', () => {
 });
 
 test.describe('RN01 - Restrição Geográfica de Anúncios', () => {
-  test('anúncio com CEP fora de Santo Amaro e região é recusado', async ({ page }) => {
-    await entrar(page, USUARIOS.vendedor);
+  test('quem mora fora de Santo Amaro e região não consegue anunciar', async ({ page }) => {
+    // O anúncio usa o CEP do cadastro (não dá para digitar outro na tela)
+    await entrar(page, USUARIOS.foraDaArea);
     await page.goto('/anunciar');
-    await preencherAnuncio(page, 'Patinete fora da área');
-    await page.getByPlaceholder('04000-000').fill('01310-100');
-    await page.getByRole('button', { name: /Publicar anúncio/ }).click();
-
-    await expect(page.locator('.anunciar-alert.error')).toContainText('Santo Amaro');
-    await page.goto('/explorar?busca=fora');
-    await expect(page.getByRole('heading', { name: 'Nenhum anúncio por aqui ainda' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Seu endereço fica fora da área atendida' })).toBeVisible();
+    await expect(page.getByText(/04600-000 a 04799-999/)).toBeVisible();
+    await expect(page.getByRole('button', { name: /Publicar anúncio/ })).toHaveCount(0);
   });
 });
 

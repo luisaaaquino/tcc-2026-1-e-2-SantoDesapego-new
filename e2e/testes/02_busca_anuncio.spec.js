@@ -2,8 +2,8 @@ const { test, expect } = require('@playwright/test');
 const { USUARIOS, ANUNCIOS } = require('../dados');
 const { entrar } = require('../utilitarios');
 
-const cards = (page) => page.locator('.ecard');
-const tituloDosCards = (page) => page.locator('.ecard-titulo');
+const cards = (page) => page.locator('.cartao-anuncio');
+const tituloDosCards = (page) => page.locator('.cartao-anuncio-titulo');
 
 test.describe('RN13 - Priorização por Proximidade', () => {
   test('o catálogo é público: visitante vê os anúncios sem fazer login', async ({ page }) => {
@@ -17,7 +17,7 @@ test.describe('RN13 - Priorização por Proximidade', () => {
     await page.getByRole('combobox').selectOption('distancia');
 
     await expect(tituloDosCards(page).first()).toHaveText(ANUNCIOS.sofa.titulo); // Santo Amaro Centro
-    await expect(cards(page).first().locator('.ecard-distancia')).toHaveText(/menos de 1 km/);
+    await expect(cards(page).first().locator('.cartao-anuncio-meta')).toContainText(/menos de 1 km/);
     await expect(cards(page).last()).toContainText(ANUNCIOS.bicicleta.titulo); // Campo Belo, o mais longe
   });
 });
@@ -25,7 +25,7 @@ test.describe('RN13 - Priorização por Proximidade', () => {
 test.describe('RF07 - Busca por Filtros', () => {
   test('busca por texto encontra o anúncio, sem ligar para acento ou maiúscula', async ({ page }) => {
     await page.goto('/explorar');
-    await page.getByPlaceholder('Buscar sofá, bicicleta, livro...').fill('SOFA retratil');
+    await page.getByPlaceholder(/^Buscar sofá, bicicleta, livro/).fill('SOFA retratil');
     await page.getByRole('button', { name: 'Buscar' }).click();
     await expect(tituloDosCards(page)).toHaveText([ANUNCIOS.sofa.titulo]);
   });

@@ -25,18 +25,18 @@ test.describe('RF20 - Módulo Administrativo', () => {
   test('o administrador pausa um anúncio e ele sai da busca', async ({ page }) => {
     await entrar(page, USUARIOS.admin);
     await page.goto('/admin');
-    await page.getByRole('button', { name: /Anúncios/ }).click();
+    await page.getByRole('tab', { name: /Anúncios/ }).click();
     await page.locator('.admin-table tr', { hasText: ANUNCIOS.livro.titulo }).getByRole('button', { name: 'Pausar' }).click();
     await page.getByRole('button', { name: 'Pausar', exact: true }).last().click();
 
     await page.goto('/explorar');
-    await expect(page.locator('.ecard')).not.toContainText([ANUNCIOS.livro.titulo]);
+    await expect(page.locator('.cartao-anuncio')).not.toContainText([ANUNCIOS.livro.titulo]);
   });
 
   test('a ação do administrador fica no log de auditoria', async ({ page }) => {
     await entrar(page, USUARIOS.admin);
     await page.goto('/admin');
-    await page.getByRole('button', { name: /Logs de auditoria/ }).click();
+    await page.getByRole('tab', { name: /Logs de auditoria/ }).click();
     await expect(page.getByText(/Moderou anúncio|moderar_anuncio/).first()).toBeVisible();
   });
 });
@@ -45,7 +45,7 @@ test.describe('RN02 - Verificação de Identidade (Compliance)', () => {
   test('conta suspensa pelo administrador não consegue mais entrar', async ({ page, browser }) => {
     await entrar(page, USUARIOS.admin);
     await page.goto('/admin');
-    await page.getByRole('button', { name: /Usuários/ }).click();
+    await page.getByRole('tab', { name: /Usuários/ }).click();
     await linhaDoUsuario(page, USUARIOS.vizinho.email).getByRole('button', { name: 'Suspender' }).click();
     await page.getByRole('button', { name: 'Suspender', exact: true }).last().click();
     await expect(linhaDoUsuario(page, USUARIOS.vizinho.email)).toContainText(/Suspens/);

@@ -37,7 +37,8 @@ const entrar = async (page, usuario, { senha = SENHA } = {}) => {
   await page.getByPlaceholder('Sua senha').fill(senha);
   await page.locator('button.btn-login').click(); // não confundir com "Entrar com Google"
   await digitarCodigo(page, await esperarCodigo(usuario.email, antes));
-  await expect(page.getByText(`Olá, ${usuario.nome}!`).first()).toBeVisible();
+  // No cabeçalho logado aparece a foto com o nome, com o link "Meu perfil"
+  await expect(page.getByTitle('Meu perfil').filter({ hasText: usuario.nome }).first()).toBeVisible();
 };
 
 // Navegadores extras (uma pessoa em cada) para testes com comprador e vendedor.
@@ -53,4 +54,14 @@ const fecharPessoas = async () => {
   while (pessoasAbertas.length) await pessoasAbertas.pop().close();
 };
 
-module.exports = { codigosEnviados, esperarCodigo, digitarCodigo, entrar, novaPessoa, fecharPessoas };
+/** Id de um anúncio pelo título, consultando a API de teste. */
+const idDoAnuncio = async (page, titulo) => {
+  const resposta = await page.request.get(`http://localhost:8090/api/anuncios?busca=${encodeURIComponent(titulo)}`);
+  const corpo = await resposta.json();
+  const lista = corpo.anuncios || corpo.dados || corpo;
+  const anuncio = lista.find((a) => a.titulo === titulo);
+  expect(anuncio, `anúncio "${titulo}" na API`).toBeTruthy();
+  return anuncio.id;
+};
+
+module.exports = { idDoAnuncio, codigosEnviados, esperarCodigo, digitarCodigo, entrar, novaPessoa, fecharPessoas };

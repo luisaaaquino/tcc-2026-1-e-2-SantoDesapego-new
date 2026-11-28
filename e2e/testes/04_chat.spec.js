@@ -1,11 +1,11 @@
 const { test, expect } = require('@playwright/test');
 const { USUARIOS, ANUNCIOS } = require('../dados');
-const { entrar, novaPessoa, fecharPessoas } = require('../utilitarios');
+const { entrar, novaPessoa, fecharPessoas, idDoAnuncio } = require('../utilitarios');
 
 // Fecha os navegadores extras de cada teste
 test.afterEach(fecharPessoas);
 
-const campoMensagem = (page) => page.getByPlaceholder('Escreva sua mensagem...');
+const campoMensagem = (page) => page.getByPlaceholder(/^Escreva sua mensagem/);
 // Só os balões da conversa aberta (a lista ao lado também mostra a prévia)
 const baloes = (page) => page.locator('.msg-balloes');
 const enviarMensagem = async (page, texto) => {
@@ -62,8 +62,8 @@ test.describe('RN09 - Moderação de Conteúdo', () => {
 test.describe('RN14 - Bloqueio de Mensagens Externas', () => {
   test('o vendedor não abre conversa no próprio anúncio', async ({ page }) => {
     await entrar(page, USUARIOS.vendedor);
-    await page.goto('/explorar');
-    await page.getByText(ANUNCIOS.sofa.titulo).click();
+    // O próprio anúncio não aparece no Explorar do vendedor: abre pelo endereço
+    await page.goto(`/anuncio/${await idDoAnuncio(page, ANUNCIOS.sofa.titulo)}`);
     await page.getByRole('button', { name: /Conversar com o anunciante/ }).click();
     await expect(page.getByText('Você não pode conversar no seu próprio anúncio.')).toBeVisible();
   });

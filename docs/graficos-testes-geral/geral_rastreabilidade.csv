@@ -1,0 +1,51 @@
+﻿Código;Nome;Casos - Back-end / API;Casos - Front-end;Casos - Ponta a ponta;Total de casos;Aprovados;Situação
+RN01;Restrição Geográfica de Anúncios;9;0;1;10;10;Atendido
+RN02;Verificação de Identidade (Compliance);13;5;2;20;20;Atendido
+RN03;Política de Senhas Robustas;27;6;0;33;33;Atendido
+RN04;Confirmação de Pagamento via API;5;0;0;5;5;Atendido
+RN05;Garantia de Recebimento (Escrow);3;0;1;4;4;Atendido
+RN06;Taxa de Intermediação;5;0;0;5;5;Atendido
+RN07;Ciclo de Vida do Anúncio;3;0;0;3;3;Atendido
+RN08;Liberação da Avaliação;5;0;1;6;6;Atendido
+RN09;Moderação de Conteúdo;13;0;2;15;15;Atendido
+RN10;Exclusão de Dados Pessoais;5;0;0;5;5;Atendido
+RN11;Consentimento Livre e Esclarecido;2;3;1;6;6;Atendido
+RN12;Minimização de Dados;2;0;0;2;2;Atendido
+RN13;Priorização por Proximidade;5;0;2;7;7;Atendido
+RN14;Bloqueio de Mensagens Externas;7;0;1;8;8;Atendido
+RN15;Classificação de Estado de Conservação;6;3;0;9;9;Atendido
+RN16;Código de Entrega;5;0;1;6;6;Atendido
+RN17;Verificação em Duas Etapas;9;10;0;19;19;Atendido
+RN18;Condições de Compra;5;0;1;6;6;Atendido
+RF01;Validação de CEP;23;16;2;41;41;Atendido
+RF02;Autenticação e Gestão de Sessão;26;11;5;42;42;Atendido
+RF03;Aceite de Termos e Política de Privacidade;4;0;0;4;4;Atendido
+RF04;Gestão de Dados Pessoais (LGPD);22;0;0;22;22;Atendido
+RF05;Perfil Público do Usuário;5;0;0;5;5;Atendido
+RF06;Anúncio de Produtos;62;14;3;79;79;Atendido
+RF07;Busca por Filtros;17;0;5;22;22;Atendido
+RF08;Busca Geolocalizada por Proximidade;4;6;1;11;11;Atendido
+RF09;Categorização Hierárquica de Produtos;3;2;0;5;5;Atendido
+RF10;Favoritos e Itens Salvos;7;0;1;8;8;Atendido
+RF11;Upload e Gestão de Imagens;7;0;0;7;7;Atendido
+RF12;Gestão do Ciclo de Vida do Anúncio;17;0;1;18;18;Atendido
+RF13;Painel do Vendedor;5;0;0;5;5;Atendido
+RF14;Integração com Gateway de Pagamento;12;0;0;12;12;Atendido
+RF15;Chat Interno;19;0;1;20;20;Atendido
+RF16;Sistema de Reputação;9;0;1;10;10;Atendido
+RF17;Histórico com pagamentos pendentes e recusados;16;0;1;17;17;Atendido
+RF18;Notificações ao Usuário;11;12;1;24;24;Atendido
+RF19;Denúncia de Anúncios;3;0;1;4;4;Atendido
+RF20;Módulo Administrativo;26;0;3;29;29;Atendido
+RF21;Canal de Denúncias;14;0;0;14;14;Atendido
+RF22;Newsletter;3;2;0;5;5;Atendido
+RF23;Confirmação de Entrega por Código;5;0;1;6;6;Atendido
+RF24;"Seção ""Para você"" (recomendações da Home)";39;0;0;39;39;Atendido
+RF25;Central de Ajuda;9;3;0;12;12;Atendido
+RF27;Verificação de Maioridade;19;7;1;27;27;Atendido
+RNF04;Princípio do Menor Privilégio;0;0;1;1;1;Atendido
+RNF09;Dois compradores no mesmo item;9;0;0;9;9;Atendido
+RNF11;Usabilidade e Responsividade;0;0;8;8;8;Atendido
+RNF12;Acessibilidade WCAG 2.1 Nível AA;0;28;11;39;39;Atendido
+RNF19;Limites de Upload;0;13;0;13;13;Atendido
+RNF20;Tolerância a Falhas da Inteligência Artificial;0;0;1;1;1;Atendido
