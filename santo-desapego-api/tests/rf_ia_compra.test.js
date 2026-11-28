@@ -34,8 +34,12 @@ const CATALOGO = {
   20: [],
 };
 
-const montarBanco = ({ cliques = [] } = {}) => pool.query.mockImplementation(async (sql, params) => {
+// porTermos: anúncios achados pelas palavras do pedido (qualquer categoria)
+// proprios: quantos anúncios ativos da própria pessoa batem com o pedido
+const montarBanco = ({ cliques = [], porTermos = [], proprios = 0 } = {}) => pool.query.mockImplementation(async (sql, params) => {
   if (/FROM cliques_comprador/.test(sql)) return linhas(...cliques.map((c) => ({ categoria_id: c })));
+  if (/COUNT\(\*\)::int AS total FROM anuncios/.test(sql)) return linhas({ total: proprios });
+  if (/FROM anuncios a JOIN categorias/.test(sql)) return linhas(...porTermos);
   if (/FROM anuncios a WHERE/.test(sql)) return linhas(...(CATALOGO[params[0]] || []));
   return linhas();
 });
@@ -60,12 +64,12 @@ describe('RF24 - Assistente de Compra com IA', () => {
 
   test('sem mensagem, sugere a partir dos anúncios vistos recentemente', async () => {
     montarBanco({ cliques: [10] });
-    roteiro({ itens_ids: [102], justificativa: 'A mais perto de você.', categorias_de_fora: [] });
 
     const r = await gerarSugestaoCompra({ usuarioId: COMPRADOR, bairroPerfil: 'Santo Amaro Centro' });
 
     expect(r.tipo).toBe('sugestao');
-    expect(r.itens.map((i) => i.id)).toEqual([102]);
+    expect(r.itens.map((i) => i.id)).toEqual([102, 101]); // as duas geladeiras, a mais perto primeiro
+    expect(chamadaEstruturada).not.toHaveBeenCalled();
     expect(r.escolha_declarada).toMatch(/anúncios que você abriu recentemente: Geladeiras/);
     const sqlCliques = pool.query.mock.calls.find(([s]) => /cliques_comprador/.test(s))[0];
     expect(sqlCliques).toMatch(/INTERVAL '14 days'/);
@@ -84,15 +88,57 @@ describe('RF24 - Assistente de Compra com IA', () => {
     expect(params).toEqual([10, COMPRADOR, 800]);
   });
 
-  test('candidatos vêm do mais perto para o mais longe do bairro do comprador', async () => {
+  test('opções vêm do mais perto para o mais longe do bairro do comprador', async () => {
     montarBanco();
-    roteiro(pedido({ categorias_ids: [10] }), { itens_ids: [102], justificativa: 'ok', categorias_de_fora: [] });
+    roteiro(pedido({ categorias_ids: [10], orcamento_total: null }));
 
-    await gerarSugestaoCompra({ usuarioId: COMPRADOR, bairroPerfil: 'Santo Amaro Centro', mensagens: ['geladeira'] });
+    const r = await gerarSugestaoCompra({ usuarioId: COMPRADOR, bairroPerfil: 'Santo Amaro Centro', mensagens: ['geladeira'] });
 
-    const candidatos = JSON.parse(chamadaEstruturada.mock.calls[1][0].usuario).candidatos;
-    expect(candidatos.map((c) => c.id)).toEqual([102, 101]); // Granja Julieta fica mais perto que o Campo Belo
-    expect(candidatos[0].dist_km).toBeLessThan(candidatos[1].dist_km);
+    expect(r.itens.map((c) => c.id)).toEqual([102, 101]); // Granja Julieta fica mais perto que o Campo Belo
+    expect(r.itens[0].dist_km).toBeLessThan(r.itens[1].dist_km);
+  });
+
+  test('pedido simples mostra todas as opções, sem descartar nenhuma por critério inventado', async () => {
+    montarBanco();
+    roteiro(pedido({ categorias_ids: [10], orcamento_total: null, intencao: 'uma geladeira' }));
+
+    const r = await gerarSugestaoCompra({ usuarioId: COMPRADOR, bairroPerfil: 'Campo Belo', mensagens: ['quero geladeira'] });
+
+    expect(r.tipo).toBe('sugestao');
+    expect(r.itens).toHaveLength(2);
+    expect(r.texto).toBe('Encontrei 2 anúncios para o seu pedido, do mais perto para o mais longe de você.');
+    expect(r.texto).not.toMatch(/custo|benefício|deixad/i);
+    expect(chamadaEstruturada).toHaveBeenCalledTimes(1); // o modelo só interpretou; não escolheu entre as opções
+  });
+
+  test('acha o produto pelas palavras do pedido mesmo cadastrado em outra categoria', async () => {
+    // "Brinquedos" (20 no teste) está vazio, mas o boneco foi cadastrado em outra categoria
+    montarBanco({ porTermos: [{ id: 301, titulo: 'Action Figure do Luffy', preco: '200', bairro: 'Campo Belo', categoria_id: 99, categoria: 'Diversos' }] });
+    roteiro(pedido({ categorias_ids: [20], orcamento_total: null, termos_busca: ['brinquedo', 'action figure', 'x', '50%_off'] }));
+
+    const r = await gerarSugestaoCompra({ usuarioId: COMPRADOR, bairroPerfil: 'Campo Belo', mensagens: ['quero brinquedos'] });
+
+    expect(r.itens.map((i) => i.titulo)).toEqual(['Action Figure do Luffy']);
+    const [sql, params] = pool.query.mock.calls.find(([s]) => /FROM anuncios a JOIN categorias/.test(s));
+    expect(sql).toMatch(/a\.status = 'ativo' AND a\.vendedor_id != \$1/);
+    expect(sql).toMatch(/a\.titulo ILIKE ANY\(\$2\) OR a\.descricao ILIKE ANY\(\$2\)/);
+    // termos curtos saem e curingas vindos do modelo são limpos
+    expect(params).toEqual([COMPRADOR, ['%brinquedo%', '%action figure%', '%50off%']]);
+  });
+
+  test('o mesmo anúncio achado pela categoria e pelas palavras aparece uma vez só', async () => {
+    montarBanco({ porTermos: [{ id: 101, titulo: 'Geladeira Consul', preco: '700', bairro: 'Campo Belo', categoria_id: 10, categoria: 'Geladeiras' }] });
+    roteiro(pedido({ categorias_ids: [10], orcamento_total: null, termos_busca: ['geladeira'] }));
+    const r = await gerarSugestaoCompra({ usuarioId: COMPRADOR, bairroPerfil: 'Campo Belo', mensagens: ['geladeira'] });
+    expect(r.itens.map((i) => i.id).sort()).toEqual([101, 102]);
+  });
+
+  test('sem resultado porque os anúncios são da própria pessoa, avisa isso', async () => {
+    montarBanco({ proprios: 2 });
+    roteiro(pedido({ categorias_ids: [20], orcamento_total: null, termos_busca: ['brinquedo'] }));
+    const r = await gerarSugestaoCompra({ usuarioId: COMPRADOR, bairroPerfil: 'Campo Belo', mensagens: ['quero brinquedos'] });
+    expect(r.tipo).toBe('recusa');
+    expect(r.texto).toMatch(/Os únicos que encontrei são anúncios seus/);
   });
 
   test('monta uma sugestão com 1 item por categoria dentro do orçamento', async () => {
