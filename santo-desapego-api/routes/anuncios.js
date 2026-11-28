@@ -7,6 +7,16 @@ const { validarDadosAnuncio, inserirAnuncio, enderecoParaAnunciar } = require('.
 
 const router = express.Router();
 
+// Raiz simples de uma palavra da busca: tira o plural e a vogal final, para
+// "roupa" achar "Roupas", "feminina" achar "Feminino" e "livros" achar "Livro".
+// Palavras curtas (até 4 letras) ficam como estão: "mesa", "sofa", "tv".
+const raizDaPalavra = (palavra) => {
+  let r = palavra;
+  if (r.length > 4 && r.endsWith('s')) r = r.slice(0, -1);
+  if (r.length > 4 && /[aoe]$/.test(r)) r = r.slice(0, -1);
+  return r;
+};
+
 // ============================================================
 //  POST ANÚNCIO — cria com validações
 // ============================================================
@@ -307,23 +317,31 @@ router.get('/api/anuncios', autenticarOpcional, async (req, res) => {
     }
 
     if (busca) {
-      // Busca por texto no título ou descrição (case-insensitive, ignora acentos).
+      // Busca por texto (case-insensitive, ignora acentos) no título, na
+      // descrição e no nome da categoria e da categoria-pai do anúncio — assim
+      // "roupa" também acha o terno cadastrado em "Roupas e Acessórios ›
+      // Feminino", mesmo sem a palavra no título.
       // Quebra em palavras e exige TODAS presentes (em qualquer ordem, em
-      // qualquer um dos dois campos) — evita que buscas com as palavras fora
-      // de ordem ou com termos extras deixem de encontrar o anúncio.
+      // qualquer um dos campos). Cada palavra vira a sua "raiz" (sem plural e
+      // sem a vogal final), para "roupa" achar "Roupas" e "feminina" achar
+      // "Feminino".
       const termos = busca
         .normalize('NFD')
         .replace(/[̀-ͯ]/g, '')
         .toLowerCase()
         .trim()
         .split(/\s+/)
-        .filter(Boolean);
+        .filter(Boolean)
+        .map(raizDaPalavra);
 
       if (termos.length > 0) {
+        const semAcento = (campo) => `TRANSLATE(LOWER(${campo}), 'áàâãäéèêëíìîïóòôõöúùûüçñ', 'aaaaaeeeeiiiiooooouuuucn')`;
         const condicoesTermos = termos.map((termo, i) => {
           const p = paramIndex + i;
-          return `(TRANSLATE(LOWER(a.titulo), 'áàâãäéèêëíìîïóòôõöúùûüçñ', 'aaaaaeeeeiiiiooooouuuucn') LIKE $${p}
-                 OR TRANSLATE(LOWER(a.descricao), 'áàâãäéèêëíìîïóòôõöúùûüçñ', 'aaaaaeeeeiiiiooooouuuucn') LIKE $${p})`;
+          return `(${semAcento('a.titulo')} LIKE $${p}
+                 OR ${semAcento('a.descricao')} LIKE $${p}
+                 OR ${semAcento('c.nome')} LIKE $${p}
+                 OR ${semAcento('cp.nome')} LIKE $${p})`;
         });
         whereClause += ` AND (${condicoesTermos.join(' AND ')})`;
         termos.forEach((termo) => params.push(`%${termo}%`));
@@ -368,6 +386,7 @@ router.get('/api/anuncios', autenticarOpcional, async (req, res) => {
         (SELECT imagem FROM anuncio_imagens WHERE anuncio_id = a.id AND is_principal = true LIMIT 1) AS imagem_principal
       FROM anuncios a
       JOIN categorias c ON a.categoria_id = c.id
+      LEFT JOIN categorias cp ON cp.id = c.categoria_pai
       JOIN usuarios u ON a.vendedor_id = u.id
     ` + whereClause;
 
@@ -422,6 +441,7 @@ router.get('/api/anuncios', autenticarOpcional, async (req, res) => {
       const countQuery = `
         SELECT COUNT(*) FROM anuncios a
         JOIN categorias c ON a.categoria_id = c.id
+        LEFT JOIN categorias cp ON cp.id = c.categoria_pai
       ` + whereClause;
       const totalResult = await pool.query(countQuery, params);
       total = parseInt(totalResult.rows[0].count);

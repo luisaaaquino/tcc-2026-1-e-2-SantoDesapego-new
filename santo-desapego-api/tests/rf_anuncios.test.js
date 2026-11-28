@@ -174,7 +174,27 @@ describe('RF07 - Busca por Filtros', () => {
   test('busca por texto ignora acentos, maiúsculas e ordem das palavras', async () => {
     await buscar({ busca: 'Geladéira  BRASTEMP' });
     const params = consultaPrincipal()[1];
-    expect(params.slice(0, 2)).toEqual(['%geladeira%', '%brastemp%']);
+    expect(params.slice(0, 2)).toEqual(['%geladeir%', '%brastemp%']);
+  });
+
+  test('busca por texto também olha a categoria e a categoria-pai do anúncio', async () => {
+    await buscar({ busca: 'roupa' });
+    const [sql, params] = consultaPrincipal();
+    expect(sql).toMatch(/LEFT JOIN categorias cp ON cp\.id = c\.categoria_pai/);
+    expect(sql).toMatch(/LOWER\(c\.nome\)/);
+    expect(sql).toMatch(/LOWER\(cp\.nome\)/);
+    expect(params[0]).toBe('%roup%'); // acha "Roupas e Acessórios"
+    // a contagem usa a mesma junção, senão o total sairia diferente da lista
+    const contagem = pool.query.mock.calls.find(([s]) => /SELECT COUNT\(\*\)/.test(s))[0];
+    expect(contagem).toMatch(/LEFT JOIN categorias cp/);
+  });
+
+  test.each([
+    ['roupas', '%roup%'], ['feminina', '%feminin%'], ['livros', '%livr%'],
+    ['mesa', '%mesa%'], ['tênis', '%teni%'], ['tv', '%tv%'],
+  ])('busca por "%s" procura pela raiz %s (plural e masculino/feminino)', async (palavra, esperado) => {
+    await buscar({ busca: palavra });
+    expect(consultaPrincipal()[1][0]).toBe(esperado);
   });
 
   test('ordenação por menor preço', async () => {
