@@ -175,13 +175,15 @@ const Anuncio = () => {
     let cancelado = false;
     const token = localStorage.getItem('sd_token');
     const json = (url, opcoes) => fetch(url, opcoes).then((r) => (r.ok ? r.json() : {})).catch(() => ({}));
+    const comLogin = { headers: token ? { Authorization: `Bearer ${token}` } : {} };
 
     Promise.all([
       token
         ? json(`${API_URL}/api/recomendacoes?limite=20`, { headers: { Authorization: `Bearer ${token}` } })
         : Promise.resolve({}),
-      categoriaId ? json(`${API_URL}/api/anuncios?categoria_id=${categoriaId}&limite=21`) : Promise.resolve({}),
-      json(`${API_URL}/api/anuncios?ordenacao=recentes&limite=30`),
+      // sugestões sem os anúncios de quem está vendo (mesma regra do Explorar)
+      categoriaId ? json(`${API_URL}/api/anuncios?categoria_id=${categoriaId}&limite=21&excluir_proprios=1`, comLogin) : Promise.resolve({}),
+      json(`${API_URL}/api/anuncios?ordenacao=recentes&limite=30&excluir_proprios=1`, comLogin),
     ]).then(([paraVoce, mesmaCategoria, recentes]) => {
       if (cancelado) return;
       const vistos = new Set([anuncioId]);

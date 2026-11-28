@@ -84,8 +84,13 @@ const Home = () => {
       .catch(() => {});
   }, []);
 
+  // Logado: sem os próprios anúncios (mesma regra do Explorar — não dá
+  // para comprar de si mesmo). Visitante: o parâmetro não muda nada.
   useEffect(() => {
-    fetch(`${API_URL}/api/anuncios?ordenacao=recentes&limite=30`)
+    const token = localStorage.getItem('sd_token');
+    fetch(`${API_URL}/api/anuncios?ordenacao=recentes&limite=30&excluir_proprios=1`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
       .then((r) => r.json())
       .then((d) => setRecentes(d.anuncios || []))
       .catch(() => setRecentes([]));
@@ -140,8 +145,10 @@ const Home = () => {
     }
     const timer = setTimeout(async () => {
       try {
+        const token = localStorage.getItem('sd_token');
         const res = await fetch(
-          `${API_URL}/api/anuncios?busca=${encodeURIComponent(termoBusca.trim())}&limite=5`
+          `${API_URL}/api/anuncios?busca=${encodeURIComponent(termoBusca.trim())}&limite=5&excluir_proprios=1`,
+          { headers: token ? { Authorization: `Bearer ${token}` } : {} }
         );
         const data = await res.json();
         setSugestoes(data.anuncios || []);
