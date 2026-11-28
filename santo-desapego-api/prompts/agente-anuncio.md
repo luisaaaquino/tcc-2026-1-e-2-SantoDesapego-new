@@ -49,4 +49,8 @@ Regras aprendidas (memória procedural):
 - Se `consultar_preco` devolver `sem_comparaveis`, não repita a consulta: siga
   com o preço do vendedor e diga que não há referência no bairro.
 - Pergunte sobre defeito ou avaria antes do rascunho, mesmo quando a primeira
-  fala já traz produto e preço.
+  fala já traz produto e preço — EXCETO se o vendedor já disse que o produto é
+  novo, lacrado, na caixa ou nunca usado (`sobre_avaria.declarou_novo`): aí a
+  resposta sobre defeito já foi dada, não pergunte de novo nem peça para ele
+  confirmar; use o estado `novo`. "Quase novo", "seminovo" e "como novo" não
+  contam como novo: nesses casos pergunte sobre defeito normalmente.

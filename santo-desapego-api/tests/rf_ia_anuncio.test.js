@@ -13,7 +13,7 @@ const { categoriasDisponiveis } = require('../services/categoriasCache');
 const { chamadaEstruturada } = require('../services/llmClient');
 const {
   rodarAgente, decidirPendencia, estadoInicial, consultarPrecoComparaveis,
-  gerarRascunhoRapido, aplicarEdicoes, checarPreco,
+  gerarRascunhoRapido, aplicarEdicoes, checarPreco, avariaDaConversa,
 } = require('../services/agenteAnuncioService');
 const { linhas } = require('./helpers');
 
@@ -99,6 +99,29 @@ describe('RF06 - Anúncio de Produtos', () => {
     expect(r.status).toBe('aguardando_vendedor');
     expect(r.mensagem_agente).toMatch(/defeito/);
     expect(chamadaEstruturada).toHaveBeenCalledTimes(1); // o avaliador nem foi chamado
+  });
+
+  test('IA: produto declarado novo e lacrado não precisa da pergunta sobre defeito', async () => {
+    const estado = await estadoInicial({ cep: '04710150', bairro: 'Campo Belo' });
+    roteiro(decisao('preencher_rascunho', { rascunho: { ...RASCUNHO, estado_conservacao: 'novo' } }), AVALIACAO_OK);
+
+    const r = await rodarAgente({ estado, mensagemVendedor: 'Roupas de banho infantis, 30 reais, todas novas e lacradas', vendedorId: VENDEDOR });
+
+    expect(r.status).toBe('aguardando_aprovacao'); // passou pelo portão sem perguntar de novo
+    expect(r.estado.conversa.some((m) => m.papel === 'agente' && /defeito/.test(m.texto))).toBe(false);
+  });
+
+  test.each([
+    ['todas novas e lacradas', true],
+    ['nunca foi usado, ainda na caixa', true],
+    ['novinho, com etiqueta', true],
+    ['quase novo', false],
+    ['seminovo, bem conservado', false],
+    ['está como nova', false],
+  ])('IA: "%s" conta como produto novo? %s', async (fala, esperado) => {
+    const estado = await estadoInicial({ cep: '04710150', bairro: 'Campo Belo' });
+    estado.conversa.push({ papel: 'vendedor', texto: fala });
+    expect(avariaDaConversa(estado).declarou_novo).toBe(esperado);
   });
 
   test('IA: rascunho aprovado vira pendência para o vendedor decidir (a IA não publica)', async () => {

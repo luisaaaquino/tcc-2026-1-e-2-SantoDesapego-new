@@ -144,19 +144,27 @@ const NEGA = /\b(sem (nenhum )?(defeito|problema|avaria)s?|nenhum (defeito|probl
 // davam falso positivo (ex.: brinquedo que "faz barulho").
 const MENCIONA = /\b(defeito|avaria|quebrad\w*|rachad\w*|rachadura|trincad\w*|amassad\w*|riscad\w*|rasgad\w*|vaza\w*|n[ãa]o (gela|congela|funciona|liga|acende|esquenta)|demora\w* (pra|para) (gelar|congelar|esquentar|ligar)|barulho estranho|s[óo] n[ãa]o (gela|congela|funciona|liga|acende|esquenta))\b/i;
 const PERGUNTA_AVARIA = /\b(defeito|avaria|problema|funciona|risco|amassad|quebr|rachad|estado)/i;
+// Produto declarado novo de fábrica: "novo", "lacrado", "na caixa", "nunca
+// usado", "com etiqueta"... — já responde sobre defeito, não precisa perguntar.
+// "Quase novo", "seminovo" e "como novo" NÃO contam: usado pode ter marca.
+const DECLARA_NOVO = /\b(nov[oa]s?|novinh[oa]s?|lacrad[oa]s?|na (caixa|embalagem)|nunca (foi |foram )?usad[oa]s?|sem uso|com etiqueta|zero km)\b/i;
+const NOVO_RELATIVO = /\b(quase|como|semi-?)\s?nov[oa]s?\b|\bseminov[oa]s?\b/gi;
 
 function avariaDaConversa(estado) {
   const msgs = estado.conversa;
   const perguntada = msgs.some((m) => m.papel === 'agente' && PERGUNTA_AVARIA.test(m.texto));
   let negouDefeito = false;
+  let declarouNovo = false;
   const falas = [];
   for (const m of msgs) {
     if (m.papel !== 'vendedor') continue;
     if (MENCIONA.test(m.texto.replace(NEGA, ''))) falas.push(m.texto);
     else if (new RegExp(NEGA.source, 'i').test(m.texto)) negouDefeito = true;
+    if (DECLARA_NOVO.test(m.texto.replace(NOVO_RELATIVO, ''))) declarouNovo = true;
   }
-  return { perguntada, negou_defeito: negouDefeito, mencionada: falas.length > 0, falas,
-    tratada: perguntada || negouDefeito || falas.length > 0 };
+  return { perguntada, negou_defeito: negouDefeito, declarou_novo: declarouNovo,
+    mencionada: falas.length > 0, falas,
+    tratada: perguntada || negouDefeito || declarouNovo || falas.length > 0 };
 }
 
 function precoPedido(estado) {
@@ -336,7 +344,8 @@ async function decidir(estado, categorias) {
         : null,
     },
     rascunho_atual: estado.rascunho,
-    sobre_avaria: { perguntada: avaria.perguntada, negou_defeito: avaria.negou_defeito, mencionada: avaria.mencionada },
+    sobre_avaria: { perguntada: avaria.perguntada, negou_defeito: avaria.negou_defeito,
+      declarou_novo: avaria.declarou_novo, mencionada: avaria.mencionada },
     categorias_disponiveis: categorias,
   };
   const { conteudo, uso } = await chamadaEstruturada({
