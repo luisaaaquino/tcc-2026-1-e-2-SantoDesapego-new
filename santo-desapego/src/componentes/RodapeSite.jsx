@@ -1,5 +1,12 @@
 import { Link } from 'react-router-dom';
 import { EMAILS } from '../config';
+import { rolarAteSecao } from '../utils/rolagem';
+
+// "Como funciona": já estando na Home, rola direto até a seção. Clicar de
+// novo no mesmo link não muda o endereço, e aí o React Router não fazia nada.
+const irParaComoFunciona = (e) => {
+  if (rolarAteSecao('como-funciona')) e.preventDefault();
+};
 
 // Rodapé das páginas públicas (Home, Explorar e Sobre). Antes estava
 // copiado nos três arquivos; agora as três mostram o mesmo conteúdo.
@@ -25,7 +32,7 @@ const RodapeSite = ({ usuario, onAbrirLegal }) => {
         <details className="footer-col">
           <summary><h4>Plataforma</h4></summary>
           <div className="footer-col-links">
-            <Link to="/#como-funciona">Como funciona</Link>
+            <Link to="/#como-funciona" onClick={irParaComoFunciona}>Como funciona</Link>
             <Link to={linkAnunciar}>Anunciar</Link>
             <Link to="/explorar">Categorias</Link>
             <Link to="/sobre">Sobre nós</Link>

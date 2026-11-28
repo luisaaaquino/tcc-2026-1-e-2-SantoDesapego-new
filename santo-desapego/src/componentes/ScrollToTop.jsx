@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { rolarAteSecao } from '../utils/rolagem';
 
 /* ── Rola pro topo (ou pra âncora certa) a cada troca de página ──
    O React Router não faz isso sozinho: ao navegar de uma página
@@ -22,10 +23,12 @@ const ScrollToTop = () => {
 
   useEffect(() => {
     if (hash) {
-      const el = document.getElementById(hash.slice(1));
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        return;
+      const id = hash.slice(1);
+      if (rolarAteSecao(id)) {
+        // Vindo de outra página, os anúncios da Home ainda estão carregando
+        // e empurram a seção para baixo: confere de novo quando assentar
+        const ajuste = setTimeout(() => rolarAteSecao(id), 900);
+        return () => clearTimeout(ajuste);
       }
     }
     window.scrollTo(0, 0);

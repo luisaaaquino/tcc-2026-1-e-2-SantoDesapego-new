@@ -11,6 +11,7 @@ import BarraCategorias from '../componentes/BarraCategorias';
 import CartaoAnuncio from '../componentes/CartaoAnuncio';
 import { IconSearch, IconLogout, IconPin, IconTag, IconShield } from '../componentes/Icones';
 import { API_URL } from '../config';
+import { rolarAteSecao } from '../utils/rolagem';
 
 /* ── Como funciona: o fluxo real de uma venda, em ordem ───────── */
 const PASSOS = [
@@ -291,7 +292,12 @@ const Home = () => {
         <nav className="mobile-drawer-panel" aria-label="Menu principal">
           <GavetaPerfil usuario={usuario} onNavegar={fecharMenu} />
           <Link to="/explorar" onClick={fecharMenu}>Explorar desapegos</Link>
-          <a href="#como-funciona" onClick={fecharMenu}>Como funciona</a>
+          <a href="#como-funciona" onClick={(e) => {
+            e.preventDefault();
+            fecharMenu();
+            // espera a gaveta fechar (ela trava a rolagem da página enquanto aberta)
+            setTimeout(() => rolarAteSecao('como-funciona'), 60);
+          }}>Como funciona</a>
           <Link to="/sobre" onClick={fecharMenu}>Sobre nós</Link>
           <Link to="/central-ajuda" onClick={fecharMenu}>Central de ajuda</Link>
           {usuario && (
@@ -323,7 +329,10 @@ const Home = () => {
             </p>
             <div className="inicio-acoes">
               <Link to={linkAnunciar} className="btn-primary">Anunciar um item</Link>
-              <a href="#como-funciona" className="nav-btn">Como funciona</a>
+              <a href="#como-funciona" className="nav-btn"
+                onClick={(e) => { e.preventDefault(); rolarAteSecao('como-funciona'); }}>
+                Como funciona
+              </a>
             </div>
           </div>
 
