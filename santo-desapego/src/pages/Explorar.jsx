@@ -259,6 +259,34 @@ const Explorar = () => {
   const limparCondicoes = () => setCondicoes([]);
   const limparBairro = () => setBairroFiltro('');
 
+  // Barra de categorias do topo = navegar para outra seção: começa uma busca
+  // nova (limpa condição, faixa de preço e o texto buscado). O bairro e a
+  // ordenação continuam — dizem onde a pessoa está e como ela gosta de ver
+  // a lista. Os chips de categoria do painel da esquerda só refinam, então
+  // lá os filtros continuam valendo.
+  // Mantém a categoria do endereço igual à da tela (senão uma busca feita
+  // depois lia a categoria antiga do endereço e voltava para ela)
+  const atualizarEndereco = (id, { limparBusca = false } = {}) => {
+    const params = new URLSearchParams(searchParams);
+    if (limparBusca) params.delete('busca');
+    if (id) params.set('categoria_id', id); else params.delete('categoria_id');
+    const nova = params.toString();
+    if (nova !== searchParams.toString()) navigate(`/explorar${nova ? `?${nova}` : ''}`);
+  };
+
+  const escolherPelaBarra = (id) => {
+    setCategoriaAtiva(id);
+    limparCondicoes();
+    limparPreco();
+    atualizarEndereco(id, { limparBusca: true });
+  };
+
+  // Chips do painel da esquerda: só troca a categoria (refinar)
+  const escolherPeloPainel = (id) => {
+    setCategoriaAtiva(id);
+    atualizarEndereco(id);
+  };
+
   /* Renderiza um link de categoria já com o ícone certo */
   return (
     <div className="explorar-wrapper">
@@ -334,7 +362,7 @@ const Explorar = () => {
           </button>
         </div>
 
-        <BarraCategorias ativa={categoriaAtiva} onEscolher={setCategoriaAtiva} />
+        <BarraCategorias ativa={categoriaAtiva} onEscolher={escolherPelaBarra} />
       </header>
 
       {/* ── Gaveta do menu (mobile) ── */}
@@ -418,17 +446,16 @@ const Explorar = () => {
           {/* ── Sidebar de filtros ── */}
           <aside className={`explorar-sidebar${filtrosAbertos ? ' mobile-aberta' : ''}`}>
 
-            {/* Categoria — fica só aqui no painel de filtros (a barra de
-                categorias do cabeçalho saiu em todas as telas) */}
+            {/* Categoria no painel = refinar: os outros filtros continuam */}
             <div className="filter-section filter-section--categoria">
               <div className="filter-section-title">
                 <h3>Categoria</h3>
-                <button className="filter-clear" onClick={() => setCategoriaAtiva(null)}>Limpar</button>
+                <button className="filter-clear" onClick={() => escolherPeloPainel(null)}>Limpar</button>
               </div>
               <div className="filter-options">
                 <button
                   className={`filter-option ${!categoriaAtiva ? 'active' : ''}`}
-                  onClick={() => setCategoriaAtiva(null)}
+                  onClick={() => escolherPeloPainel(null)}
                 >
                   Todos
                 </button>
@@ -436,7 +463,7 @@ const Explorar = () => {
                   <button
                     key={cat.id}
                     className={`filter-option ${categoriaAtiva === cat.id ? 'active' : ''}`}
-                    onClick={() => setCategoriaAtiva(cat.id)}
+                    onClick={() => escolherPeloPainel(cat.id)}
                   >
                     {cat.nome}
                   </button>
