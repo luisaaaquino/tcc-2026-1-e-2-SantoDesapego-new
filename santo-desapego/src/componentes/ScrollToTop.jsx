@@ -24,11 +24,24 @@ const ScrollToTop = () => {
   useEffect(() => {
     if (hash) {
       const id = hash.slice(1);
-      if (rolarAteSecao(id)) {
-        // Vindo de outra página, os anúncios da Home ainda estão carregando
-        // e empurram a seção para baixo: confere de novo quando assentar
-        const ajuste = setTimeout(() => rolarAteSecao(id), 900);
-        return () => clearTimeout(ajuste);
+      // Vindo de outra página: vai direto (sem animação) para a seção
+      if (rolarAteSecao(id, { suave: false })) {
+        // Os anúncios da Home ainda estão chegando e empurram a seção para
+        // baixo — a pessoa via a lista de anúncios por um instante. Enquanto
+        // a página cresce, mantém a seção no lugar; para quando assenta
+        // (ou se a própria pessoa rolar a página).
+        const manter = () => rolarAteSecao(id, { suave: false });
+        if (typeof ResizeObserver === 'undefined') return undefined;
+        const observador = new ResizeObserver(manter);
+        observador.observe(document.body);
+        const parar = () => {
+          observador.disconnect();
+          clearTimeout(limite);
+          ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach((ev) => window.removeEventListener(ev, parar));
+        };
+        const limite = setTimeout(parar, 4000);
+        ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach((ev) => window.addEventListener(ev, parar, { passive: true }));
+        return parar;
       }
     }
     window.scrollTo(0, 0);
