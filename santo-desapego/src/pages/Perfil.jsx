@@ -12,6 +12,7 @@ import {
 
 import { API_URL } from '../config';
 import { atualizarMovimento } from '../utils/camadaMovimento';
+import { formatarPreco, tempoRelativo } from '../utils/formato';
 
 /* ── Ícones SVG ───────────────────────────────────────────── */
 const I = {
@@ -428,18 +429,96 @@ const SecaoPainel = ({ usuario, estatisticas }) => {
           <div className="painel-cta-icon"><I.bag /></div>
           <h3>Procurando algo?</h3>
           <p>Descubra desapegos perto de você. Tudo a poucos minutos de casa.</p>
-          <Link to="/" className="painel-cta-btn">
+          <Link to="/explorar" className="painel-cta-btn">
             <IconSearch size={16} /> Explorar desapegos
           </Link>
         </div>
       </div>
 
-      {/* Lista vazia (futura: meus anúncios e últimas compras) */}
+      {/* [RF13] Atividade recente: anúncios publicados, compras e vendas */}
+      <AtividadeRecente />
+    </>
+  );
+};
+
+/* Atividade recente da Visão geral: junta os últimos anúncios, compras e
+   vendas da pessoa, do mais novo para o mais antigo. Só mostra "ainda não
+   tem atividade" quando ela realmente não tem nada. */
+const ROTULO_COMPRA = {
+  approved: 'Você comprou', pending: 'Compra com pagamento pendente', in_process: 'Compra com pagamento em análise',
+  rejected: 'Compra com pagamento recusado', refunded: 'Compra reembolsada', cancelled: 'Compra cancelada',
+};
+const ROTULO_VENDA = {
+  approved: 'Você vendeu', pending: 'Venda com pagamento pendente', in_process: 'Venda com pagamento em análise',
+  rejected: 'Venda com pagamento recusado', refunded: 'Venda reembolsada', cancelled: 'Venda cancelada',
+};
+const MAX_ATIVIDADES = 5;
+
+const AtividadeRecente = () => {
+  const [itens, setItens] = useState(null); // null = carregando
+
+  useEffect(() => {
+    const token = localStorage.getItem('sd_token');
+    const pegar = (rota) => fetch(`${API_URL}${rota}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => (r.ok ? r.json() : {})).catch(() => ({}));
+    let cancelado = false;
+
+    Promise.all([pegar('/api/usuario/anuncios'), pegar('/api/usuario/compras'), pegar('/api/usuario/vendas')])
+      .then(([anuncios, compras, vendas]) => {
+        if (cancelado) return;
+        const lista = [
+          ...(anuncios.anuncios || []).map((a) => ({
+            chave: `a${a.id}`, data: a.data_criacao, texto: 'Você anunciou', titulo: a.titulo,
+            preco: a.preco, imagem: a.imagem_principal, link: `/anuncio/${a.id}`,
+          })),
+          ...(compras.compras || []).map((c) => ({
+            chave: `c${c.id}`, data: c.criada_em, texto: ROTULO_COMPRA[c.status] || 'Compra', titulo: c.anuncio_titulo,
+            preco: c.preco, imagem: c.anuncio_imagem, link: '/perfil?aba=compras',
+          })),
+          ...(vendas.vendas || []).map((v) => ({
+            chave: `v${v.id}`, data: v.criada_em, texto: ROTULO_VENDA[v.status] || 'Venda', titulo: v.anuncio_titulo,
+            preco: v.preco, imagem: v.anuncio_imagem, link: '/perfil?aba=vendas',
+          })),
+        ].sort((x, y) => new Date(y.data) - new Date(x.data));
+        setItens(lista.slice(0, MAX_ATIVIDADES));
+      });
+    return () => { cancelado = true; };
+  }, []);
+
+  if (itens === null) return null;
+
+  if (itens.length === 0) {
+    return (
       <div className="painel-empty">
         <h4>Você ainda não tem atividade por aqui</h4>
-        <p>Quando publicar um anúncio ou fazer uma compra, tudo aparece aqui.</p>
+        <p>Quando publicar um anúncio ou fizer uma compra, tudo aparece aqui.</p>
       </div>
-    </>
+    );
+  }
+
+  return (
+    <section className="painel-atividade" aria-labelledby="titulo-atividade">
+      <h2 id="titulo-atividade">Atividade recente</h2>
+      <ul>
+        {itens.map((it) => (
+          <li key={it.chave}>
+            <Link to={it.link} className="painel-atividade-item">
+              {it.imagem
+                ? <img src={it.imagem} alt="" loading="lazy" />
+                : <span className="painel-atividade-sem-foto" aria-hidden="true" />}
+              <span className="painel-atividade-texto">
+                <span className="painel-atividade-acao">{it.texto}</span>
+                <strong>{it.titulo}</strong>
+              </span>
+              <span className="painel-atividade-lado">
+                <span className="painel-atividade-preco">{formatarPreco(it.preco)}</span>
+                <span className="painel-atividade-data">{tempoRelativo(it.data)}</span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 };
 
